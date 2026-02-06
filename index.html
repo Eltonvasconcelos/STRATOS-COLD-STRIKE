@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS: SUPREMACIA GLOBAL</title>
+    <title>STRATOS: INTELIGÊNCIA GLOBAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
     <style>
@@ -12,46 +12,45 @@
         .ui-overlay { position: relative; z-index: 10; pointer-events: none; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; }
         .interactive { pointer-events: auto !important; }
         .neon-box { border: 1px solid #22d3ee; background: rgba(0, 8, 15, 0.95); box-shadow: 0 0 15px #0891b2; padding: 10px; border-radius: 4px; }
-        input { background: #001a1a; border: 1px solid #22d3ee; color: #fff; padding: 5px; width: 100%; margin-bottom: 5px; font-size: 10px; }
+        input { background: #001a1a; border: 1px solid #22d3ee; color: #fff; padding: 6px; width: 100%; margin-bottom: 4px; font-size: 11px; }
+        .res-text { font-size: 9px; line-height: 1.2; }
     </style>
 </head>
 <body>
     <div id="globeViz" class="interactive"></div>
     <div class="ui-overlay">
-        <header class="interactive"><div class="neon-box">
-            <h1 class="text-[10px] font-black text-cyan-400 uppercase">Stratos: Cold Strike // Global Intelligence</h1>
+        <header class="interactive"><div class="neon-box text-center">
+            <h1 class="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Stratos: Cold Strike // Global Military Intelligence</h1>
         </div></header>
 
         <main id="p" class="interactive hidden">
-            <div class="neon-box w-full max-w-[260px] mx-auto border-l-4 border-cyan-500">
-                <h2 id="n" class="text-md font-black text-white border-b border-cyan-900 mb-2 uppercase">LOCAL</h2>
-                <div class="text-[10px] space-y-1">
-                    <p>🌐 IDIOMA: <span id="l" class="text-white">---</span></p>
-                    <p>💰 INVESTIMENTO: <span id="b" class="text-green-400">---</span></p>
-                    <p>🪖 EXÉRCITO: <span id="a" class="text-cyan-200">---</span></p>
-                    <p class="text-yellow-500 font-bold mt-1 uppercase text-[8px]">Tática de Quartel:</p>
-                    <p id="s" class="text-gray-400 italic text-[9px]">---</p>
-                </div>
+            <div class="neon-box w-full max-w-[250px] mx-auto border-l-4 border-cyan-500">
+                <h2 id="n" class="text-sm font-black text-white border-b border-cyan-900 mb-1 uppercase">SISTEMA</h2>
+                <p id="desc" class="text-[9px] text-gray-400 italic">Clique no globo para dados...</p>
             </div>
         </main>
 
         <footer class="interactive">
-            <div class="neon-box w-full max-w-[280px] mx-auto">
-                <h3 class="text-[10px] font-bold text-center mb-2 uppercase">⚔️ Simulador de Batalha Global</h3>
-                <input id="p1" placeholder="Ex: Brazil">
-                <input id="p2" placeholder="Ex: Israel">
-                <button onclick="batalha()" class="w-full py-2 bg-red-900 text-white font-black text-[10px] uppercase">SIMULAR COMBATE</button>
-                <div id="res" class="text-center text-white font-bold text-[11px] mt-2 italic"></div>
+            <div class="neon-box w-full max-w-[320px] mx-auto overflow-y-auto max-h-[50vh]">
+                <h3 class="text-[10px] font-bold text-center mb-2 uppercase text-yellow-500">⚔️ Simulador Tático de Conflito</h3>
+                <input id="p1" placeholder="Atacante (Ex: Brazil)">
+                <input id="p2" placeholder="Defensor (Ex: Russia)">
+                <button onclick="batalha()" class="w-full py-2 bg-red-800 hover:bg-red-700 text-white font-black text-[10px] uppercase transition-all">Iniciar Simulação</button>
+                <div id="res" class="res-text text-white mt-2 border-t border-cyan-900 pt-2"></div>
             </div>
         </footer>
     </div>
 
     <script>
         const baseMilitar = {
-            "Brazil": { p: 80, l: "Português", b: "USD 20.5B", a: "360.000 + 10.000 Recrutas", s: "Domínio em selva e controle fluvial." },
-            "Israel": { p: 85, l: "Hebraico", b: "USD 24.3B", a: "170.000 Elite", s: "Ataque aéreo cirúrgico e Iron Dome." },
-            "United States of America": { p: 100, l: "Inglês", b: "USD 877B", a: "1.3M Ativos", s: "Supremacia global e porta-aviões." },
-            "Sudan": { p: 40, l: "Árabe", b: "USD 1.1B", a: "100.000", s: "Guerra de guerrilha e mobilidade terrestre." }
+            "Brazil": {power:75,econ:65,tech:60,army:360000,air:700,sea:110,style:"Guerra em selva e resistência territorial"},
+            "United States": {power:100,econ:100,tech:100,army:1300000,air:13000,sea:490,style:"Supremacia global total"},
+            "Russia": {power:95,econ:70,tech:85,army:900000,air:4000,sea:350,style:"Ataque massivo terrestre e nuclear"},
+            "China": {power:98,econ:95,tech:90,army:2000000,air:3300,sea:780,style:"Domínio tecnológico e numérico"},
+            "Israel": {power:88,econ:80,tech:95,army:170000,air:600,sea:65,style:"Ataques cirúrgicos e defesa avançada"},
+            "United Kingdom": {power:82,econ:85,tech:88,army:150000,air:500,sea:75,style:"Força naval e elite profissional"},
+            "France": {power:84,econ:83,tech:87,army:205000,air:550,sea:70,style:"Ataque rápido e tecnologia militar"},
+            "North Korea": {power:70,econ:30,tech:60,army:1200000,air:900,sea:80,style:"Guerra total e mísseis"}
         };
 
         const world = Globe()(document.getElementById('globeViz'))
@@ -60,26 +59,38 @@
                 const name = obj.properties.NAME;
                 document.getElementById('p').classList.remove('hidden');
                 document.getElementById('n').innerText = name;
-                const d = baseMilitar[name] || { l: "Nativo", b: "USD 2B+", a: "Padrão", s: "Defesa Territorial." };
-                document.getElementById('l').innerText = d.l;
-                document.getElementById('b').innerText = d.b;
-                document.getElementById('a').innerText = d.a;
-                document.getElementById('s').innerText = d.s;
+                const d = baseMilitar[name] || {style: "Dados táticos restritos para este setor."};
+                document.getElementById('desc').innerText = d.style;
             });
 
         function batalha(){
-            let a = document.getElementById("p1").value;
-            let b = document.getElementById("p2").value;
-            let r = document.getElementById("res");
-            if(!baseMilitar[a] || !baseMilitar[b]){
-                r.innerHTML = "NAÇÃO NÃO RECONHECIDA";
+            let p1=document.getElementById("p1").value.trim();
+            let p2=document.getElementById("p2").value.trim();
+            let res=document.getElementById("res");
+
+            if(!baseMilitar[p1]||!baseMilitar[p2]){
+                res.innerHTML="❌ ERRO: PAÍS NÃO MAPEADO NO RADAR GLOBAL";
                 return;
             }
-            let v = baseMilitar[a].p > baseMilitar[b].p ? a : b;
-            r.innerHTML = "🏆 VITÓRIA ESTIMADA: " + v.toUpperCase();
+
+            let A=baseMilitar[p1];
+            let B=baseMilitar[p2];
+
+            let scoreA=A.power+A.econ+A.tech+(A.army/50000)+(A.air/200)+(A.sea/50);
+            let scoreB=B.power+B.econ+B.tech+(B.army/50000)+(B.air/200)+(B.sea/50);
+
+            let vencedor=scoreA>scoreB?p1:p2;
+            let perdedor=scoreA>scoreB?p2:p1;
+            let chance=Math.floor(Math.random()*20)+70;
+
+            res.innerHTML=
+                "🌍 ANÁLISE INICIADA...<br>"+
+                "⚔️ CONFLITO: "+p1+" VS "+p2+"<br>"+
+                "📊 PODER "+p1+": "+Math.floor(scoreA)+" | "+p2+": "+Math.floor(scoreB)+"<br>"+
+                "🧠 TÁTICA "+p1+": "+A.style+"<br><br>"+
+                "<span style='color:#facc15'>🏆 VENCEDOR ESTIMADO: "+vencedor.toUpperCase()+" ("+chance+"%)</span><br>"+
+                "🛰️ SIMULAÇÃO BASEADA EM IA GLOBAL";
         }
     </script>
 </body>
 </html>
-
-
