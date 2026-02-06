@@ -2,107 +2,201 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLOBAL INTELLIGENCE CORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G.I.C. | SUPREME STRATEGIC COMMAND</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --bg: #000507; }
+        :root { --neon: #00f2ff; --alert: #ff003c; --bg: #000a0f; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
-        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.5; }
-        .hud { position: relative; z-index: 10; height: 100vh; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        
+        /* Efeito de Scanner e CRT */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            z-index: 1000; pointer-events: none; background-size: 100% 3px, 3px 100%; opacity: 0.6;
+        }
+
+        #globeViz { position: absolute; top: 0; z-index: 1; filter: brightness(0.7) contrast(1.2); }
+
+        .ui-root { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
-        .glass { background: rgba(0, 20, 30, 0.8); border: 1px solid var(--neon); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
-        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 100; pointer-events: none; }
-        .loading { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
-        .bar-fill { height: 100%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: width 0.3s; }
+
+        .panel-military {
+            background: rgba(0, 10, 15, 0.95);
+            border: 1px solid var(--neon);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+            backdrop-filter: blur(15px);
+            clip-path: polygon(0 0, 95% 0, 100% 15%, 100% 100%, 5% 100%, 0 85%);
+        }
+
+        .stat-line { height: 2px; background: #002b30; position: relative; overflow: hidden; }
+        .stat-fill { height: 100%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: width 1.5s ease-in-out; }
+
+        input, select {
+            background: #00151a; border: 1px solid #004d55; color: #fff;
+            padding: 12px; font-size: 10px; width: 100%; outline: none;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-strike {
+            background: var(--neon); color: #000; font-weight: 900;
+            padding: 15px; width: 100%; font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+        }
+
+        .btn-strike:hover { background: #fff; box-shadow: 0 0 40px #fff; }
+
+        .loading-screen {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loading">
-    <div class="w-48 h-1 bg-cyan-900 mb-4"><div id="load-bar" class="bar-fill" style="width: 0%"></div></div>
-    <p class="text-[10px] tracking-[4px] animate-pulse">DECRYPTING CORE...</p>
+<div id="loader" class="loading-screen">
+    <div class="text-center">
+        <h2 class="font-orbitron text-xl mb-4 animate-pulse">STRATOS CORE INITIALIZING</h2>
+        <div class="w-64 h-1 bg-gray-900 mx-auto">
+            <div id="load-bar" class="h-full bg-cyan-400 w-0 transition-all duration-300"></div>
+        </div>
+        <p id="load-text" class="text-[8px] mt-4 opacity-50 tracking-[3px]">ESTABLISHING SATELLITE UPLINK...</p>
+    </div>
 </div>
 
-<div class="scanline"></div>
 <div id="globeViz"></div>
 
-<div class="hud">
-    <header class="interactive glass p-3 flex justify-between items-center">
+<div class="ui-root">
+    <header class="interactive panel-military p-4 flex justify-between items-center mb-2">
         <div>
-            <h1 class="text-xs font-black tracking-tighter neon-text font-orbitron">G.I.C. // STRATOS CORE</h1>
-            <p class="text-[7px] opacity-70">SISTEMA DE INTELIGÊNCIA GLOBAL</p>
+            <h1 class="font-orbitron font-black text-sm tracking-widest text-white">CENTRAL INTELLIGENCE CORE</h1>
+            <p class="text-[7px] text-cyan-500 font-bold">CLEARANCE LEVEL: SUPREME COMMANDER</p>
         </div>
-        <div id="clock" class="text-sm font-bold font-orbitron">00:00:00</div>
+        <div class="text-right font-orbitron">
+            <div id="clock" class="text-sm font-bold">00:00:00</div>
+            <div class="text-[6px] text-red-600 animate-pulse font-black">ACTIVE THREAT MONITOR</div>
+        </div>
     </header>
 
-    <main class="interactive flex flex-col gap-3">
-        <div class="glass p-4 w-full max-w-[400px]">
-            <select id="countrySelect" class="w-full bg-black border border-cyan-500 text-[10px] p-2 mb-4 outline-none" onchange="analyze(this.value)">
-                <option value="">SELECIONE UMA NAÇÃO...</option>
-            </select>
-            
-            <div id="data-view" class="hidden space-y-3">
-                <div class="grid grid-cols-2 gap-2 text-[9px]">
-                    <div class="border-l-2 border-cyan-500 pl-2">PIB: <span id="v-gdp" class="text-white"></span></div>
-                    <div class="border-l-2 border-cyan-500 pl-2">PODER: <span id="v-pwr" class="text-white"></span></div>
+    <main class="flex-1 flex flex-col justify-end gap-2">
+        <div class="interactive panel-military p-5 w-full max-w-[450px] mx-auto mb-2">
+            <div id="main-ui">
+                <p class="text-[8px] mb-2 opacity-60">TARGET ANALYSIS SELECTION</p>
+                <select id="countrySelect" class="mb-4" onchange="loadIntel(this.value)">
+                    <option value="">SELECT SOVEREIGN STATE...</option>
+                </select>
+
+                <div id="intel-display" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-4 text-[9px]">
+                        <div class="stat-box">
+                            <span class="opacity-50">MILITARY BUDGET</span>
+                            <p id="i-budget" class="text-white font-bold">$0.00B</p>
+                        </div>
+                        <div class="stat-box">
+                            <span class="opacity-50">NUCLEAR CAPABILITY</span>
+                            <p id="i-nuke" class="text-red-500 font-bold">NONE</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="stat-item">
+                            <div class="flex justify-between text-[7px] mb-1"><span>TECHNOLOGY INDEX</span><span id="v-tech">0%</span></div>
+                            <div class="stat-line"><div id="b-tech" class="stat-fill" style="width: 0%"></div></div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="flex justify-between text-[7px] mb-1"><span>LOGISTIC REACH</span><span id="v-log">0%</span></div>
+                            <div class="stat-line"><div id="b-log" class="stat-fill" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+
+                    <button onclick="runAiAnalysis()" class="btn-strike text-[10px] mt-4">Generate Strategic Analysis</button>
                 </div>
-                <div class="h-1 bg-cyan-900"><div id="bar-pwr" class="bar-fill"></div></div>
-                <p id="v-bio" class="text-[8px] italic opacity-60"></p>
-                <button onclick="aiScan()" class="w-full bg-cyan-500 text-black text-[9px] font-bold py-2 mt-2 hover:bg-white transition">AI GLOBAL SCAN</button>
             </div>
         </div>
-    </main>
 
-    <footer class="glass p-2 text-[8px] opacity-50 flex justify-between">
-        <span>ESTADO: SEGURO</span>
-        <span>LINK: SATÉLITE-09</span>
-    </footer>
+        <footer class="interactive panel-military p-3 text-[7px] flex gap-4 overflow-hidden h-16">
+            <div class="flex-1 border-r border-cyan-900 pr-2">
+                <p class="text-cyan-400 font-bold underline">GLOBAL RANKING (POWER IDX)</p>
+                <div id="rank-list" class="flex gap-4 mt-1"></div>
+            </div>
+            <div class="w-32 opacity-70 italic" id="console-msg">
+                Systems online. Waiting for commander input.
+            </div>
+        </footer>
+    </main>
 </div>
 
 <script>
-    const db = {
-        "brazil": { n: "BRASIL", gdp: "$2.1T", pwr: 78, bio: "Potência sul-americana com domínio em recursos naturais e guerra de selva." },
-        "usa": { n: "EUA", gdp: "$26.9T", pwr: 100, bio: "Hegemonia global. Líder em projeção militar e tecnologia aeroespacial." },
-        "russia": { n: "RÚSSIA", gdp: "$2.2T", pwr: 95, bio: "Maior arsenal nuclear do mundo. Especialista em guerra de atrito." },
-        "china": { n: "CHINA", gdp: "$19.3T", pwr: 98, bio: "Gigante industrial. Líder em tecnologia 5G e expansão marítima." },
-        "israel": { n: "ISRAEL", gdp: "$0.5T", pwr: 92, bio: "Vanguarda em defesa cibernética e ataques de precisão." }
+    // BANCO DE DADOS MIL-INT (Realista 2026)
+    const milIntel = {
+        "brazil": { n: "BRASIL", budget: "21.5B", nuke: "0", tech: 72, log: 68, power: 75, bio: "Regional hegemon. Specialists in asymmetric jungle warfare." },
+        "usa": { n: "USA", budget: "886B", nuke: "5,044", tech: 100, log: 100, power: 100, bio: "Global force projection leader. Dominant in all domains." },
+        "russia": { n: "RUSSIA", budget: "109B", nuke: "5,580", tech: 88, log: 85, power: 97, bio: "Nuclear superpower. High attrition warfare doctrine." },
+        "china": { n: "CHINA", budget: "296B", nuke: "500+", tech: 96, log: 94, power: 98, bio: "Rapid technological surge. Dominant naval manufacturing." },
+        "israel": { n: "ISRAEL", budget: "24B", nuke: "90*", tech: 98, log: 90, power: 92, bio: "Active defense doctrine. World-class cyber & AI integration." }
     };
 
-    function analyze(id) {
-        if(!db[id]) return;
-        const d = db[id];
-        document.getElementById('data-view').classList.remove('hidden');
-        document.getElementById('v-gdp').innerText = d.gdp;
-        document.getElementById('v-pwr').innerText = d.pwr + " IDX";
-        document.getElementById('v-bio').innerText = d.bio;
-        document.getElementById('bar-pwr').style.width = d.pwr + "%";
+    function loadIntel(id) {
+        if(!milIntel[id]) return;
+        const d = milIntel[id];
+        document.getElementById('intel-display').classList.remove('hidden');
+        document.getElementById('i-budget').innerText = `$${d.budget}`;
+        document.getElementById('i-nuke').innerText = d.nuke > 0 ? d.nuke : "NON-NUCLEAR";
+        
+        // Animate Bars
+        setTimeout(() => {
+            document.getElementById('b-tech').style.width = d.tech + "%";
+            document.getElementById('b-log').style.width = d.log + "%";
+            document.getElementById('v-tech').innerText = d.tech + "%";
+            document.getElementById('v-log').innerText = d.log + "%";
+        }, 100);
+
+        document.getElementById('console-msg').innerText = `Scoping Target: ${d.n}. Data verified via Satellite 09.`;
     }
 
-    function aiScan() {
-        alert("SISTEMA DE IA: Analisando equilíbrios geopolíticos... Estabilidade Global em 64%");
+    function runAiAnalysis() {
+        const id = document.getElementById('countrySelect').value;
+        const d = milIntel[id];
+        alert(`AI STRATEGIC ANALYSIS:\nTarget: ${d.n}\nVerdict: ${d.bio}\nStrategic Risk: ${100 - d.power}%`);
     }
 
-    // Inicialização
+    // Inicialização do Sistema
     const select = document.getElementById('countrySelect');
-    Object.keys(db).forEach(k => {
+    Object.keys(milIntel).forEach(k => {
         const opt = document.createElement('option');
-        opt.value = k; opt.innerText = db[k].n;
+        opt.value = k; opt.innerText = milIntel[k].n;
         select.appendChild(opt);
     });
 
+    // Ranking no rodapé
+    const rankList = document.getElementById('rank-list');
+    Object.values(milIntel).sort((a,b)=>b.power - a.power).forEach(c => {
+        rankList.innerHTML += `<div class="whitespace-nowrap"><span class="opacity-50">${c.n}:</span> ${c.power}</div>`;
+    });
+
+    // Motor do Globo (Otimizado)
     const world = Globe()(document.getElementById('globeViz'))
         .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
         .backgroundColor('rgba(0,0,0,0)')
         .showAtmosphere(true).atmosphereColor('#00f2ff');
 
+    // Loading Sequencial (Evita travamento no mobile)
     let p = 0;
     const itv = setInterval(() => {
-        p += 10; document.getElementById('load-bar').style.width = p + "%";
-        if(p >= 100) { clearInterval(itv); document.getElementById('loader').style.opacity = '0'; setTimeout(()=>document.getElementById('loader').remove(), 500); }
-    }, 100);
+        p += Math.random() * 20;
+        document.getElementById('load-bar').style.width = Math.min(p, 100) + "%";
+        if(p >= 100) {
+            clearInterval(itv);
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').remove(), 500);
+            }, 500);
+        }
+    }, 150);
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
