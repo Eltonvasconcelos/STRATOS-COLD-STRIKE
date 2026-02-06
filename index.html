@@ -3,377 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLOBAL INTELLIGENCE CORE | SECURE TERMINAL</title>
-    
+    <title>GLOBAL INTELLIGENCE CORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@100;400;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --deep-cyan: #00474b;
-            --alert-red: #ff003c;
-            --matrix-green: #00ff41;
-            --bg-dark: #000507;
-        }
-
-        body, html {
-            margin: 0; padding: 0; background: var(--bg-dark);
-            color: var(--neon-blue); font-family: 'JetBrains Mono', monospace;
-            overflow: hidden; height: 100vh;
-        }
-
-        /* Scanline Effect */
-        body::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 999; pointer-events: none; background-size: 100% 3px, 3px 100%;
-        }
-
-        #globeViz { position: absolute; top: 0; z-index: 1; filter: saturate(1.5) brightness(0.8); }
-
-        .hud-container {
-            position: relative; z-index: 10; height: 100vh;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 20px; pointer-events: none;
-        }
-
+        :root { --neon: #00f2ff; --bg: #000507; }
+        body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.5; }
+        .hud { position: relative; z-index: 10; height: 100vh; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
-
-        /* Panel Styling */
-        .glass-panel {
-            background: rgba(0, 15, 20, 0.85);
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2), inset 0 0 15px rgba(0, 242, 255, 0.1);
-            backdrop-filter: blur(10px);
-            position: relative; overflow: hidden;
-        }
-
-        .glass-panel::before {
-            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(0, 242, 255, 0.05), transparent);
-            transform: rotate(45deg); animation: shine 6s infinite;
-        }
-
-        @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
-
-        .neon-text { text-shadow: 0 0 10px var(--neon-blue); }
-        .danger-text { color: var(--alert-red); text-shadow: 0 0 10px var(--alert-red); }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
-
-        .stat-bar-bg { height: 6px; background: rgba(0, 71, 75, 0.5); border-radius: 3px; overflow: hidden; }
-        .stat-bar-fill { height: 100%; background: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1); }
-
-        input, select {
-            background: rgba(0, 30, 40, 0.9); border: 1px solid var(--neon-blue);
-            color: white; font-family: 'Orbitron', sans-serif; padding: 10px;
-            outline: none; font-size: 12px;
-        }
-
-        .btn-core {
-            background: var(--neon-blue); color: #000; font-family: 'Orbitron', sans-serif;
-            font-weight: 900; letter-spacing: 2px; transition: 0.4s;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-        }
-
-        .btn-core:hover { background: #fff; box-shadow: 0 0 30px #fff; transform: scale(1.05); }
-
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 9999; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1s;
-        }
+        .glass { background: rgba(0, 20, 30, 0.8); border: 1px solid var(--neon); backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
+        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 100; pointer-events: none; }
+        .loading { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        .bar-fill { height: 100%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: width 0.3s; }
     </style>
 </head>
 <body>
 
-    <div id="loader" class="loading-overlay">
-        <div class="w-64 h-1 bg-cyan-900 mb-4">
-            <div id="load-progress" class="h-full bg-cyan-400 w-0 transition-all duration-500"></div>
+<div id="loader" class="loading">
+    <div class="w-48 h-1 bg-cyan-900 mb-4"><div id="load-bar" class="bar-fill" style="width: 0%"></div></div>
+    <p class="text-[10px] tracking-[4px] animate-pulse">DECRYPTING CORE...</p>
+</div>
+
+<div class="scanline"></div>
+<div id="globeViz"></div>
+
+<div class="hud">
+    <header class="interactive glass p-3 flex justify-between items-center">
+        <div>
+            <h1 class="text-xs font-black tracking-tighter neon-text font-orbitron">G.I.C. // STRATOS CORE</h1>
+            <p class="text-[7px] opacity-70">SISTEMA DE INTELIGÊNCIA GLOBAL</p>
         </div>
-        <p class="text-xs font-bold animate-pulse tracking-[5px]">DECRYPTING GLOBAL CORE...</p>
-    </div>
+        <div id="clock" class="text-sm font-bold font-orbitron">00:00:00</div>
+    </header>
 
-    <div id="globeViz"></div>
-
-    <div class="hud-container">
-        <header class="interactive flex justify-between items-start">
-            <div class="glass-panel p-4 w-96">
-                <h1 class="font-black text-xl italic tracking-tighter neon-text">G.I.C. // GLOBAL INTELLIGENCE CORE</h1>
-                <div class="flex gap-4 mt-2 text-[8px] uppercase font-bold">
-                    <span>Status: <span class="text-green-500">Secure</span></span>
-                    <span>Link: <span class="text-cyan-500">Satellite-09</span></span>
-                    <span class="danger-text">Defcon: 3</span>
-                </div>
-            </div>
+    <main class="interactive flex flex-col gap-3">
+        <div class="glass p-4 w-full max-w-[400px]">
+            <select id="countrySelect" class="w-full bg-black border border-cyan-500 text-[10px] p-2 mb-4 outline-none" onchange="analyze(this.value)">
+                <option value="">SELECIONE UMA NAÇÃO...</option>
+            </select>
             
-            <div class="glass-panel p-4 text-right">
-                <div id="clock" class="text-2xl font-bold tracking-widest font-orbitron">00:00:00</div>
-                <div id="date" class="text-[9px] opacity-60">06 FEB 2026</div>
-                <div class="mt-2">
-                    <button onclick="changeLang('pt')" class="text-[9px] border px-2 border-cyan-800 hover:bg-cyan-800">PT</button>
-                    <button onclick="changeLang('en')" class="text-[9px] border px-2 border-cyan-800 hover:bg-cyan-800">EN</button>
+            <div id="data-view" class="hidden space-y-3">
+                <div class="grid grid-cols-2 gap-2 text-[9px]">
+                    <div class="border-l-2 border-cyan-500 pl-2">PIB: <span id="v-gdp" class="text-white"></span></div>
+                    <div class="border-l-2 border-cyan-500 pl-2">PODER: <span id="v-pwr" class="text-white"></span></div>
                 </div>
+                <div class="h-1 bg-cyan-900"><div id="bar-pwr" class="bar-fill"></div></div>
+                <p id="v-bio" class="text-[8px] italic opacity-60"></p>
+                <button onclick="aiScan()" class="w-full bg-cyan-500 text-black text-[9px] font-bold py-2 mt-2 hover:bg-white transition">AI GLOBAL SCAN</button>
             </div>
-        </header>
-
-        <main class="flex justify-between items-center h-full">
-            <div class="interactive glass-panel p-6 w-[450px] ml-4">
-                <h2 id="txt-analysis" class="font-orbitron text-xs font-bold mb-4 border-b border-cyan-900 pb-2">STRATEGIC POWER ANALYSIS</h2>
-                
-                <div class="space-y-6">
-                    <div>
-                        <select id="countrySelect" class="w-full mb-4" onchange="analyzeCountry(this.value)">
-                            <option value="">SELECT SOVEREIGN STATE...</option>
-                        </select>
-                    </div>
-
-                    <div id="countryStats" class="hidden animate-in fade-in duration-1000">
-                        <div class="grid grid-cols-2 gap-4 text-[10px] mb-6">
-                            <div class="stat-card">
-                                <span class="opacity-50">GDP (NOMINAL)</span>
-                                <p id="stat-gdp" class="text-white font-bold text-sm">$ 0.00T</p>
-                            </div>
-                            <div class="stat-card">
-                                <span class="opacity-50">POPULATION</span>
-                                <p id="stat-pop" class="text-white font-bold text-sm">0.0M</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="stat-box">
-                                <div class="flex justify-between text-[8px] mb-1">
-                                    <span>TECHNOLOGICAL SUPREMACY</span>
-                                    <span id="val-tech">0%</span>
-                                </div>
-                                <div class="stat-bar-bg"><div id="bar-tech" class="stat-bar-fill" style="width: 0%"></div></div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="flex justify-between text-[8px] mb-1">
-                                    <span>GLOBAL INFLUENCE (SOFT POWER)</span>
-                                    <span id="val-inf">0%</span>
-                                </div>
-                                <div class="stat-bar-bg"><div id="bar-inf" class="stat-bar-fill" style="width: 0%"></div></div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="flex justify-between text-[8px] mb-1">
-                                    <span>MILITARY PROJECTION</span>
-                                    <span id="val-mil">0%</span>
-                                </div>
-                                <div class="stat-bar-bg"><div id="bar-mil" class="stat-bar-fill" style="width: 0%"></div></div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 pt-4 border-t border-cyan-950">
-                            <button onclick="generateAIReport()" class="btn-core w-full py-3 text-[10px]">AI STRATEGIC REPORT</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="interactive glass-panel p-6 w-[350px] mr-4">
-                <h3 id="txt-ranking" class="font-orbitron text-xs font-bold mb-4 border-b border-cyan-900 pb-2">TOP 8 GLOBAL POWERS</h3>
-                <div id="rankingList" class="space-y-3 text-[10px]">
-                    </div>
-            </div>
-        </main>
-
-        <footer class="interactive glass-panel p-4 mt-4 h-32">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 border-2 border-cyan-500 rounded-full flex items-center justify-center animate-spin">
-                    <div class="w-6 h-6 border-2 border-white rounded-full"></div>
-                </div>
-                <div id="ai-console" class="text-[10px] italic opacity-80 leading-relaxed font-mono">
-                    [SYSTEM_READY]: Awaiting geopolitical query. Satellite links established. Global power indices synchronized with 2026 fiscal projections.
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <div id="reportModal" class="hidden fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-10">
-        <div class="glass-panel w-full max-w-4xl p-10 max-h-[80vh] overflow-y-auto">
-            <h2 class="font-orbitron text-2xl mb-6 neon-text" id="report-title">AI STRATEGIC REPORT</h2>
-            <div id="report-body" class="text-sm leading-loose space-y-4"></div>
-            <button onclick="closeReport()" class="mt-10 btn-core px-10 py-3">TERMINATE SESSION</button>
         </div>
-    </div>
+    </main>
 
-    <script>
-        // --- BANCO DE DADOS GERAL (ESTIMATIVAS 2026) ---
-        const globalData = {
-            "brazil": { n: "BRAZIL", p: 216, gdp: 2.1, tech: 68, inf: 75, mil: 82, ind: 70, power: 74, bio: "Strategic South American hegemon with vast resource dominance." },
-            "usa": { n: "UNITED STATES", p: 338, gdp: 26.9, tech: 100, inf: 98, mil: 100, ind: 92, power: 100, bio: "Global military and financial anchor. Leading innovation ecosystem." },
-            "china": { n: "CHINA", p: 1412, gdp: 19.3, tech: 95, inf: 88, mil: 96, ind: 100, power: 97, bio: "Industrial powerhouse. Rapidly closing technological gap with the West." },
-            "russia": { n: "RUSSIA", p: 144, gdp: 2.2, tech: 85, inf: 60, mil: 98, ind: 75, power: 85, bio: "Nuclear titan with massive energy leverage over Eurasia." },
-            "india": { n: "INDIA", p: 1428, gdp: 3.7, tech: 78, inf: 72, mil: 88, ind: 85, power: 82, bio: "Emerging titan with highest population growth and tech labor force." },
-            "germany": { n: "GERMANY", p: 83, gdp: 4.3, tech: 92, inf: 85, mil: 65, ind: 95, power: 88, bio: "The industrial heart of Europe. High precision technology center." },
-            "japan": { n: "JAPAN", p: 124, gdp: 4.4, tech: 96, inf: 82, mil: 75, ind: 90, power: 89, bio: "Pacific tech hub. Master of robotics and industrial efficiency." },
-            "uk": { n: "UNITED KINGDOM", p: 67, gdp: 3.1, tech: 88, inf: 92, mil: 85, ind: 78, power: 86, bio: "Major financial node with deep historical global influence." },
-            "israel": { n: "ISRAEL", p: 9.4, gdp: 0.52, tech: 98, inf: 70, mil: 92, ind: 70, power: 80, bio: "Leading cybersecurity and military tech innovator in the Middle East." },
-            "france": { n: "FRANCE", p: 68, gdp: 2.9, tech: 90, inf: 94, mil: 88, ind: 82, power: 89, bio: "Sovereign European power with massive soft power and luxury exports." }
-        };
+    <footer class="glass p-2 text-[8px] opacity-50 flex justify-between">
+        <span>ESTADO: SEGURO</span>
+        <span>LINK: SATÉLITE-09</span>
+    </footer>
+</div>
 
-        let currentLang = 'en';
-        const trans = {
-            pt: {
-                analysis: "ANÁLISE DE PODER ESTRATÉGICO",
-                ranking: "TOP 8 POTÊNCIAS GLOBAIS",
-                select: "SELECIONE ESTADO SOBERANO...",
-                ai_console: "[SISTEMA_PRONTO]: Aguardando consulta geopolítica. Links de satélite estabelecidos.",
-                ai_report: "GERANDO RELATÓRIO DE IA...",
-                terminate: "ENCERRAR SESSÃO",
-                gdp: "PIB (NOMINAL)",
-                pop: "POPULAÇÃO"
-            },
-            en: {
-                analysis: "STRATEGIC POWER ANALYSIS",
-                ranking: "TOP 8 GLOBAL POWERS",
-                select: "SELECT SOVEREIGN STATE...",
-                ai_console: "[SYSTEM_READY]: Awaiting geopolitical query. Satellite links established.",
-                ai_report: "GENERATING AI REPORT...",
-                terminate: "TERMINATE SESSION",
-                gdp: "GDP (NOMINAL)",
-                pop: "POPULATION"
-            }
-        };
+<script>
+    const db = {
+        "brazil": { n: "BRASIL", gdp: "$2.1T", pwr: 78, bio: "Potência sul-americana com domínio em recursos naturais e guerra de selva." },
+        "usa": { n: "EUA", gdp: "$26.9T", pwr: 100, bio: "Hegemonia global. Líder em projeção militar e tecnologia aeroespacial." },
+        "russia": { n: "RÚSSIA", gdp: "$2.2T", pwr: 95, bio: "Maior arsenal nuclear do mundo. Especialista em guerra de atrito." },
+        "china": { n: "CHINA", gdp: "$19.3T", pwr: 98, bio: "Gigante industrial. Líder em tecnologia 5G e expansão marítima." },
+        "israel": { n: "ISRAEL", gdp: "$0.5T", pwr: 92, bio: "Vanguarda em defesa cibernética e ataques de precisão." }
+    };
 
-        // --- INICIALIZAÇÃO DO GLOBO (NASA STYLE) ---
-        const world = Globe()(document.getElementById('globeViz'))
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-            .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-            .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-            .showAtmosphere(true)
-            .atmosphereColor('#00f2ff')
-            .atmosphereDaylightAlpha(0.1);
+    function analyze(id) {
+        if(!db[id]) return;
+        const d = db[id];
+        document.getElementById('data-view').classList.remove('hidden');
+        document.getElementById('v-gdp').innerText = d.gdp;
+        document.getElementById('v-pwr').innerText = d.pwr + " IDX";
+        document.getElementById('v-bio').innerText = d.bio;
+        document.getElementById('bar-pwr').style.width = d.pwr + "%";
+    }
 
-        // --- CARREGAMENTO DO BANCO ---
-        function initSystem() {
-            const select = document.getElementById('countrySelect');
-            const sortedCountries = Object.keys(globalData).sort();
-            
-            sortedCountries.forEach(code => {
-                const opt = document.createElement('option');
-                opt.value = code;
-                opt.innerText = globalData[code].n;
-                select.appendChild(opt);
-            });
+    function aiScan() {
+        alert("SISTEMA DE IA: Analisando equilíbrios geopolíticos... Estabilidade Global em 64%");
+    }
 
-            updateRanking();
-            
-            // Simulação de Loading
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                document.getElementById('load-progress').style.width = progress + '%';
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    document.getElementById('loader').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loader').remove(), 1000);
-                }
-            }, 50);
-        }
+    // Inicialização
+    const select = document.getElementById('countrySelect');
+    Object.keys(db).forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k; opt.innerText = db[k].n;
+        select.appendChild(opt);
+    });
 
-        // --- ANALISAR PAÍS ---
-        function analyzeCountry(id) {
-            if (!id) return;
-            const data = globalData[id];
-            const stats = document.getElementById('countryStats');
-            stats.classList.remove('hidden');
+    const world = Globe()(document.getElementById('globeViz'))
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+        .backgroundColor('rgba(0,0,0,0)')
+        .showAtmosphere(true).atmosphereColor('#00f2ff');
 
-            document.getElementById('stat-gdp').innerText = `$ ${data.gdp}T`;
-            document.getElementById('stat-pop').innerText = `${data.p}M`;
+    let p = 0;
+    const itv = setInterval(() => {
+        p += 10; document.getElementById('load-bar').style.width = p + "%";
+        if(p >= 100) { clearInterval(itv); document.getElementById('loader').style.opacity = '0'; setTimeout(()=>document.getElementById('loader').remove(), 500); }
+    }, 100);
 
-            // Animação das Barras
-            const animateBar = (idBar, idVal, value) => {
-                const bar = document.getElementById(idBar);
-                const txt = document.getElementById(idVal);
-                bar.style.width = value + '%';
-                let current = 0;
-                const itv = setInterval(() => {
-                    if (current >= value) clearInterval(itv);
-                    txt.innerText = current + '%';
-                    current++;
-                }, 15);
-            };
-
-            animateBar('bar-tech', 'val-tech', data.tech);
-            animateBar('bar-inf', 'val-inf', data.inf);
-            animateBar('bar-mil', 'val-mil', data.mil);
-
-            document.getElementById('ai-console').innerText = `[INTEL]: Analyzing ${data.n}. Strategic significance: ${data.bio}`;
-        }
-
-        // --- RANKING ---
-        function updateRanking() {
-            const list = document.getElementById('rankingList');
-            const ranked = Object.values(globalData).sort((a,b) => b.power - a.power).slice(0, 8);
-            
-            list.innerHTML = '';
-            ranked.forEach((c, i) => {
-                list.innerHTML += `
-                    <div class="flex items-center justify-between border-b border-cyan-950 pb-1">
-                        <span>0${i+1}. ${c.n}</span>
-                        <span class="text-white font-bold">${c.power} IDX</span>
-                    </div>
-                `;
-            });
-        }
-
-        // --- RELATÓRIO IA ---
-        function generateAIReport() {
-            const id = document.getElementById('countrySelect').value;
-            const data = globalData[id];
-            const modal = document.getElementById('reportModal');
-            const body = document.getElementById('report-body');
-
-            modal.classList.remove('hidden');
-            body.innerHTML = '';
-
-            const sentences = [
-                `DECRYPTING DATA FOR ${data.n.toUpperCase()}...`,
-                `SITUATIONAL ANALYSIS: ${data.bio}`,
-                `GEOPOLITICAL THREAT LEVEL: ${100 - data.inf}% STABILITY RISK.`,
-                `INDUSTRIAL CORE STATUS: ${data.ind}% CAPACITY UTILIZATION.`,
-                `FINAL PROJECTION: ${data.n} remains a ${data.power > 90 ? 'Tier-1 Global Dominator' : 'Regional Strategic Node'} for the 2026-2030 cycle.`,
-                `STRATEGIC RECOMMENDATION: Focus on ${data.tech < 90 ? 'Technological Uplift' : 'Military Consolidation'} to maintain index position.`
-            ];
-
-            let i = 0;
-            const type = () => {
-                if (i < sentences.length) {
-                    body.innerHTML += `<p class="border-l-2 border-cyan-500 pl-4 mb-4 animate-pulse">${sentences[i]}</p>`;
-                    i++;
-                    setTimeout(type, 800);
-                }
-            };
-            type();
-        }
-
-        function closeReport() {
-            document.getElementById('reportModal').classList.add('hidden');
-        }
-
-        function changeLang(l) {
-            currentLang = l;
-            document.getElementById('txt-analysis').innerText = trans[l].analysis;
-            document.getElementById('txt-ranking').innerText = trans[l].ranking;
-            document.getElementById('ai-console').innerText = trans[l].ai_console;
-        }
-
-        // Clock
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0');
-        }, 1000);
-
-        initSystem();
-    </script>
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
 </body>
 </html>
