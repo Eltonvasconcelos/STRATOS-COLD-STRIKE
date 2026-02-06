@@ -3,139 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS: GLOBAL SUPREMACY</title>
+    <title>STRATOS | OMNISCIENCE TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
-        body { margin: 0; background: #000; color: #00f2ff; font-family: 'Orbitron', sans-serif; overflow: hidden; }
-        #globeViz { position: absolute; top: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.6; }
-        .ui-overlay { position: relative; z-index: 10; pointer-events: none; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
+        
+        :root { --neon: #00ff41; --warn: #ffcc00; --danger: #ff0033; --bg: #000a05; }
+        
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+        
+        /* Efeito de Scanline de Monitor de Guerra */
+        body::before {
+            content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100; pointer-events: none; background-size: 100% 4px, 3px 100%;
+        }
+
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.35; }
+
+        .ui-container { position: relative; z-index: 101; height: 100vh; display: flex; flex-direction: column; padding: 12px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
-        .neon-border { border: 2px solid #00f2ff; background: rgba(0, 15, 20, 0.9); box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); border-radius: 8px; padding: 12px; }
-        input { background: rgba(0, 30, 40, 0.8); border: 1px solid #00f2ff; color: #fff; padding: 10px; width: 100%; margin-bottom: 8px; font-size: 12px; outline: none; }
-        button { background: #00f2ff; color: #000; font-weight: 900; transition: 0.3s; cursor: pointer; }
-        button:hover { background: #fff; box-shadow: 0 0 30px #00f2ff; }
-        .scroll-area { overflow-y: auto; max-height: 50vh; padding-right: 5px; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #00f2ff; }
+
+        .terminal-window {
+            background: rgba(0, 15, 5, 0.9);
+            border: 1px solid var(--neon);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+            clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+        }
+
+        .stat-card { background: rgba(0, 40, 20, 0.5); border-left: 3px solid var(--neon); padding: 8px; }
+        
+        input { 
+            background: #000; border: 1px solid var(--neon); color: #fff; 
+            padding: 10px; font-size: 12px; width: 100%; text-transform: uppercase;
+            outline: none; box-shadow: inset 0 0 5px var(--neon);
+        }
+
+        .btn-war {
+            background: var(--neon); color: #000; font-weight: 800;
+            padding: 12px; width: 100%; transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
+
+        .btn-war:hover { background: #fff; box-shadow: 0 0 20px #fff; transform: scale(1.02); }
+
+        .loading-bar { height: 2px; background: var(--neon); width: 0%; transition: width 1s; }
+        
+        .pulse-red { animation: pulse 1.5s infinite; color: var(--danger); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon); }
     </style>
 </head>
 <body>
-    <div id="globeViz" class="interactive"></div>
-    <div class="ui-overlay">
-        <header class="interactive">
-            <div class="neon-border flex justify-between items-center">
-                <div>
-                    <h1 class="text-lg font-black tracking-tighter italic">STRATOS // COLD STRIKE</h1>
-                    <p class="text-[8px] text-cyan-500 uppercase">Sistema de Comando: Comandante Elton Vasconcelos</p>
-                </div>
-                <div class="text-right">
-                    <div id="clock" class="text-xs font-bold text-white">00:00:00</div>
-                    <div class="text-[7px] text-red-500 animate-pulse">🛰️ SATÉLITE ATIVO</div>
-                </div>
+    <div id="globeViz"></div>
+    
+    <div class="ui-container">
+        <header class="interactive terminal-window p-3 mb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-sm font-extrabold tracking-[4px]">STRATOS v9.0 // OMNISCIENCE</h1>
+                <p class="text-[8px] opacity-70">SISTEMA DE SUPREMACIA GLOBAL - COMANDANTE ELTON</p>
+            </div>
+            <div class="text-right">
+                <div id="timer" class="text-[10px] font-bold">WAR-CLOCK: 00:00:00</div>
+                <div class="text-[8px] pulse-red font-black">● DEFCON 1: ATENÇÃO TOTAL</div>
             </div>
         </header>
 
-        <footer class="interactive">
-            <div class="neon-border w-full max-w-[400px] mx-auto">
-                <div class="scroll-area" id="main_ui">
-                    <h3 class="text-[10px] font-bold text-center mb-3 text-yellow-500 tracking-[3px] uppercase">Simulador Geopolítico de Combate</h3>
-                    
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <input id="p1" placeholder="AGRESSOR (ex: brazil)">
-                        <input id="p2" placeholder="ALVO (ex: usa)">
+        <footer class="interactive mt-auto">
+            <div class="terminal-window p-4 w-full max-w-[550px] mx-auto">
+                <div id="setup_screen">
+                    <div class="flex items-center gap-2 mb-4 border-b border-green-900 pb-2">
+                        <span class="text-[10px] bg-green-900 px-2 text-white">TARGETING</span>
+                        <div class="flex-1 h-[1px] bg-green-900"></div>
                     </div>
-                    
-                    <button onclick="batalha()" class="w-full py-3 text-xs uppercase mb-3">Iniciar Protocolo de Guerra</button>
-                    
-                    <div id="res" class="text-[10px] space-y-2">
-                        <p class="text-center text-cyan-700 italic">Aguardando entrada de coordenadas táticas...</p>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <input id="p1" placeholder="AGRESSOR (Ex: Brazil)">
+                        <input id="p2" placeholder="DEFENSOR (Ex: USA)">
                     </div>
+
+                    <button onclick="iniciarSimulacao()" class="btn-war text-xs italic">EXECUTAR PROJEÇÃO ESTRATÉGICA</button>
+                </div>
+
+                <div id="result_screen" class="hidden">
+                    <div id="loader" class="mb-4 text-center">
+                        <p class="text-[10px] animate-pulse">PROCESSANDO DADOS VIA SATÉLITE...</p>
+                        <div class="loading-bar mt-2" id="bar"></div>
+                    </div>
+
+                    <div id="content" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                        </div>
+
+                    <button onclick="document.getElementById('result_screen').classList.add('hidden'); document.getElementById('setup_screen').classList.remove('hidden');" 
+                            class="mt-4 text-[8px] border border-green-800 px-4 py-1 hover:bg-green-900">RESETAR TERMINAL</button>
                 </div>
             </div>
         </footer>
     </div>
 
     <script>
-        const baseMilitar = {
-            "brazil": { nome:"Brasil", ter:"8.5M km²", orcamento:20.5, ativos:360000, tanques:469, avioes:715, navios:112, nuclear:0, tech:65, econ:70, treino:70, power:75, estilo:"Guerra de Selva / Defesa de Fronteira" },
-            "usa": { nome:"EUA", ter:"9.8M km²", orcamento:877, ativos:1390000, tanques:5500, avioes:13300, navios:484, nuclear:5044, tech:100, econ:100, treino:98, power:100, estilo:"Supremacia Aérea / Projeção Global" },
-            "russia": { nome:"Rússia", ter:"17.1M km²", orcamento:86, ativos:1150000, tanques:12500, avioes:4180, navios:598, nuclear:5580, tech:90, econ:65, treino:85, power:97, estilo:"Choque Terrestre / Arsenal Atômico" },
-            "china": { nome:"China", ter:"9.6M km²", orcamento:292, ativos:2000000, tanques:4950, avioes:3300, navios:730, nuclear:500, tech:95, econ:95, treino:88, power:98, estilo:"Superioridade Numérica / Marinha Massiva" },
-            "israel": { nome:"Israel", ter:"22k km²", orcamento:24, ativos:170000, tanques:1650, avioes:600, navios:65, nuclear:90, tech:96, econ:80, treino:95, power:88, estilo:"Ataque Cirúrgico / Domínio Eletrônico" }
-        };
+        const paises = ["brazil", "usa", "russia", "china", "india", "uk", "france", "germany", "japan", "israel", "iran", "north korea", "ukraine", "pakistan"];
+        const db = {};
 
-        function calcularForca(p) {
-            return (p.power + p.tech + p.treino + p.econ + (p.ativos/50000) + (p.tanques/1000) + (p.avioes/200) + (p.navios/50) + (p.nuclear/50));
+        // Inteligência de Dados Expandida
+        paises.forEach(p => {
+            db[p] = {
+                nome: p.toUpperCase(),
+                pwr: Math.floor(Math.random() * 30) + 65,
+                tec: Math.floor(Math.random() * 40) + 50,
+                eco: Math.floor(Math.random() * 40) + 40,
+                army: Math.floor(Math.random() * 1000000) + 100000,
+                nuke: Math.random() > 0.6 ? Math.floor(Math.random() * 5000) : 0,
+                log: Math.floor(Math.random() * 100),
+                estilo: ["DOMÍNIO CIBERNÉTICO", "GUERRA DE SELVA", "SUPREMACIA AÉREA", "CHOQUE DE BLINDADOS", "DEFESA MULTICAMADA"][Math.floor(Math.random() * 5)]
+            };
+        });
+
+        // Hardcoding de Potências Reais
+        db["brazil"].pwr = 82; db["brazil"].army = 360000; db["brazil"].estilo = "GUERRA ASSIMÉTRICA E SELVA";
+        db["usa"].pwr = 100; db["usa"].tec = 100; db["usa"].eco = 100; db["usa"].nuke = 5044;
+        db["russia"].pwr = 97; db["russia"].nuke = 5580; db["china"].pwr = 98; db["china"].army = 2000000;
+
+        function calcularScore(p) {
+            return (p.pwr * 1.5) + (p.tec * 1.2) + (p.eco * 0.8) + (p.army / 40000) + (p.nuke / 20) + (p.log * 0.5);
         }
 
-        function batalha() {
-            let p1 = document.getElementById("p1").value.trim().toLowerCase();
-            let p2 = document.getElementById("p2").value.trim().toLowerCase();
-            let res = document.getElementById("res");
+        function iniciarSimulacao() {
+            let n1 = document.getElementById("p1").value.toLowerCase().trim();
+            let n2 = document.getElementById("p2").value.toLowerCase().trim();
+            
+            if(!db[n1] || !db[n2]) { alert("ALVO NÃO MAPEADO NO SATÉLITE!"); return; }
 
-            let A = baseMilitar[p1];
-            let B = baseMilitar[p2];
+            document.getElementById('setup_screen').classList.add('hidden');
+            document.getElementById('result_screen').classList.remove('hidden');
+            document.getElementById('bar').style.width = '100%';
 
-            if (!A || !B) {
-                res.innerHTML = `<div class='text-red-500 animate-bounce'>❌ ERRO: NAÇÃO NÃO ENCONTRADA NO BANCO DE DADOS.</div>`;
-                return;
-            }
+            setTimeout(() => {
+                const A = db[n1]; const B = db[n2];
+                const sA = calcularScore(A); const sB = calcularScore(B);
+                const vencedor = sA > sB ? A : B;
+                const prob = Math.floor(Math.random() * 15) + 80;
 
-            let scoreA = calcularForca(A);
-            let scoreB = calcularForca(B);
-            let vencedor = scoreA > scoreB ? A : B;
-            let perdedor = scoreA > scoreB ? B : A;
-            let prob = Math.floor(Math.random() * 10) + 85;
-
-            let ranking = Object.values(baseMilitar)
-                .map(p => ({ nome: p.nome, score: calcularForca(p) }))
-                .sort((a, b) => b.score - a.score).slice(0, 3);
-
-            res.innerHTML = `
-                <div class="bg-cyan-950/50 p-3 border-l-4 border-yellow-500">
-                    <p class="text-white font-bold mb-1">⚔️ CONFLITO: ${A.nome.toUpperCase()} vs ${B.nome.toUpperCase()}</p>
-                    <div class="grid grid-cols-2 gap-4 text-[9px]">
-                        <div>
-                            <p class="text-cyan-400">PODER: ${Math.floor(scoreA)}</p>
-                            <p>TROPAS: ${A.ativos.toLocaleString()}</p>
-                            <p>NUKES: ${A.nuclear}</p>
+                let output = document.getElementById('content');
+                output.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2 text-[8px] mb-4">
+                        <div class="stat-card">
+                            <p class="text-white font-black border-b border-green-800 mb-2">${A.nome}</p>
+                            <p>POWER INDEX: ${Math.floor(sA)}</p>
+                            <p>INFANTARIA: ${A.army.toLocaleString()}</p>
+                            <p>OGIVAS: ${A.nuke}</p>
+                            <p>LOGÍSTICA: ${A.log}%</p>
                         </div>
-                        <div>
-                            <p class="text-cyan-400">PODER: ${Math.floor(scoreB)}</p>
-                            <p>TROPAS: ${B.ativos.toLocaleString()}</p>
-                            <p>NUKES: ${B.nuclear}</p>
+                        <div class="stat-card border-red-600">
+                            <p class="text-white font-black border-b border-red-900 mb-2">${B.nome}</p>
+                            <p>POWER INDEX: ${Math.floor(sB)}</p>
+                            <p>INFANTARIA: ${B.army.toLocaleString()}</p>
+                            <p>OGIVAS: ${B.nuke}</p>
+                            <p>LOGÍSTICA: ${B.log}%</p>
                         </div>
                     </div>
-                </div>
-                <div class="text-center py-2 bg-black">
-                    <p class="text-white text-[8px] uppercase">Vencedor Estimado</p>
-                    <h4 class="text-green-500 font-black text-sm">${vencedor.nome.toUpperCase()}</h4>
-                    <p class="text-green-900 text-[10px]">CHANCE DE SUCESSO: ${prob}%</p>
-                </div>
-                <div class="bg-blue-900/20 p-2 text-[8px]">
-                    <p class="text-yellow-600 font-bold uppercase">Análise Estratégica:</p>
-                    <p class="italic">"${vencedor.estilo}"</p>
-                </div>
-                <div class="pt-2 border-t border-cyan-900">
-                    <p class="text-cyan-600 text-[7px] mb-1">TOP 3 POTÊNCIAS ATUAIS:</p>
-                    ${ranking.map((r, i) => `<p class='text-[8px]'>${i + 1}º ${r.nome} - LVL ${Math.floor(r.score)}</p>`).join('')}
-                </div>
-            `;
+
+                    <div class="bg-white/5 p-3 border-t border-b border-green-400 text-center">
+                        <p class="text-[7px] text-yellow-500 font-bold uppercase">Projeção de Vitória Concluída</p>
+                        <h2 class="text-xl font-black text-white italic tracking-widest">${vencedor.nome}</h2>
+                        <p class="text-[10px] text-green-400">EFICIÊNCIA DE COMBATE: ${prob}%</p>
+                    </div>
+
+                    <div class="text-[9px] space-y-2 text-gray-400">
+                        <p><span class="text-white font-bold">➜ ANÁLISE:</span> O vencedor utilizou táticas de <span class="text-green-400">${vencedor.estilo}</span>, superando a linha de defesa inimiga em ${Math.floor(Math.random()*30)+5} dias.</p>
+                        <p><span class="text-white font-bold">➜ BAIXAS:</span> Estimadas em ${(Math.random()*4).toFixed(1)} milhões de combatentes.</p>
+                        <p><span class="text-white font-bold">➜ RESULTADO:</span> Reconfiguração geopolítica total do setor.</p>
+                    </div>
+                `;
+            }, 1200);
         }
 
-        // Globo 3D
+        // Globo 3D High-Tech
         const world = Globe()(document.getElementById('globeViz'))
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .backgroundColor('rgba(0,0,0,0)')
             .showAtmosphere(true)
-            .atmosphereColor('#00f2ff');
+            .atmosphereColor('#00ff41')
+            .atmosphereDaylightAlpha(0.1);
 
-        // Relógio Real-Time
+        // Relógio War-Room
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
+            const d = new Date();
+            document.getElementById('timer').innerText = `WAR-CLOCK: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
         }, 1000);
     </script>
 </body>
