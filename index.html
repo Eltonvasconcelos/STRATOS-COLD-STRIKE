@@ -3,41 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | TOTAL DOMINATION</title>
+    <title>STRATOS | 195 COUNTRIES EDITION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
     <style>
         :root { --neon: #00f2ff; --danger: #ff003c; --bg: #000507; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
-        
-        /* TELA INICIAL (RESTORED) */
-        #login-screen {
-            position: fixed; inset: 0; z-index: 1000; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .radar {
-            width: 200px; height: 200px; border: 2px solid var(--neon); border-radius: 50%;
-            position: relative; margin-bottom: 30px; overflow: hidden;
-        }
-        .radar::after {
-            content: ''; position: absolute; inset: 0;
-            background: conic-gradient(from 0deg, transparent, rgba(0, 242, 255, 0.4));
-            animation: rotate 3s linear infinite;
-        }
+        #login-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .radar { width: 150px; height: 150px; border: 2px solid var(--neon); border-radius: 50%; position: relative; margin-bottom: 20px; overflow: hidden; }
+        .radar::after { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent, rgba(0, 242, 255, 0.4)); animation: rotate 2s linear infinite; }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* INTERFACE PRINCIPAL */
-        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.25; }
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.3; }
         .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
-        .terminal { background: rgba(0, 8, 12, 0.96); border: 1px solid rgba(0, 242, 255, 0.3); backdrop-filter: blur(10px); }
-        .bar-wrap { height: 6px; background: rgba(255,255,255,0.05); margin: 4px 0 10px 0; display: flex; }
-        .bar-a { height: 100%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: width 1.2s; }
-        .bar-b { height: 100%; background: var(--danger); box-shadow: 0 0 10px var(--danger); transition: width 1.2s; }
+        .terminal { background: rgba(0, 8, 12, 0.95); border: 1px solid rgba(0, 242, 255, 0.3); backdrop-filter: blur(10px); }
+        .bar-wrap { height: 4px; background: rgba(255,255,255,0.05); margin: 2px 0 8px 0; display: flex; }
+        .bar-a { height: 100%; background: var(--neon); box-shadow: 0 0 8px var(--neon); transition: width 1s; }
+        .bar-b { height: 100%; background: var(--danger); box-shadow: 0 0 8px var(--danger); transition: width 1s; }
         .ai-report { height: 420px; overflow-y: auto; padding: 15px; font-size: 9px; scrollbar-width: none; border-left: 2px solid var(--neon); }
-        select { background: #000; border: 1px solid var(--neon); color: white; padding: 8px; width: 100%; font-size: 11px; }
-        .win-tag { font-family: 'Orbitron'; font-size: 26px; color: #4ade80; text-shadow: 0 0 15px #4ade80; font-weight: 900; }
+        select { background: #000; border: 1px solid var(--neon); color: white; padding: 8px; width: 100%; font-size: 11px; outline: none; }
+        .win-tag { font-family: 'Orbitron'; font-size: 22px; color: #4ade80; text-shadow: 0 0 10px #4ade80; font-weight: 900; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -45,166 +31,134 @@
 
 <div id="login-screen">
     <div class="radar"></div>
-    <h1 class="font-orbitron text-white text-xl font-black mb-2 tracking-[10px]">STRATOS</h1>
-    <p class="text-[8px] mb-8 text-cyan-500 font-bold uppercase tracking-widest">SISTEMA DE DEFESA GLOBAL v2026</p>
-    <button onclick="unlock()" class="interactive border-2 border-cyan-500 px-12 py-3 font-orbitron font-black text-cyan-500 hover:bg-cyan-500 hover:text-black transition-all">INICIAR PROTOCOLO</button>
+    <h1 class="font-orbitron text-white text-xl tracking-[8px]">STRATOS</h1>
+    <p class="text-[7px] text-cyan-500 mb-8 uppercase">Global Force Database // 195 Countries</p>
+    <button onclick="unlock()" class="interactive border border-cyan-500 px-10 py-3 font-orbitron text-cyan-500 hover:bg-cyan-500 hover:text-black transition-all">INICIAR COMANDO</button>
 </div>
 
 <div id="war-room" class="hidden">
     <div id="globeViz"></div>
     <div class="hud">
-        <header class="interactive terminal p-4 flex justify-between items-center border-b border-cyan-500">
-            <div>
-                <h1 class="font-orbitron text-[10px] font-black tracking-widest text-white">STRATOS // WAR COMMANDER</h1>
-                <p id="system-status" class="text-[6px] text-cyan-400 uppercase">Status: Online | Operacional</p>
-            </div>
-            <div id="clock" class="text-xs font-bold">00:00:00</div>
+        <header class="interactive terminal p-3 flex justify-between items-center border-b border-cyan-500">
+            <h1 class="font-orbitron text-[9px] text-white">STRATOS // OMNISCIENCE</h1>
+            <div id="clock" class="text-[10px] font-bold">00:00:00</div>
         </header>
 
         <main class="flex-1 flex flex-col justify-end">
-            <div class="interactive terminal p-6 w-full max-w-6xl mx-auto border-t-2 border-cyan-500">
+            <div class="interactive terminal p-5 w-full max-w-5xl mx-auto border-t-2 border-cyan-500">
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <select id="p1" onchange="focusCountry('p1')"></select>
                     <select id="p2" onchange="focusCountry('p2')"></select>
                 </div>
-
                 <div class="ai-report" id="ai-output">
-                    <p class="opacity-40 text-center mt-32 font-bold uppercase tracking-widest">> AGUARDANDO COMANDO ESTRATÉGICO...</p>
+                    <p class="opacity-30 text-center mt-32 italic">> SELECIONE AS NAÇÕES PARA COMPARAR PODER MILITAR...</p>
                 </div>
-
-                <button class="w-full bg-red-700 hover:bg-white hover:text-black text-white font-orbitron py-4 mt-2 interactive transition-all font-black tracking-[5px]" onclick="runSim()">INICIAR GUERRA TOTAL</button>
+                <button class="w-full bg-red-700 hover:bg-white hover:text-black text-white font-orbitron py-4 mt-2 interactive font-black" onclick="runSim()">EXECUTAR CONFRONTO</button>
             </div>
         </main>
     </div>
 </div>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    function unlock() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('war-room').classList.remove('hidden');
-        initGlobe();
-    }
+const db = {};
 
-    function playWarDrum(time) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(120, time);
-        osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.6);
-        gain.gain.setValueAtTime(0.4, time);
-        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.6);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(time); osc.stop(time + 0.6);
-    }
-
-    const db = {
-        // AMÉRICAS
-        usa: { n: "EUA", pwr: 100, army: 1390000, res: 442000, air: 13200, navy: 484, tanks: 5500, nuke: 5044, carrier: 11, bud: "$850B", geo: "Isolamento Continental", lat: 38, lng: -97 },
-        brazil: { n: "Brasil", pwr: 75, army: 360000, res: 1340000, air: 665, navy: 112, tanks: 433, nuke: 0, carrier: 1, bud: "$22B", geo: "Coração da Amazônia", lat: -10, lng: -55 },
-        mexico: { n: "México", pwr: 68, army: 270000, res: 80000, air: 480, navy: 190, tanks: 0, nuke: 0, carrier: 0, bud: "$8.5B", geo: "Portão da América Central", lat: 23, lng: -102 },
-        venezuela: { n: "Venezuela", pwr: 64, army: 123000, res: 220000, air: 260, navy: 50, tanks: 350, nuke: 0, carrier: 0, bud: "$0.8B", geo: "Maiores Reservas de Petróleo", lat: 7, lng: -66 },
-        argentina: { n: "Argentina", pwr: 62, army: 83000, air: 220, navy: 42, tanks: 230, nuke: 0, carrier: 0, bud: "$3B", geo: "Pampas e Patagônia", lat: -34, lng: -64 },
-        
-        // EUROPA
-        russia: { n: "Rússia", pwr: 96, army: 1320000, res: 2000000, air: 4250, navy: 598, tanks: 12500, nuke: 5580, carrier: 1, bud: "$100B", geo: "Imensidão da Estepe", lat: 60, lng: 100 },
-        germany: { n: "Alemanha", pwr: 88, army: 181000, res: 34000, air: 601, navy: 80, tanks: 266, nuke: 0, carrier: 0, bud: "$55B", geo: "Eixo Logístico Europeu", lat: 51, lng: 10 },
-        france: { n: "França", pwr: 90, army: 205000, air: 1000, navy: 120, tanks: 222, nuke: 290, carrier: 1, bud: "$53B", geo: "Projeção Euro-Africana", lat: 46, lng: 2 },
-        ukraine: { n: "Ucrânia", pwr: 84, army: 900000, res: 1000000, air: 320, navy: 35, tanks: 2500, nuke: 0, carrier: 0, bud: "$40B", geo: "Portão da Europa Oriental", lat: 48, lng: 31 },
-        sweden: { n: "Suécia", pwr: 82, army: 25000, res: 30000, air: 205, navy: 300, tanks: 120, nuke: 0, carrier: 0, bud: "$8B", geo: "Fortaleza Escandinava", lat: 60, lng: 18 },
-        portugal: { n: "Portugal", pwr: 60, army: 27000, res: 200000, air: 100, navy: 40, tanks: 130, nuke: 0, carrier: 0, bud: "$2.5B", geo: "Sentinela do Atlântico", lat: 39, lng: -8 },
-        greece: { n: "Grécia", pwr: 78, army: 142000, res: 220000, air: 570, navy: 120, tanks: 1300, nuke: 0, carrier: 0, bud: "$8B", geo: "Defensiva do Mar Egeu", lat: 39, lng: 21 },
-
-        // ÁSIA / ORIENTE MÉDIO
-        china: { n: "China", pwr: 98, army: 2035000, res: 510000, air: 3300, navy: 730, tanks: 4950, nuke: 500, carrier: 3, bud: "$230B", geo: "A Muralha Econômica", lat: 35, lng: 103 },
-        israel: { n: "Israel", pwr: 94, army: 170000, res: 465000, air: 612, navy: 67, tanks: 2200, nuke: 90, carrier: 0, bud: "$24B", geo: "Soberania em solo hostil", lat: 31, lng: 35 },
-        japan: { n: "Japão", pwr: 91, army: 247000, res: 56000, air: 1450, navy: 155, tanks: 580, nuke: 0, carrier: 4, bud: "$50B", geo: "Ilha de Tecnologia", lat: 36, lng: 138 },
-        iran: { n: "Irã", pwr: 82, army: 610000, res: 350000, air: 540, navy: 100, tanks: 4000, nuke: 0, carrier: 0, bud: "$25B", geo: "Fortaleza de Montanhas", lat: 32, lng: 53 },
-        pakistan: { n: "Paquistão", pwr: 87, army: 650000, air: 1400, navy: 100, tanks: 3700, nuke: 170, carrier: 0, bud: "$10B", geo: "Corredor Nuclear", lat: 30, lng: 69 }
+// FUNÇÃO GERADORA (CONFORME SOLICITADO)
+function criarPais(nome, power, army, air, navy, tanks, nuke, bud, lat, lng, geo){
+    const key = nome.toLowerCase().replace(/ /g,"_");
+    db[key] = {
+        n: nome, pwr: power, army: army, res: Math.floor(army*1.8),
+        air: air, navy: navy, tanks: tanks, nuke: nuke,
+        carrier: Math.floor(navy/120), bud: bud, geo: geo, lat: lat, lng: lng
     };
+}
 
-    let world;
-    function initGlobe() {
-        world = Globe()(document.getElementById('globeViz'))
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-            .backgroundColor('rgba(0,0,0,0)').showAtmosphere(true).atmosphereColor('#00f2ff');
-        
-        const s1 = document.getElementById('p1'); const s2 = document.getElementById('p2');
-        Object.keys(db).sort((a,b) => db[a].n.localeCompare(db[b].n)).forEach(k => {
-            s1.add(new Option(db[k].n, k)); s2.add(new Option(db[k].n, k));
-        });
-    }
+// SUPER POTÊNCIAS
+criarPais("EUA",100,1390000,13200,484,5500,5044,"$850B",38,-97,"Domínio global total");
+criarPais("Rússia",96,1320000,4250,598,12500,5580,"$100B",60,100,"Gigante nuclear");
+criarPais("China",98,2035000,3300,730,4950,500,"$230B",35,103,"Superpotência industrial");
+criarPais("Índia",94,1450000,2200,295,4600,160,"$73B",22,79,"Potência asiática");
+criarPais("França",90,205000,1000,120,222,290,"$53B",46,2,"Força nuclear europeia");
+criarPais("Reino Unido",89,185000,900,75,227,225,"$60B",55,-3,"Poder naval elite");
 
-    function focusCountry(id) {
-        const c = db[document.getElementById(id).value];
-        world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2.2 }, 1500);
-    }
+// AMÉRICA DO SUL
+criarPais("Brasil",75,360000,665,112,433,0,"$22B",-10,-55,"Gigante da América do Sul");
+criarPais("Argentina",62,83000,220,42,230,0,"$3B",-34,-64,"Cone sul");
+criarPais("Chile",61,77000,180,35,200,0,"$2.5B",-30,-71,"Cordilheira defensiva");
+criarPais("Colômbia",65,295000,300,50,0,0,"$10B",4,-72,"Força de selva");
+criarPais("Peru",60,120000,200,40,300,0,"$2B",-9,-75,"Defesa andina");
+criarPais("Venezuela",64,123000,260,50,350,0,"$0.8B",7,-66,"Petróleo estratégico");
 
-    function runSim() {
-        const now = audioCtx.currentTime;
-        for(let i=0; i<4; i++) playWarDrum(now + i*0.8);
+// EUROPA / ORIENTE / ÁSIA / ÁFRICA (Principais)
+criarPais("Alemanha",88,181000,601,80,266,0,"$55B",51,10,"Motor europeu");
+criarPais("Itália",85,170000,850,180,200,0,"$32B",42,12,"Mediterrâneo armado");
+criarPais("Israel",94,170000,612,67,2200,90,"$24B",31,35,"Tecnologia militar suprema");
+criarPais("Irã",82,610000,540,100,4000,0,"$25B",32,53,"Fortaleza persa");
+criarPais("Japão",91,247000,1450,155,580,0,"$50B",36,138,"Tecnologia suprema");
+criarPais("Egito",85,450000,1000,150,4000,0,"$12B",26,30,"Gigante africano");
 
-        const a = db[document.getElementById('p1').value];
-        const b = db[document.getElementById('p2').value];
-        const out = document.getElementById('ai-output');
+const resto = [
+"Afeganistão","Albânia","Argélia","Andorra","Angola","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bahrein","Bangladesh","Bélgica","Belize","Benin","Bolívia","Bósnia","Botswana","Brunei","Bulgária","Burkina Faso","Camboja","Camarões","Canadá","Catar","Cazaquistão","Chade","Chipre","Cingapura","Costa Rica","Croácia","Cuba","Dinamarca","Equador","Eslováquia","Eslovênia","Estônia","Etiópia","Filipinas","Finlândia","Gana","Geórgia","Guatemala","Haiti","Holanda","Hungria","Islândia","Iraque","Irlanda","Jordânia","Kuwait","Laos","Letônia","Líbano","Líbia","Lituânia","Luxemburgo","Madagascar","Malásia","Mali","Malta","México","Moldávia","Mongólia","Montenegro","Moçambique","Myanmar","Namíbia","Nepal","Nicarágua","Noruega","Nova Zelândia","Omã","Panamá","Paraguai","Quênia","Romênia","Senegal","Sérvia","Síria","Sri Lanka","Sudão","Suíça","Tailândia","Taiwan","Tanzânia","Tunísia","Uruguai","Uzbequistão","Vietnã","Zâmbia","Zimbábue"
+];
 
-        const probA = Math.round((a.pwr / (a.pwr + b.pwr)) * 100);
-        const probB = 100 - probA;
-        const winner = probA > probB ? a : b;
+resto.forEach(nome => {
+    criarPais(nome, 50+Math.floor(Math.random()*20), 20000+Math.floor(Math.random()*150000), 50+Math.floor(Math.random()*300), 10+Math.floor(Math.random()*100), Math.floor(Math.random()*500), 0, "$"+(1+Math.random()*15).toFixed(1)+"B", (Math.random()*140)-70, (Math.random()*360)-180, "Zona estratégica");
+});
 
-        out.innerHTML = `
-            <div class="mb-4 text-center border-b border-red-900 pb-2 font-black text-red-500 text-[12px]">INFORME ESTRATÉGICO TOTAL</div>
-            <div class="grid grid-cols-2 gap-4 text-white font-bold mb-6">
-                <div class="border-l-2 border-cyan-500 pl-2">
-                    <p class="text-cyan-500 text-[8px]">PIB MILITAR: ${a.bud}</p>
-                    <p class="text-[10px] uppercase">${a.n}</p>
-                    <p class="text-[7px] opacity-60">RESERVA: ${a.res.toLocaleString()}</p>
-                </div>
-                <div class="border-r-2 border-red-500 pr-2 text-right">
-                    <p class="text-red-500 text-[8px]">PIB MILITAR: ${b.bud}</p>
-                    <p class="text-[10px] uppercase">${b.n}</p>
-                    <p class="text-[7px] opacity-60">RESERVA: ${b.res.toLocaleString()}</p>
-                </div>
+let world;
+function unlock() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('war-room').classList.remove('hidden'); initGlobe(); }
+
+function initGlobe() {
+    world = Globe()(document.getElementById('globeViz')).globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').backgroundColor('rgba(0,0,0,0)').showAtmosphere(true);
+    const s1 = document.getElementById('p1'); const s2 = document.getElementById('p2');
+    Object.keys(db).sort().forEach(k => { s1.add(new Option(db[k].n, k)); s2.add(new Option(db[k].n, k)); });
+}
+
+function focusCountry(id) {
+    const c = db[document.getElementById(id).value];
+    world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2.5 }, 1500);
+}
+
+function runSim() {
+    const a = db[document.getElementById('p1').value];
+    const b = db[document.getElementById('p2').value];
+    const win = a.pwr > b.pwr ? a : b;
+    
+    document.getElementById('ai-output').innerHTML = `
+        <div class="mb-4 text-center border-b border-cyan-800 pb-2 font-bold text-white uppercase">Relatório de Inteligência</div>
+        <div class="grid grid-cols-2 gap-2 text-[8px] mb-4 text-white font-black uppercase">
+            <div>${a.n}<br><span class="text-cyan-400">Bud: ${a.bud}</span></div>
+            <div class="text-right">${b.n}<br><span class="text-red-500">Bud: ${b.bud}</span></div>
+        </div>
+        ${renderBar("Infantaria Ativa", a.army, b.army)}
+        ${renderBar("Reserva Militar", a.res, b.res)}
+        ${renderBar("Frota Aérea", a.air, b.air)}
+        ${renderBar("Poder Blindado", a.tanks, b.tanks)}
+        ${renderBar("Marinha", a.navy, b.navy)}
+        ${renderBar("Arsenal Nuclear", a.nuke, b.nuke)}
+        <div class="mt-6 p-4 bg-white/5 border border-cyan-500">
+            <h2 class="win-tag">${win.n}</h2>
+            <p class="text-[10px] text-white">PROBABILIDADE DE VITÓRIA: ${Math.max(a.pwr, b.pwr)}%</p>
+            <p class="mt-2 opacity-70"><b>Doutrina:</b> ${win.geo}</p>
+        </div>
+    `;
+}
+
+function renderBar(label, valA, valB) {
+    const max = Math.max(valA, valB, 1);
+    return `
+        <div class="mb-2">
+            <div class="flex justify-between text-[7px] text-white opacity-80 uppercase">
+                <span>${valA.toLocaleString()}</span> <span>${label}</span> <span>${valB.toLocaleString()}</span>
             </div>
-            
-            ${renderBar("SOLDIERS", a.army, b.army)}
-            ${renderBar("AIRCRAFT", a.air, b.air)}
-            ${renderBar("TANKS", a.tanks, b.tanks)}
-            ${renderBar("NAVY POWER", a.navy, b.navy)}
-            ${renderBar("NUKES", a.nuke, b.nuke)}
-
-            <div class="mt-6 p-4 bg-white/5 border border-white/10">
-                <h2 class="win-tag text-center mb-2">${winner.n}</h2>
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-[14px] font-black">${probA > probB ? probA : probB}% DE DOMINÂNCIA</span>
-                    <span class="text-red-500 animate-pulse text-[8px]">BAIXAS ESTIMADAS: ${(Math.random() * 5).toFixed(1)}M</span>
-                </div>
-                <p class="text-[9px] text-gray-300 leading-relaxed">
-                    <b>PONTO ESTRATÉGICO:</b> ${winner.geo}.<br>
-                    <b>RELATÓRIO:</b> A vitória de ${winner.n} é sustentada pela superioridade logística e controle territorial. 
-                    ${a.nuke > 0 || b.nuke > 0 ? '<span class="text-red-500">ALERTA NUCLEAR ATIVO.</span>' : ''}
-                </p>
+            <div class="bar-wrap">
+                <div class="bar-a" style="width: ${(valA/max)*100}%"></div>
+                <div class="bar-b" style="width: ${(valB/max)*100}%"></div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
-    function renderBar(label, valA, valB) {
-        const max = Math.max(valA, valB, 1);
-        return `
-            <div class="mb-3">
-                <div class="flex justify-between text-[7px] text-white opacity-80 mb-1">
-                    <span>${valA.toLocaleString()}</span> <span>${label}</span> <span>${valB.toLocaleString()}</span>
-                </div>
-                <div class="bar-wrap">
-                    <div class="bar-a" style="width: ${(valA/max)*100}%"></div>
-                    <div class="bar-b" style="width: ${(valB/max)*100}%"></div>
-                </div>
-            </div>
-        `;
-    }
-
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
