@@ -1,268 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STRATOS OMEGA // WAR AI</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="//unpkg.com/globe.gl"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
-<style>
-:root{
---neon:#00f7ff;
---danger:#ff003c;
---gold:#facc15;
---bg:#00060a;
-}
-
-body{
-background:radial-gradient(circle at center,#020d12,#000);
-color:var(--neon);
-font-family:'Share Tech Mono',monospace;
-overflow:hidden;
-margin:0;
-}
-
-#globe{
-position:absolute;
-top:0;
-z-index:1;
-opacity:.35;
-}
-
-.hud{
-position:relative;
-z-index:10;
-height:100vh;
-display:flex;
-flex-direction:column;
-padding:10px;
-pointer-events:none;
-}
-
-.interactive{pointer-events:auto;}
-
-.panel{
-background:rgba(0,10,15,.85);
-border:1px solid rgba(0,255,255,.2);
-backdrop-filter:blur(10px);
-box-shadow:0 0 25px rgba(0,255,255,.08);
-}
-
-.title{
-font-family:Orbitron;
-letter-spacing:3px;
-font-weight:900;
-}
-
-.win{
-font-size:28px;
-font-family:Orbitron;
-font-weight:900;
-color:#4ade80;
-text-shadow:0 0 25px #4ade80;
-}
-
-.dangerFlash{
-animation:flash 1s infinite;
-}
-@keyframes flash{
-0%{opacity:1}
-50%{opacity:.2}
-100%{opacity:1}
-}
-
-.barWrap{height:6px;background:#02161d;margin-bottom:10px}
-.barA{height:100%;background:#00f7ff;box-shadow:0 0 10px #00f7ff}
-.barB{height:100%;background:#ff003c;box-shadow:0 0 10px #ff003c}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATOS | GLOBAL OMNISCIENCE 195</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/globe.gl"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #00080a; }
+        body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.3; }
+        .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
+        .interactive { pointer-events: auto !important; }
+        .terminal { background: rgba(0, 10, 15, 0.95); border: 1px solid rgba(0, 242, 255, 0.3); backdrop-filter: blur(15px); }
+        .ai-console { height: 60px; font-size: 11px; color: #fff; padding: 12px; border-left: 4px solid #facc15; margin-bottom: 10px; }
+        .ai-report { height: 380px; overflow-y: auto; padding: 15px; font-size: 10px; scrollbar-width: none; border-top: 1px solid rgba(0,242,255,0.2); }
+        .bar-wrap { height: 6px; background: rgba(255,255,255,0.05); margin: 4px 0 12px 0; border-radius: 3px; overflow: hidden; display: flex; }
+        .bar-a { height: 100%; background: var(--neon); box-shadow: 0 0 15px var(--neon); transition: width 1s ease-in-out; }
+        .bar-b { height: 100%; background: var(--danger); box-shadow: 0 0 15px var(--danger); transition: width 1s ease-in-out; }
+        select { background: #000c10; border: 1px solid var(--neon); color: white; padding: 10px; width: 100%; font-size: 13px; font-family: 'Orbitron'; outline: none; }
+        .win-tag { font-family: 'Orbitron'; font-size: 28px; color: #4ade80; text-shadow: 0 0 20px #4ade80; font-weight: 900; }
+    </style>
 </head>
-
 <body>
 
-<div id="globe"></div>
+<div id="war-room">
+    <div id="globeViz"></div>
+    <div class="hud">
+        <header class="interactive terminal p-4 flex justify-between items-center border-b-2 border-cyan-500">
+            <div>
+                <h1 class="font-orbitron text-[11px] text-white font-black tracking-[4px]">STRATOS // DATABASE TOTAL</h1>
+                <p class="text-[7px] text-cyan-400 uppercase tracking-widest">Sincronização 2026: 195 Nações Ativas</p>
+            </div>
+            <div id="clock" class="text-sm font-bold text-cyan-400">00:00:00</div>
+        </header>
 
-<div class="hud">
+        <main class="flex-1 flex flex-col justify-end">
+            <div class="interactive terminal p-6 w-full max-w-5xl mx-auto border-t-2 border-cyan-500 rounded-t-3xl shadow-2xl">
+                
+                <div class="ai-console terminal mb-4">
+                    <span class="text-yellow-500 font-bold">[GEMINI INTEL]:</span> 
+                    <span id="ai-live-text">Aguardando definição de alvos globais...</span>
+                </div>
 
-<!-- TOP -->
-<div class="interactive panel p-4 flex justify-between items-center mb-2">
-<div>
-<div class="title text-white text-xs">STRATOS OMEGA // GLOBAL WAR AI</div>
-<div id="status" class="text-[10px] text-cyan-400">STATUS: ONLINE</div>
-</div>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <select id="p1" onchange="focusCountry('p1')"></select>
+                    <select id="p2" onchange="focusCountry('p2')"></select>
+                </div>
 
-<div class="text-right">
-<div id="clock" class="text-red-500 font-bold text-lg">00:00</div>
-<div id="defcon" class="text-yellow-400 text-xs">DEFCON 5</div>
-</div>
-</div>
+                <div class="ai-report" id="ai-output">
+                    <p class="opacity-20 text-center mt-32 italic tracking-widest text-white">SISTEMA COMPLETO PRONTO PARA SIMULAÇÃO</p>
+                </div>
 
-<!-- CENTER -->
-<div class="flex-1 flex items-end justify-center">
-
-<div class="interactive panel p-5 w-full max-w-5xl">
-
-<div class="mb-3 text-yellow-400 text-xs">
-AI CENTRAL: <span id="aiText">Inicializando satélites militares...</span>
-</div>
-
-<div class="grid grid-cols-2 gap-3 mb-3">
-<select id="p1" class="bg-black border border-cyan-400 p-2"></select>
-<select id="p2" class="bg-black border border-red-500 p-2"></select>
-</div>
-
-<div id="report" class="h-64 overflow-y-auto text-[11px] mb-3 border-l border-cyan-400 pl-3">
-Sistema pronto para simulação global.
-</div>
-
-<button onclick="simulate()" class="w-full bg-red-700 hover:bg-white hover:text-black font-bold tracking-[4px] py-4">
-INICIAR GUERRA GLOBAL
-</button>
-
-</div>
-</div>
+                <button class="w-full bg-red-800 hover:bg-white hover:text-black text-white font-orbitron py-5 mt-4 interactive font-black tracking-[6px] transition-all" onclick="runSim()">EXECUTAR CONFRONTO TOTAL</button>
+            </div>
+        </main>
+    </div>
 </div>
 
 <script>
-const db={};
+const db = {};
 
-function add(n,p,army,air,navy,tanks,nuke,lat,lng,doc){
-db[n]={n,p,army,air,navy,tanks,nuke,lat,lng,doc};
+// FUNÇÃO PARA INJETAR O MUNDO INTEIRO
+function populateWorld() {
+    const todosOsPaises = [
+        "Afeganistão", "África do Sul", "Albânia", "Alemanha", "Andorra", "Angola", "Antígua e Barbuda", "Arábia Saudita", "Argélia", "Argentina", "Armênia", "Austrália", "Áustria", "Azerbaijão", "Bahamas", "Bahrein", "Bangladesh", "Barbados", "Bélgica", "Belize", "Benim", "Bielorrússia", "Bolívia", "Bósnia e Herzegovina", "Botsuana", "Brasil", "Brunei", "Bulgária", "Burquina Faso", "Burundi", "Butão", "Cabo Verde", "Camarões", "Camboja", "Canadá", "Catar", "Cazaquistão", "Chade", "Chile", "China", "Chipre", "Colômbia", "Comores", "Congo-Brazzaville", "Congo-Kinshasa", "Coreia do Norte", "Coreia do Sul", "Costa do Marfim", "Costa Rica", "Croácia", "Cuba", "Dinamarca", "Djibuti", "Dominica", "Egito", "El Salvador", "Emirados Árabes Unidos", "Equador", "Eritreia", "Eslováquia", "Eslovênia", "Espanha", "Eswatini", "Etiópia", "Fiji", "Filipinas", "Finlândia", "França", "Gabão", "Gâmbia", "Gana", "Geórgia", "Granada", "Grécia", "Guatemala", "Guiana", "Guiné", "Guiné Equatorial", "Guiné-Bissau", "Haiti", "Honduras", "Hungria", "Iêmen", "Ilhas Marshall", "Ilhas Salomão", "Índia", "Indonésia", "Irã", "Iraque", "Irlanda", "Islândia", "Israel", "Itália", "Jamaica", "Japão", "Jordânia", "Kiribati", "Kuwait", "Laos", "Lesoto", "Letônia", "Líbano", "Libéria", "Líbia", "Liechtenstein", "Lituânia", "Luxemburgo", "Macedônia do Norte", "Madagascar", "Malásia", "Malaui", "Maldivas", "Mali", "Malta", "Marrocos", "Maurício", "Mauritânia", "México", "Micronésia", "Moçambique", "Moldávia", "Mônaco", "Mongólia", "Montenegro", "Namíbia", "Nauru", "Nepal", "Nicarágua", "Níger", "Nigéria", "Noruega", "Nova Zelândia", "Omã", "Países Baixos", "Palau", "Panamá", "Papua-Nova Guiné", "Paquistão", "Paraguai", "Peru", "Polônia", "Portugal", "Quênia", "Quirguistão", "Reino Unido", "República Centro-Africana", "República Checa", "República Dominicana", "Romênia", "Ruanda", "Rússia", "Samoa", "San Marino", "Santa Lúcia", "São Cristóvão e Neves", "São Tomé e Príncipe", "São Vicente e Granadinas", "Seicheles", "Senegal", "Serra Leoa", "Sérvia", "Singapura", "Síria", "Somália", "Sri Lanka", "Sudão", "Sudão do Sul", "Suécia", "Suíça", "Suriname", "Tailândia", "Taiwan", "Tajiquistão", "Tanzânia", "Timor-Leste", "Togo", "Tonga", "Trindade e Tobago", "Tunísia", "Turquemenistão", "Turquia", "Tuvalu", "Ucrânia", "Uganda", "Uruguai", "Uzbequistão", "Vanuatu", "Vaticano", "Venezuela", "Vietnã", "Zâmbia", "Zimbábue"
+    ];
+
+    todosOsPaises.forEach(nome => {
+        const key = nome.toLowerCase().replace(/ /g,"_");
+        // Lógica de poder: Potências reais recebem dados históricos, outros recebem base proporcional
+        let pwr = 50 + Math.random() * 30;
+        let army = 10000 + Math.random() * 200000;
+        let doc = "Defesa Territorial Nacional";
+
+        if(nome === "EUA") { pwr = 100; army = 1390000; doc = "Doutrina de Ataque Global"; }
+        if(nome === "China") { pwr = 98; army = 2035000; doc = "Guerra de Exaustão"; }
+        if(nome === "Rússia") { pwr = 97; army = 1350000; doc = "Batalha Profunda"; }
+        if(nome === "Brasil") { pwr = 78; army = 360000; doc = "Guerra de Selva"; }
+        if(nome === "Israel") { pwr = 95; army = 170000; doc = "Ataque Cirúrgico"; }
+
+        db[key] = {
+            n: nome, pwr: pwr, army: army,
+            air: Math.floor(pwr * 10), tanks: Math.floor(pwr * 20),
+            bud: "$" + Math.floor(pwr/2) + "B", doc: doc,
+            lat: (Math.random() * 140) - 70, lng: (Math.random() * 360) - 180
+        };
+        
+        document.getElementById('p1').add(new Option(nome, key));
+        document.getElementById('p2').add(new Option(nome, key));
+    });
 }
 
-add("EUA",100,1390000,13300,480,5500,5000,37,-95,"Domínio global");
-add("Rússia",97,1350000,4100,600,12000,5500,60,90,"Batalha profunda");
-add("China",98,2035000,3300,730,4950,500,35,103,"A2/AD massivo");
-add("Brasil",78,360000,665,112,433,0,-14,-51,"Guerra de selva");
-add("Israel",95,170000,600,70,2200,90,31,34,"Tecnologia militar");
-add("França",92,205000,1000,120,220,290,46,2,"Projeção nuclear");
-add("Reino Unido",91,150000,680,75,230,225,55,-3,"Projeção global");
-add("Índia",94,1450000,2200,300,4600,160,20,78,"Massa militar");
-
-const sel1=document.getElementById("p1");
-const sel2=document.getElementById("p2");
-
-Object.values(db).forEach(c=>{
-sel1.add(new Option(c.n,c.n));
-sel2.add(new Option(c.n,c.n));
-});
-
-let world=Globe()(document.getElementById("globe"))
-.globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-.backgroundColor("rgba(0,0,0,0)")
-.atmosphereColor("#00ffff");
-
-function focus(c){
-world.pointOfView({lat:c.lat,lng:c.lng,altitude:2},1200);
+let world;
+function initGlobe() {
+    world = Globe()(document.getElementById('globeViz')).globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').backgroundColor('rgba(0,0,0,0)').showAtmosphere(true);
+    populateWorld();
+    
+    const intel = ["Analisando satélites...", "195 países em prontidão.", "Gemini 3 Flash ativo.", "Monitorando Fevereiro 2026."];
+    setInterval(() => { document.getElementById('ai-live-text').innerText = intel[Math.floor(Math.random()*intel.length)]; }, 10000);
 }
 
-sel1.onchange=()=>focus(db[sel1.value]);
-sel2.onchange=()=>focus(db[sel2.value]);
-
-function powerCalc(c){
-let score=
-c.p+
-c.army/20000+
-c.air/50+
-c.tanks/200+
-(c.nuke*5)+
-(Math.random()*10);
-
-return score;
+function focusCountry(id) {
+    const c = db[document.getElementById(id).value];
+    world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2.5 }, 1500);
 }
 
-function simulate(){
-
-let a=db[sel1.value];
-let b=db[sel2.value];
-
-let pa=powerCalc(a);
-let pb=powerCalc(b);
-
-let total=pa+pb;
-let chanceA=Math.round((pa/total)*100);
-let chanceB=100-chanceA;
-
-let winner=chanceA>chanceB?a:b;
-
-let event="";
-let rand=Math.random();
-
-if(rand>.85){event="⚠ Evento nuclear tático detectado";}
-else if(rand>.7){event="🤝 Aliança surpresa formada";}
-else if(rand>.5){event="🚀 Ataque surpresa aéreo";}
-else event="📡 Conflito direto total";
-
-document.getElementById("defcon").innerText="DEFCON "+(Math.floor(Math.random()*4)+1);
-
-document.getElementById("report").innerHTML=`
-
-<div class="text-center text-white mb-2">RELATÓRIO ESTRATÉGICO</div>
-
-${bar(a.n,b.n,"Poder Militar",pa,pb)}
-${bar(a.n,b.n,"Chance Vitória",chanceA,chanceB)}
-
-<div class="mt-3 text-yellow-400">${event}</div>
-
-<div class="mt-4 p-4 border border-green-400 bg-green-400/10 text-center">
-<div class="win">${winner.n}</div>
-<div class="text-xs mt-2">
-Vitória projetada baseada em superioridade estratégica, logística e domínio tático global.
-</div>
-</div>
-`;
-
-attackLine(a,b);
+function runSim() {
+    const a = db[document.getElementById('p1').value];
+    const b = db[document.getElementById('p2').value];
+    const win = a.pwr > b.pwr ? a : b;
+    
+    document.getElementById('ai-output').innerHTML = `
+        <div class="mb-4 text-center border-b border-cyan-800 pb-2 font-bold text-white uppercase text-[9px]">Relatório Gemini Strategic</div>
+        ${renderBar("Contingente Terrestre", a.army, b.army)}
+        ${renderBar("Poder de Fogo Estimado", a.air, b.air)}
+        <div class="mt-6 p-5 bg-white/5 border border-cyan-500 rounded-lg">
+            <h2 class="win-tag">${win.n}</h2>
+            <p class="mt-3 text-gray-300 text-[10px]"><b>ANÁLISE GEMINI:</b> A vitória de ${win.n} é sustentada pela sua doutrina de ${win.doc}. Em 2026, a infraestrutura militar de ${win.bud} garante vantagem absoluta no teatro de operações.</p>
+        </div>
+    `;
 }
 
-function bar(a,b,label,v1,v2){
-let max=Math.max(v1,v2);
-return `
-<div class="text-[10px]">${label}</div>
-<div class="flex justify-between text-[9px]">
-<span>${a}: ${Math.round(v1)}</span>
-<span>${b}: ${Math.round(v2)}</span>
-</div>
-<div class="barWrap">
-<div class="barA" style="width:${(v1/max)*100}%"></div>
-<div class="barB" style="width:${(v2/max)*100}%"></div>
-</div>
-`;
+function renderBar(label, valA, valB) {
+    const max = Math.max(valA, valB, 1);
+    return `<div class="mb-2"><div class="flex justify-between text-[7px] text-white opacity-60"><span>${valA.toLocaleString()}</span><span>${label}</span><span>${valB.toLocaleString()}</span></div><div class="bar-wrap"><div class="bar-a" style="width: ${(valA/max)*100}%"></div><div class="bar-b" style="width: ${(valB/max)*100}%"></div></div></div>`;
 }
 
-function attackLine(a,b){
-world.arcsData([{
-startLat:a.lat,
-startLng:a.lng,
-endLat:b.lat,
-endLng:b.lng,
-color:["#ff003c","#00ffff"],
-arcDashLength:0.4,
-arcDashGap:4,
-arcDashAnimateTime:1200
-}]);
-}
-
-setInterval(()=>{
-document.getElementById("clock").innerText=new Date().toLocaleTimeString();
-},1000);
-
-const frases=[
-"Analisando satélites militares...",
-"Monitorando submarinos nucleares...",
-"IA prevendo guerras globais...",
-"Interceptando comunicações...",
-"Escaneando ameaças..."
-];
-
-setInterval(()=>{
-document.getElementById("aiText").innerText=
-frases[Math.floor(Math.random()*frases.length)];
-},4000);
-
+window.onload = initGlobe;
+setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
