@@ -3,167 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | SECURE GATEWAY</title>
+    <title>STRATOS | GLOBAL INTELLIGENCE ATLAS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #00080a; }
+        :root { --neon: #00f2ff; --alert: #ff003c; --gold: #facc15; --bg: #000507; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
         
-        /* EFEITOS VISUAIS */
-        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 1000; pointer-events: none; }
-        
-        /* TELA 1: PORTAL DE ACESSO */
-        #access-screen {
-            position: fixed; inset: 0; z-index: 2000; background: radial-gradient(circle, #001a1d 0%, #00080a 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
+        /* TELA DE INÍCIO - APEX GATEWAY */
+        #gateway {
+            position: fixed; inset: 0; z-index: 5000; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: all 1.2s cubic-bezier(0.95, 0.05, 0.79, 0.03);
         }
 
-        .hex-button {
-            width: 150px; height: 150px; background: rgba(0, 242, 255, 0.05); border: 2px solid var(--neon);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-            display: flex; items-center; justify-content: center; cursor: pointer; transition: 0.4s;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); position: relative;
+        .radar {
+            width: 200px; height: 200px; border: 1px solid var(--neon); border-radius: 50%;
+            position: relative; background: radial-gradient(circle, rgba(0,242,255,0.1) 0%, transparent 70%);
+            margin-bottom: 30px;
         }
+        .radar::after {
+            content: ""; position: absolute; width: 50%; height: 50%; background: var(--neon);
+            top: 0; left: 0; transform-origin: 100% 100%; border-radius: 100% 0 0 0;
+            opacity: 0.3; animation: scan 3s linear infinite;
+        }
+        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .hex-button:hover { background: var(--neon); color: black; box-shadow: 0 0 50px var(--neon); transform: scale(1.1); }
-        .hex-button span { font-family: 'Orbitron', sans-serif; font-weight: 900; text-align: center; font-size: 12px; }
+        .btn-access {
+            background: transparent; border: 1px solid var(--neon); color: var(--neon);
+            padding: 15px 40px; font-family: 'Orbitron', sans-serif; font-weight: 900;
+            letter-spacing: 5px; cursor: pointer; transition: 0.4s; position: relative;
+            overflow: hidden;
+        }
+        .btn-access:hover { background: var(--neon); color: #000; box-shadow: 0 0 50px var(--neon); }
 
-        .auth-text { margin-top: 20px; font-size: 8px; letter-spacing: 5px; opacity: 0.5; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-
-        /* TELA 2: WAR ROOM (HIDDEN INICIAL) */
-        #war-room { opacity: 0; transition: opacity 1s; display: none; }
-        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.35; }
+        /* INTERFACE PRINCIPAL */
+        #main-system { display: none; opacity: 0; transition: 1s; }
+        .terminal-panel { 
+            background: rgba(0, 15, 20, 0.9); border: 1px solid var(--neon);
+            backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+        }
+        .stat-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 10px; }
+        .data-label { font-size: 8px; color: var(--gold); opacity: 0.8; }
+        .data-value { font-size: 11px; color: #fff; font-weight: 700; }
         
-        .ui-overlay { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
+        #globeViz { position: absolute; top: 0; z-index: 1; filter: brightness(0.6) saturate(1.2); }
+        .ui-container { position: relative; z-index: 100; height: 100vh; pointer-events: none; padding: 20px; display: flex; flex-direction: column; }
         .interactive { pointer-events: auto !important; }
-        
-        .terminal-box { background: rgba(0, 10, 15, 0.9); border: 1px solid var(--neon); box-shadow: 0 0 25px rgba(0, 242, 255, 0.15); backdrop-filter: blur(10px); clip-path: polygon(0 0, 97% 0, 100% 3%, 100% 100%, 3% 100%, 0 97%); }
-        .btn-simulate { background: var(--danger); color: white; font-family: 'Orbitron', sans-serif; font-weight: 900; padding: 15px; width: 100%; cursor: pointer; transition: 0.4s; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
-        .btn-simulate:hover { background: #fff; color: #000; }
-        .stat-bar { height: 4px; background: #002b30; border-radius: 2px; overflow: hidden; }
-        .stat-progress { height: 100%; background: var(--neon); transition: width 1s; }
-        input { background: #00151a; border: 1px solid #004d55; color: #fff; padding: 12px; font-size: 11px; outline: none; width: 100%; }
-        .vs-badge { background: var(--danger); color: white; padding: 2px 8px; font-weight: 900; font-size: 10px; }
+
+        input, select { background: #001015; border: 1px solid #004d55; color: #fff; padding: 10px; font-size: 11px; outline: none; }
+        .war-btn { background: var(--alert); color: #fff; font-family: 'Orbitron'; font-weight: 900; padding: 12px; width: 100%; margin-top: 10px; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
     </style>
 </head>
 <body>
 
-<div class="scanline"></div>
-
-<div id="access-screen">
-    <div class="mb-8 text-center">
-        <h1 class="font-orbitron text-white text-2xl tracking-[10px] font-black mb-2">STRATOS</h1>
-        <p class="text-[8px] tracking-[5px] text-cyan-500">GLOBAL DEFENSE NETWORK</p>
-    </div>
-    
-    <div class="hex-button interactive" onclick="unlockSystem()">
-        <div class="flex flex-col items-center">
-            <span id="btn-text">INITIALIZE<br>CORE</span>
-        </div>
-    </div>
-    
-    <div class="auth-text">AWAITING BIOMETRIC AUTHENTICATION</div>
-    <div class="mt-4 text-[6px] opacity-30">ENCRYPTION: AES-256 BIT // SATELLITE LINK: ACTIVE</div>
+<div id="gateway">
+    <div class="radar"></div>
+    <h1 class="font-orbitron text-2xl tracking-[15px] mb-2">STRATOS</h1>
+    <p class="text-[9px] mb-8 opacity-50">SISTEMA DE MONITORAMENTO DE DEFESA GLOBAL</p>
+    <button class="btn-access" onclick="bootSystem()">INICIALIZAR ACESSO</button>
+    <p class="text-[7px] mt-6 opacity-30 tracking-[3px]">ENCRYPTED WITH QUANTUM-LINK 5.0</p>
 </div>
 
-<div id="war-room">
+<div id="main-system">
     <div id="globeViz"></div>
-    <div class="ui-overlay">
-        <header class="interactive terminal-box p-4 flex justify-between items-center mb-4">
+    <div class="ui-container">
+        <header class="interactive terminal-panel p-4 flex justify-between items-center mb-4">
             <div>
-                <h1 class="font-orbitron font-black text-lg tracking-tighter text-white">STRATOS // WAR GENESIS</h1>
-                <p class="text-[8px] text-cyan-400 font-bold uppercase tracking-[3px]">Supreme Command Console</p>
+                <h2 class="font-orbitron text-xs font-bold text-white">INTEL CORE v4.0</h2>
+                <p id="location-status" class="text-[7px] text-cyan-400">SATÉLITE: ATIVO // SINAL: ESTÁVEL</p>
             </div>
-            <div class="text-right">
-                <div id="clock" class="font-orbitron text-sm">00:00:00</div>
-                <div class="text-[8px] text-red-600 font-black animate-pulse">DEFCON 2</div>
-            </div>
+            <div id="clock" class="font-orbitron text-lg font-black">00:00:00</div>
         </header>
 
-        <main class="flex-1 flex flex-col justify-end">
-            <div class="interactive terminal-box p-6 w-full max-w-2xl mx-auto mb-4">
-                <div id="input-screen">
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="text-[9px] uppercase mb-1 block">Agressor</label>
-                            <input id="p1" placeholder="Ex: USA" list="countries">
-                        </div>
-                        <div>
-                            <label class="text-[9px] uppercase mb-1 block">Defensor</label>
-                            <input id="p2" placeholder="Ex: BRAZIL" list="countries">
-                        </div>
+        <main class="flex-1 flex flex-col justify-end gap-4">
+            <div class="interactive terminal-panel p-5 w-full max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="data-label mb-1">NAÇÃO ATACANTE</p>
+                        <select id="p1" class="w-full mb-4" onchange="updateView('p1')"></select>
+                        <div id="data-p1" class="stat-grid"></div>
                     </div>
-                    <button onclick="executarGuerra()" class="btn-simulate">EXECUTAR SIMULAÇÃO DE GUERRA</button>
+                    <div>
+                        <p class="data-label mb-1">NAÇÃO DEFENSORA</p>
+                        <select id="p2" class="w-full mb-4" onchange="updateView('p2')"></select>
+                        <div id="data-p2" class="stat-grid"></div>
+                    </div>
                 </div>
-
-                <div id="result-screen" class="hidden space-y-4 max-h-[60vh] overflow-y-auto pr-2"></div>
+                <button class="war-btn" onclick="simularConflito()">ANALISAR PROJEÇÃO DE GUERRA</button>
             </div>
-            <datalist id="countries">
-                <option value="USA"><option value="BRAZIL"><option value="RUSSIA"><option value="CHINA"><option value="INDIA"><option value="UK"><option value="FRANCE"><option value="ISRAEL"><option value="IRAN"><option value="JAPAN">
-            </datalist>
+            
+            <div id="war-report" class="interactive terminal-panel p-4 hidden max-w-4xl mx-auto w-full border-t-4 border-red-600">
+                </div>
         </main>
     </div>
 </div>
 
 <script>
-    const milData = {
-        usa: { n: "ESTADOS UNIDOS", pwr: 100, army: 1390000, air: 13300, navy: 484, nuke: 5044, budget: "877B", tech: 100, doc: "Full Spectrum Dominance" },
-        china: { n: "CHINA", pwr: 98, army: 2000000, air: 3300, navy: 730, nuke: 500, budget: "292B", tech: 95, doc: "Island Chain Expansion" },
-        russia: { n: "RÚSSIA", pwr: 96, army: 1150000, air: 4180, navy: 598, nuke: 5580, budget: "86B", tech: 88, doc: "Nuclear Deterrence" },
-        brazil: { n: "BRASIL", pwr: 76, army: 360000, air: 665, navy: 112, nuke: 0, budget: "19B", tech: 72, doc: "Strategic Depth" },
-        israel: { n: "ISRAEL", pwr: 92, army: 173000, air: 601, navy: 67, nuke: 90, budget: "24B", tech: 98, doc: "Preemptive Strike" },
-        iran: { n: "IRÃ", pwr: 84, army: 610000, air: 541, navy: 101, nuke: 0, budget: "10B", tech: 75, doc: "Asymmetric Defiance" }
+    // DATABASE GLOBAL (Principais potências - Estrutura pronta para os 193)
+    const countries = {
+        usa: { n: "ESTADOS UNIDOS", lang: "Inglês", territory: "9.8M km²", pib: "$26.9T", army: 1390000, air: 13300, navy: 484, nuke: 5044, power: 100, doc: "Dominação Multi-Domínio" },
+        china: { n: "CHINA", lang: "Mandarim", territory: "9.5M km²", pib: "$19.3T", army: 2000000, air: 3300, navy: 730, nuke: 500, power: 98, doc: "Expansão de Cinturão" },
+        russia: { n: "RÚSSIA", lang: "Russo", territory: "17.1M km²", pib: "$2.2T", army: 1150000, air: 4180, navy: 598, nuke: 5580, power: 97, doc: "Guerra de Atrito" },
+        brazil: { n: "BRASIL", lang: "Português", territory: "8.5M km²", pib: "$2.1T", army: 360000, air: 665, navy: 112, nuke: 0, power: 76, doc: "Dissuasão de Fronteira" },
+        israel: { n: "ISRAEL", lang: "Hebraico", territory: "22k km²", pib: "$0.5T", army: 173000, air: 601, navy: 67, nuke: 90, power: 92, doc: "Defesa Ativa" },
+        ukraine: { n: "UCRÂNIA", lang: "Ucraniano", territory: "603k km²", pib: "$0.16T", army: 900000, air: 190, navy: 0, nuke: 0, power: 80, doc: "Resistência de Drones" },
+        india: { n: "ÍNDIA", lang: "Hindi/Inglês", territory: "3.2M km²", pib: "$3.7T", army: 1450000, air: 2210, navy: 295, nuke: 160, power: 89, doc: "Defesa de Duas Frentes" },
+        japan: { n: "JAPÃO", lang: "Japonês", territory: "377k km²", pib: "$4.4T", army: 247000, air: 1451, navy: 155, nuke: 0, power: 90, doc: "Autodefesa Marítima" },
+        france: { n: "FRANÇA", lang: "Francês", territory: "643k km²", pib: "$2.9T", army: 205000, air: 1004, navy: 128, nuke: 290, power: 88, doc: "Independência Estratégica" },
+        germany: { n: "ALEMANHA", lang: "Alemão", territory: "357k km²", pib: "$4.3T", army: 181000, air: 601, navy: 80, nuke: 0, power: 85, doc: "Pilar Europeu" }
     };
 
-    function unlockSystem() {
-        const access = document.getElementById('access-screen');
-        const war = document.getElementById('war-room');
-        const btnText = document.getElementById('btn-text');
-        
-        btnText.innerHTML = "LOADING...";
+    function bootSystem() {
+        document.getElementById('gateway').style.transform = "scale(2)";
+        document.getElementById('gateway').style.opacity = "0";
         setTimeout(() => {
-            access.style.transform = "translateY(-100%)";
-            war.style.display = "block";
-            setTimeout(() => { war.style.opacity = "1"; }, 100);
+            document.getElementById('gateway').style.display = "none";
+            document.getElementById('main-system').style.display = "block";
+            setTimeout(() => document.getElementById('main-system').style.opacity = "1", 100);
             initGlobe();
-        }, 1200);
+        }, 1000);
     }
 
-    function executarGuerra() {
-        const p1 = document.getElementById('p1').value.toLowerCase().trim();
-        const p2 = document.getElementById('p2').value.toLowerCase().trim();
-        const screen = document.getElementById('result-screen');
-        if(!milData[p1] || !milData[p2]) { alert("ALVO INVÁLIDO"); return; }
-        
-        document.getElementById('input-screen').classList.add('hidden');
-        screen.classList.remove('hidden');
-        
-        const A = milData[p1]; const B = milData[p2];
-        const vencedor = A.pwr > B.pwr ? A : B;
+    function populateSelects() {
+        const selects = ['p1', 'p2'];
+        selects.forEach(s => {
+            const el = document.getElementById(s);
+            el.innerHTML = '<option value="">SELECIONE UM PAÍS...</option>';
+            Object.keys(countries).forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k; opt.innerText = countries[k].n;
+                el.appendChild(opt);
+            });
+        });
+    }
 
-        screen.innerHTML = `
-            <div class="text-center border-b border-cyan-900 pb-2">
-                <span class="text-white font-bold">${A.n}</span> <span class="vs-badge">VS</span> <span class="text-white font-bold">${B.n}</span>
+    function updateView(id) {
+        const key = document.getElementById(id).value;
+        const panel = document.getElementById('data-' + id);
+        if(!countries[key]) { panel.innerHTML = ""; return; }
+        const c = countries[key];
+        panel.innerHTML = `
+            <div><p class="data-label">IDIOMA</p><p class="data-value">${c.lang}</p></div>
+            <div><p class="data-label">TERRITÓRIO</p><p class="data-value">${c.territory}</p></div>
+            <div><p class="data-label">PIB</p><p class="data-value">${c.pib}</p></div>
+            <div><p class="data-label">TANQUES</p><p class="data-value">${c.power*50}</p></div>
+            <div><p class="data-label">AVIÕES</p><p class="data-value">${c.air}</p></div>
+            <div><p class="data-label">OGIVAS</p><p class="data-value text-red-500">${c.nuke}</p></div>
+        `;
+    }
+
+    function simularConflito() {
+        const aKey = document.getElementById('p1').value;
+        const bKey = document.getElementById('p2').value;
+        const report = document.getElementById('war-report');
+        if(!aKey || !bKey) return;
+
+        const A = countries[aKey]; const B = countries[bKey];
+        const winner = A.power > B.power ? A : B;
+        report.classList.remove('hidden');
+        report.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-orbitron text-red-500 font-bold">PROJEÇÃO DE DESFECHO</h3>
+                <span class="text-[8px] bg-red-600 px-2 py-1 text-white">CONFIDENCIAL</span>
             </div>
-            <div class="grid grid-cols-2 gap-4 py-2 text-[9px]">
-                <div>
-                    AIR: ${A.air} <div class="stat-bar"><div class="stat-progress" style="width:${(A.air/13300)*100}%"></div></div>
-                    ARMY: ${A.army.toLocaleString()}
-                </div>
-                <div class="text-right">
-                    AIR: ${B.air} <div class="stat-bar"><div class="stat-progress ml-auto" style="width:${(B.air/13300)*100}%"></div></div>
-                    ARMY: ${B.army.toLocaleString()}
-                </div>
+            <p class="text-[11px] mb-4">Em um cenário de guerra total entre <b class="text-white">${A.n}</b> e <b class="text-white">${B.n}</b>, a superioridade estratégica é de <b class="text-green-400">${winner.n}</b>.</p>
+            <div class="grid grid-cols-3 gap-2 text-center text-[8px]">
+                <div class="border border-cyan-900 p-1">BAIXAS ESTIMADAS<br><b class="text-white">${Math.floor(Math.random()*15)}M</b></div>
+                <div class="border border-cyan-900 p-1">RISCO NUCLEAR<br><b class="text-white">${A.nuke > 0 || B.nuke > 0 ? 'CRÍTICO' : 'MÍNIMO'}</b></div>
+                <div class="border border-cyan-900 p-1">DURAÇÃO<br><b class="text-white">${Math.floor(Math.random()*48)} MESES</b></div>
             </div>
-            <div class="bg-red-950/40 p-3 border-l-2 border-red-500">
-                <p class="text-[10px] font-bold">VENCEDOR: ${vencedor.n}</p>
-                <p class="text-[8px] opacity-70">DOUTRINA: ${vencedor.doc}</p>
-                <p class="text-[8px] mt-2 text-red-400">STATUS: CONFLITO ESCALADO</p>
-            </div>
-            <button onclick="location.reload()" class="w-full border border-cyan-800 py-1 text-[8px] mt-2">RESET SYSTEM</button>
         `;
     }
 
@@ -174,7 +184,7 @@
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    populateSelects();
 </script>
 </body>
 </html>
-
