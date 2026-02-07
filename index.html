@@ -3,100 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | TOTAL WAR DOCTRINE</title>
+    <title>STRATOS | GLOBAL WAR COMPARISON</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --warn: #facc15; --danger: #ff003c; --bg: #000507; }
+        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #000507; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
-        
-        #gateway { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
-        #main-system { display: none; opacity: 0; transition: 1s; height: 100vh; }
         #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.3; }
-        
         .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
         .terminal { background: rgba(0, 10, 15, 0.95); border: 1px solid var(--neon); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
-        
-        .ai-report { font-size: 10px; color: #fff; height: 250px; overflow-y: auto; padding: 15px; background: rgba(0,5,10,0.8); line-height: 1.6; border-left: 2px solid var(--neon); }
-        .typing { border-right: 2px solid var(--neon); animation: blink 0.7s infinite; }
-        @keyframes blink { 50% { border-color: transparent; } }
-
-        .stat-badge { background: #001a1d; border: 1px solid #004d55; padding: 5px; text-align: center; }
-        .stat-val { color: #fff; font-weight: 800; font-size: 12px; display: block; }
-        .stat-lab { font-size: 7px; color: var(--neon); opacity: 0.7; text-transform: uppercase; }
-
-        .btn-war { background: var(--danger); color: white; font-family: 'Orbitron'; font-weight: 900; padding: 15px; width: 100%; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+        .ai-report { font-size: 10px; color: #fff; height: 320px; overflow-y: auto; padding: 15px; background: rgba(0,5,10,0.8); border-left: 2px solid var(--neon); }
+        .comp-row { display: grid; grid-cols: 3; border-bottom: 1px solid rgba(0,242,255,0.1); padding: 4px 0; font-size: 9px; }
+        .val-a { color: #fff; text-align: left; }
+        .label { color: var(--neon); text-align: center; font-weight: bold; opacity: 0.7; }
+        .val-b { color: #fff; text-align: right; }
+        .btn-war { background: var(--danger); color: white; font-family: 'Orbitron'; font-weight: 900; padding: 15px; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
-
-<div id="gateway">
-    <h1 class="font-orbitron text-2xl tracking-[15px] mb-4">STRATOS CORE</h1>
-    <button class="border border-cyan-500 px-12 py-4 text-[10px] tracking-[5px]" onclick="boot()">INICIAR PROTOCOLO</button>
-</div>
 
 <div id="main-system">
     <div id="globeViz"></div>
     <div class="hud">
         <header class="interactive terminal p-3 flex justify-between mb-2">
             <div>
-                <h2 class="font-orbitron text-[10px] font-black">SISTEMA DE ANÁLISE DOUTRINÁRIA</h2>
-                <p class="text-[6px] text-cyan-400">DATABASE MILITAR ATUALIZADO // DEFCON 2</p>
+                <h2 class="font-orbitron text-[10px] font-black">STRATOS // COMPARATIVO DE GUERRA TOTAL</h2>
+                <p id="status" class="text-[6px] text-cyan-400">AGUARDANDO SELEÇÃO DE ALVOS...</p>
             </div>
             <div id="clock" class="text-xs font-bold">00:00:00</div>
         </header>
 
-        <main class="flex-1 flex flex-col justify-end gap-2">
-            <div class="interactive terminal p-4 w-full max-w-5xl mx-auto overflow-y-auto">
+        <main class="flex-1 flex flex-col justify-end">
+            <div class="interactive terminal p-4 w-full max-w-5xl mx-auto overflow-hidden">
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <select id="p1" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="updateInfo('p1')"></select>
-                    <select id="p2" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="updateInfo('p2')"></select>
+                    <select id="p1" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="focusCountry('p1')"></select>
+                    <select id="p2" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="focusCountry('p2')"></select>
                 </div>
 
-                <div class="ai-report mb-4" id="ai-output">
-                    > COMANDANTE, SELECIONE AS NAÇÕES PARA O RELATÓRIO TÁTICO...
+                <div class="ai-report" id="ai-output">
+                    > COMANDANTE, SELECIONE DUAS NAÇÕES PARA COMPARAÇÃO DE PODER...
                 </div>
 
-                <button class="btn-war" onclick="gerarGuerra()">EXECUTAR SIMULAÇÃO DE GUERRA TOTAL</button>
+                <button class="btn-war interactive" onclick="gerarComparativo()">ANALISAR PROJEÇÃO DE CONFLITO</button>
             </div>
         </main>
     </div>
 </div>
 
 <script>
+    // Banco de Dados Expandido (Exemplo com dados militares reais 2024/2025)
     const db = {
-        usa: { 
-            n: "ESTADOS UNIDOS", active: "1.39M", reserve: "790k", tanks: "5,500", air: "13,300", navy: "484", nuke: "5,044", 
-            strength: "PROJEÇÃO AÉREA/NAVAL", 
-            tactics: "Doutrina de Superioridade Total. Uso massivo de ataques furtivos (Stealth) e satélites para destruir o inimigo antes do contato visual.",
-            defense: "Escudo antimíssil multicamadas e frota de 11 porta-aviões garantindo que a guerra nunca chegue ao seu solo.",
-            lat: 37, lng: -95
-        },
-        brazil: { 
-            n: "BRASIL", active: "360k", reserve: "1.3M", tanks: "430", air: "665", navy: "112", nuke: "0", 
-            strength: "GUERRA DE SELVA / INFANTARIA", 
-            tactics: "Guerra de Resistência. Atrai o inimigo para o interior do território (Amazônia/Cerrado) para exaurir recursos estrangeiros.",
-            defense: "Estratégia de Dissuasão. Foco em defesa costeira e controle de fronteiras terrestres extensas.",
-            lat: -14, lng: -51
-        },
-        russia: { 
-            n: "RÚSSIA", active: "1.15M", reserve: "2M", tanks: "12,000", air: "4,180", navy: "598", nuke: "5,580", 
-            strength: "ARTILHARIA E FORÇA NUCLEAR", 
-            tactics: "Doutrina de Atrito. Uso esmagador de artilharia pesada e mísseis balísticos para saturar defesas inimigas.",
-            defense: "Defesa em Profundidade. Utiliza o vasto território e o clima para destruir linhas de suprimento invasoras.",
-            lat: 61, lng: 105
-        }
+        usa: { n: "EUA", active: "1.32M", tanks: "5,500", air: "13,209", navy: "484", carrier: "11", nuke: "5,044", pwr: 100, lat: 37, lng: -95, tactic: "Superioridade Tecnológica e Furtividade." },
+        brazil: { n: "BRASIL", active: "360k", tanks: "433", air: "665", navy: "112", carrier: "1", nuke: "0", pwr: 76, lat: -14, lng: -51, tactic: "Guerra de Resistência e Selva." },
+        russia: { n: "RÚSSIA", active: "1.32M", tanks: "14,000", air: "4,255", navy: "598", carrier: "1", nuke: "5,580", pwr: 97, lat: 61, lng: 105, tactic: "Artilharia Massiva e Guerra de Atrito." },
+        china: { n: "CHINA", active: "2.03M", tanks: "5,000", air: "3,304", navy: "730", carrier: "3", nuke: "500", pwr: 98, lat: 35, lng: 103, tactic: "Negação de Área e Saturação de Mísseis." },
+        israel: { n: "ISRAEL", active: "170k", tanks: "2,200", air: "612", navy: "67", carrier: "0", nuke: "90", pwr: 92, lat: 31, lng: 34, tactic: "Ataque Preventivo e Defesa Ativa (Iron Dome)." }
     };
 
     let world;
 
-    function boot() {
-        document.getElementById('gateway').style.display = "none";
-        document.getElementById('main-system').style.display = "block";
-        setTimeout(() => document.getElementById('main-system').style.opacity = "1", 100);
-        initGlobe();
+    function initGlobe() {
+        world = Globe()(document.getElementById('globeViz'))
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+            .backgroundColor('rgba(0,0,0,0)').showAtmosphere(true).atmosphereColor('#00f2ff');
         populate();
     }
 
@@ -107,36 +78,41 @@
         });
     }
 
-    function updateInfo(id) {
-        const c = db[document.getElementById(id).value];
+    function focusCountry(id) {
+        const val = document.getElementById(id).value;
+        const c = db[val];
         world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2 }, 1500);
-        typeAi(`> ANALISANDO ${c.n}:\n- Força Principal: ${c.strength}\n- Ativa: ${c.active} | Reserva: ${c.reserve}\n- Tanques: ${c.tanks} | Nukes: ${c.nuke}\n- Tática: ${c.tactics}`);
     }
 
-    function typeAi(text) {
+    function gerarComparativo() {
+        const a = db[document.getElementById('p1').value];
+        const b = db[document.getElementById('p2').value];
         const out = document.getElementById('ai-output');
-        let i = 0;
-        const interval = setInterval(() => {
-            out.innerHTML = `> ` + text.substring(0, i).replace(/\n/g, '<br>') + `<span class="typing"></span>`;
-            i++;
-            if (i > text.length) { clearInterval(interval); out.innerHTML = `> ` + text.replace(/\n/g, '<br>'); }
-            out.scrollTop = out.scrollHeight;
-        }, 15);
+        
+        const winner = a.pwr > b.pwr ? a.n : b.n;
+
+        out.innerHTML = `
+            <div style="text-align:center; font-weight:bold; border-bottom:1px solid #00f2ff; margin-bottom:10px;">TABELA COMPARATIVA DE FORÇAS</div>
+            <div class="comp-row"><span class="val-a">${a.n}</span><span class="label">VS</span><span class="val-b">${b.n}</span></div>
+            <div class="comp-row"><span class="val-a">${a.active}</span><span class="label">SOLDADOS</span><span class="val-b">${b.active}</span></div>
+            <div class="comp-row"><span class="val-a">${a.tanks}</span><span class="label">TANQUES</span><span class="val-b">${b.tanks}</span></div>
+            <div class="comp-row"><span class="val-a">${a.air}</span><span class="label">CAÇAS/JATOS</span><span class="val-b">${b.air}</span></div>
+            <div class="comp-row"><span class="val-a">${a.navy}</span><span class="label">NAVIO GUERRA</span><span class="val-b">${b.navy}</span></div>
+            <div class="comp-row"><span class="val-a">${a.carrier}</span><span class="label">PORTA-AVIÕES</span><span class="val-b">${b.carrier}</span></div>
+            <div class="comp-row"><span class="val-a">${a.nuke}</span><span class="label">NUKES</span><span class="val-b">${b.nuke}</span></div>
+            
+            <div style="margin-top:20px; color: #ff003c; font-weight:bold;">> ANÁLISE DO COMANDO CENTRAL:</div>
+            <p style="font-size:9px; margin-top:5px;">
+                Em um cenário de invasão, a principal tática de ${a.n} seria baseada em ${a.tactic}. 
+                Por outro lado, ${b.n} responderia com ${b.tactic}. 
+                <br><br>
+                <b>RESULTADO DA PROJEÇÃO:</b> Devido à superioridade em tecnologia e massa de manobra, 
+                a vitória provável seria de <b>${winner}</b>, com um custo de vida estimado em milhões.
+            </p>
+        `;
     }
 
-    function gerarGuerra() {
-        const p1 = db[document.getElementById('p1').value];
-        const p2 = db[document.getElementById('p2').value];
-        const relatorio = `ANÁLISE DE CONFLITO: ${p1.n} vs ${p2.n}\n\nESTRATÉGIA DE ATAQUE (${p1.n}): ${p1.tactics}\n\nESTRATÉGIA DE DEFESA (${p2.n}): ${p2.defense}\n\nCONCLUSÃO DA IA: O conflito seria decidido pela ${p1.strength} enfrentando a ${p2.strength}. Risco de escalada nuclear: ${p1.nuke > 0 || p2.nuke > 0 ? 'ALTO' : 'NULO'}.`;
-        typeAi(relatorio);
-    }
-
-    function initGlobe() {
-        world = Globe()(document.getElementById('globeViz'))
-            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-            .backgroundColor('rgba(0,0,0,0)').showAtmosphere(true).atmosphereColor('#00f2ff');
-    }
-
+    window.onload = initGlobe;
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
