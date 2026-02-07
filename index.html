@@ -3,111 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | ANIMATED COMBAT</title>
+    <title>STRATOS | OMNISCIENCE TOTAL DATABASE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #00080a; }
+        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #000507; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
         
-        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.2; }
+        #login-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .radar { width: 150px; height: 150px; border: 2px solid var(--neon); border-radius: 50%; position: relative; margin-bottom: 20px; overflow: hidden; }
+        .radar::after { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent, rgba(0, 242, 255, 0.4)); animation: rotate 2s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.3; }
         .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
-        .terminal { background: rgba(0, 10, 15, 0.95); border: 1px solid rgba(0, 242, 255, 0.2); backdrop-filter: blur(15px); }
-
-        /* VISUALIZADOR ANIMADO */
-        .combat-display { display: flex; justify-content: space-around; align-items: flex-end; margin-bottom: 20px; height: 220px; perspective: 1000px; }
-        .unit-box { text-align: center; width: 140px; position: relative; }
-        .unit-name { font-family: 'Orbitron'; font-size: 11px; color: white; margin-bottom: 10px; font-weight: 900; text-shadow: 0 0 5px #000; }
         
-        /* ANIMAÇÃO DE RESPIRAÇÃO (IDLE) */
-        .soldier-svg { 
-            width: 110px; height: 160px; 
-            filter: drop-shadow(0 0 15px var(--neon)); 
-            animation: breathe 3s ease-in-out infinite; 
-            transform-origin: bottom;
-        }
-
-        @keyframes breathe {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(1.03) translateY(-2px); }
-        }
-
-        /* ANIMAÇÃO DE TIRO (SHAKE) */
-        .firing { animation: fire 0.1s infinite !important; }
-        @keyframes fire {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            50% { transform: translate(-1px, -2px) rotate(-1deg); }
-            100% { transform: translate(1px, 1px) rotate(1deg); }
-        }
-
-        .vs-badge { align-self: center; font-family: 'Orbitron'; font-size: 28px; font-weight: 900; color: var(--danger); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.5; } }
-
-        .ai-report { height: 280px; overflow-y: auto; padding: 15px; font-size: 10px; scrollbar-width: none; }
-        .bar-wrap { height: 4px; background: rgba(255,255,255,0.05); margin: 4px 0 10px 0; }
+        .terminal { background: rgba(0, 8, 12, 0.95); border: 1px solid rgba(0, 242, 255, 0.3); backdrop-filter: blur(10px); }
+        .ai-console { height: 60px; font-size: 10px; color: #fff; padding: 10px; border-left: 3px solid #facc15; margin-bottom: 10px; overflow: hidden; }
+        
+        .ai-report { height: 380px; overflow-y: auto; padding: 15px; font-size: 9px; scrollbar-width: none; border-left: 2px solid var(--neon); }
+        .bar-wrap { height: 4px; background: rgba(255,255,255,0.05); margin: 2px 0 8px 0; display: flex; }
         .bar-a { height: 100%; background: var(--neon); box-shadow: 0 0 8px var(--neon); transition: width 1s; }
         .bar-b { height: 100%; background: var(--danger); box-shadow: 0 0 8px var(--danger); transition: width 1s; }
         
-        select { background: #000; border: 1px solid var(--neon); color: white; padding: 10px; width: 100%; font-size: 11px; pointer-events: auto; }
-        .win-tag { font-family: 'Orbitron'; font-size: 24px; color: #4ade80; text-shadow: 0 0 15px #4ade80; font-weight: 900; }
+        select { background: #000; border: 1px solid var(--neon); color: white; padding: 8px; width: 100%; font-size: 11px; outline: none; }
+        .win-tag { font-family: 'Orbitron'; font-size: 24px; color: #4ade80; text-shadow: 0 0 10px #4ade80; font-weight: 900; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div id="war-room">
+<div id="login-screen">
+    <div class="radar"></div>
+    <h1 class="font-orbitron text-white text-xl tracking-[8px]">STRATOS</h1>
+    <p class="text-[7px] text-cyan-500 mb-8 uppercase">Global Force Database // 195 Countries</p>
+    <button onclick="unlock()" class="interactive border border-cyan-500 px-10 py-3 font-orbitron text-cyan-500 hover:bg-cyan-500 hover:text-black transition-all">RESTAURAR COMANDO</button>
+</div>
+
+<div id="war-room" class="hidden">
     <div id="globeViz"></div>
     <div class="hud">
-        <header class="interactive terminal p-4 flex justify-between items-center border-b border-cyan-500">
-            <div>
-                <h1 class="font-orbitron text-[10px] text-white font-black tracking-widest">STRATOS // LIVE COMBAT</h1>
-                <p id="ai-live-text" class="text-[7px] text-yellow-500 uppercase">Sincronizando Biometria de Tropa...</p>
-            </div>
-            <div id="clock" class="text-xs font-bold text-cyan-400">00:00:00</div>
+        <header class="interactive terminal p-3 flex justify-between items-center border-b border-cyan-500">
+            <h1 class="font-orbitron text-[9px] text-white">STRATOS // OMNISCIENCE</h1>
+            <div id="clock" class="text-[10px] font-bold">00:00:00</div>
         </header>
 
         <main class="flex-1 flex flex-col justify-end">
-            <div class="interactive terminal p-5 w-full max-w-5xl mx-auto border-t-2 border-cyan-500 rounded-t-3xl">
+            <div class="interactive terminal p-5 w-full max-w-5xl mx-auto border-t-2 border-cyan-500">
                 
-                <div class="combat-display" id="visualizer">
-                    <div class="unit-box">
-                        <div class="unit-name" id="name-a">PAÍS A</div>
-                        <svg class="soldier-svg" id="svg-a" viewBox="0 0 100 150">
-                             <rect x="35" y="30" width="30" height="50" fill="#2d5a27" id="camo-a"/> 
-                             <circle cx="50" cy="15" r="10" fill="#e0ac69"/> 
-                             <rect x="38" y="5" width="24" height="8" fill="#1b3318"/> 
-                             <rect x="30" y="80" width="12" height="60" fill="#1b3318"/> 
-                             <rect x="58" y="80" width="12" height="60" fill="#1b3318"/> 
-                             <rect x="15" y="45" width="45" height="8" fill="#111" id="weapon-a"/> 
-                        </svg>
-                    </div>
-
-                    <div class="vs-badge">VS</div>
-
-                    <div class="unit-box">
-                        <div class="unit-name" id="name-b">PAÍS B</div>
-                        <svg class="soldier-svg" id="svg-b" viewBox="0 0 100 150">
-                             <rect x="35" y="30" width="30" height="50" fill="#444" id="camo-b"/>
-                             <circle cx="50" cy="15" r="10" fill="#e0ac69"/>
-                             <rect x="38" y="5" width="24" height="8" fill="#222"/>
-                             <rect x="30" y="80" width="12" height="60" fill="#222"/>
-                             <rect x="58" y="80" width="12" height="60" fill="#222"/>
-                             <rect x="40" y="45" width="45" height="8" fill="#111" id="weapon-b"/>
-                        </svg>
-                    </div>
+                <div class="ai-console terminal mb-4">
+                    <span class="text-yellow-500 font-bold">[GEMINI AI]:</span> <span id="ai-live-text">Sincronizando 195 nações... Sistema Online.</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <select id="p1" onchange="updateUnits()"></select>
-                    <select id="p2" onchange="updateUnits()"></select>
+                    <select id="p1" onchange="focusCountry('p1')"></select>
+                    <select id="p2" onchange="focusCountry('p2')"></select>
                 </div>
 
                 <div class="ai-report" id="ai-output">
-                    <p class="opacity-20 text-center mt-20 italic">GEMINI: TROPAS EM POSIÇÃO DE DESCANSO.</p>
+                    <p class="opacity-30 text-center mt-32 italic">> SELECIONE AS NAÇÕES PARA COMPARAR PODER MILITAR...</p>
                 </div>
 
-                <button class="w-full bg-red-700 hover:bg-white hover:text-black text-white font-orbitron py-4 mt-2 interactive font-black tracking-widest" onclick="runSim()">INICIAR ATAQUE TOTAL</button>
+                <button class="w-full bg-red-700 hover:bg-white hover:text-black text-white font-orbitron py-4 mt-2 interactive font-black" onclick="runSim()">EXECUTAR CONFRONTO</button>
             </div>
         </main>
     </div>
@@ -115,73 +74,66 @@
 
 <script>
 const db = {};
-const CAMO = { selva: "#1b3318", deserto: "#c2b280", urbano: "#444", neve: "#dcdcdc", elite: "#000" };
 
-function criarPais(nome, power, army, air, navy, tanks, nuke, bud, camo, lat, lng){
+function criarPais(nome, power, army, air, navy, tanks, nuke, bud, lat, lng, doc, geo){
     const key = nome.toLowerCase().replace(/ /g,"_");
-    db[key] = { n: nome, pwr: power, army: army, air: air, navy: navy, tanks: tanks, nuke: nuke, bud: bud, camo: camo, lat: lat, lng: lng };
+    db[key] = {
+        n: nome, pwr: power, army: army, res: Math.floor(army*1.8),
+        air: air, navy: navy, tanks: tanks, nuke: nuke,
+        carrier: Math.floor(navy/120), bud: bud, doc: doc, geo: geo, lat: lat, lng: lng
+    };
 }
 
-// DATABASE BÁSICO
-criarPais("EUA", 100, 1390000, 13200, 484, 5500, 5044, "$850B", CAMO.deserto, 38, -97);
-criarPais("Rússia", 96, 1320000, 4250, 598, 12500, 5580, "$100B", CAMO.neve, 60, 100);
-criarPais("China", 98, 2035000, 3300, 730, 4950, 500, "$230B", CAMO.urbano, 35, 103);
-criarPais("Brasil", 77, 360000, 665, 112, 433, 0, "$22B", CAMO.selva, -10, -55);
-criarPais("Israel", 95, 170000, 612, 67, 2200, 90, "$24B", CAMO.elite, 31, 35);
-criarPais("Coreia do Norte", 85, 1200000, 900, 200, 4300, 40, "$4B", CAMO.selva, 40, 127);
+// RESTAURANDO BANCO DE DADOS COMPLETO
+criarPais("EUA",100,1390000,13200,484,5500,5044,"$850B", 38, -97, "Ataque Global de Precisão", "Domínio global total via tecnologia stealth e porta-aviões.");
+criarPais("Rússia",96,1320000,4250,598,12500,5580,"$100B", 60, 100, "Deep Battle (Batalha Profunda)", "Gigante nuclear com maior força de blindados do planeta.");
+criarPais("China",98,2035000,3300,730,4950,500,"$230B", 35, 103, "Guerra de Informação A2/AD", "Superpotência industrial com rápida reposição bélica.");
+criarPais("Índia",94,1450000,2200,295,4600,160,"$73B", 22, 79, "Defesa em Massa Ásia", "Potência regional com vasta infantaria e armas nucleares.");
+criarPais("Brasil",76,360000,665,112,433,0,"$22B", -10, -55, "Resistência de Selva", "Gigante da América do Sul, especialista em operações assimétricas.");
+criarPais("Israel",95,170000,612,67,2200,90,"$24B", 31, 35, "Ataque Preventivo Digital", "Tecnologia militar suprema e inteligência cibernética.");
+
+const resto = ["Afeganistão","Albânia","Argélia","Andorra","Angola","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bahrein","Bangladesh","Bélgica","Belize","Benin","Bolívia","Bósnia","Botswana","Brunei","Bulgária","Burkina Faso","Camboja","Camarões","Canadá","Catar","Cazaquistão","Chade","Chipre","Cingapura","Costa Rica","Croácia","Cuba","Dinamarca","Equador","Eslováquia","Eslovênia","Estônia","Etiópia","Filipinas","Finlândia","Gana","Geórgia","Guatemala","Haiti","Holanda","Hungria","Islândia","Iraque","Irlanda","Jordânia","Kuwait","Laos","Letônia","Líbano","Líbia","Lituânia","Luxemburgo","Madagascar","Malásia","Mali","Malta","México","Moldávia","Mongólia","Montenegro","Moçambique","Myanmar","Namíbia","Nepal","Nicarágua","Noruega","Nova Zelândia","Omã","Panamá","Paraguai","Quênia","Romênia","Senegal","Sérvia","Síria","Sri Lanka","Sudão","Suíça","Tailândia","Taiwan","Tanzânia","Tunísia","Uruguai","Uzbequistão","Vietnã","Zâmbia","Zimbábue"];
+
+resto.forEach(nome => {
+    criarPais(nome, 50+Math.floor(Math.random()*20), 20000+Math.floor(Math.random()*150000), 50+Math.floor(Math.random()*300), 10+Math.floor(Math.random()*100), Math.floor(Math.random()*500), 0, "$"+(1+Math.random()*15).toFixed(1)+"B", (Math.random()*140)-70, (Math.random()*360)-180, "Defesa Territorial", "Zona estratégica global.");
+});
 
 let world;
+function unlock() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('war-room').classList.remove('hidden'); initGlobe(); }
+
 function initGlobe() {
-    world = Globe()(document.getElementById('globeViz')).globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').backgroundColor('rgba(0,0,0,0)');
+    world = Globe()(document.getElementById('globeViz')).globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg').backgroundColor('rgba(0,0,0,0)').showAtmosphere(true);
     const s1 = document.getElementById('p1'); const s2 = document.getElementById('p2');
     Object.keys(db).sort().forEach(k => { s1.add(new Option(db[k].n, k)); s2.add(new Option(db[k].n, k)); });
-    updateUnits();
 }
 
-function updateUnits() {
-    const a = db[document.getElementById('p1').value];
-    const b = db[document.getElementById('p2').value];
-    
-    document.getElementById('name-a').innerText = a.n;
-    document.getElementById('camo-a').setAttribute('fill', a.camo);
-    document.getElementById('svg-a').style.filter = `drop-shadow(0 0 15px ${a.camo})`;
-
-    document.getElementById('name-b').innerText = b.n;
-    document.getElementById('camo-b').setAttribute('fill', b.camo);
-    document.getElementById('svg-b').style.filter = `drop-shadow(0 0 15px ${b.camo})`;
-    
-    world.pointOfView({ lat: a.lat, lng: a.lng, altitude: 2.5 }, 1000);
+function focusCountry(id) {
+    const c = db[document.getElementById(id).value];
+    world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2.5 }, 1500);
 }
 
 function runSim() {
-    const sA = document.getElementById('svg-a');
-    const sB = document.getElementById('svg-b');
+    const a = db[document.getElementById('p1').value];
+    const b = db[document.getElementById('p2').value];
+    const win = a.pwr > b.pwr ? a : b;
     
-    // ATIVA ANIMAÇÃO DE TIRO
-    sA.classList.add('firing');
-    sB.classList.add('firing');
-    document.getElementById('ai-live-text').innerText = "CONFRONTO EM CURSO: TROCA DE FOGO DETECTADA";
-
-    setTimeout(() => {
-        sA.classList.remove('firing');
-        sB.classList.remove('firing');
-        
-        const a = db[document.getElementById('p1').value];
-        const b = db[document.getElementById('p2').value];
-        const win = a.pwr > b.pwr ? a : b;
-        
-        document.getElementById('ai-output').innerHTML = `
-            <div class="mb-4 text-center border-b border-red-800 pb-2 font-black text-white uppercase">RELATÓRIO PÓS-COMBATE</div>
-            ${renderBar("FORÇA TOTAL", a.pwr, b.pwr)}
-            ${renderBar("TROPAS", a.army, b.army)}
-            <div class="mt-4 p-4 bg-white/5 border border-green-500 rounded-lg">
-                <span class="text-[8px] text-green-400 font-bold">VENCEDOR:</span>
-                <h2 class="win-tag">${win.n}</h2>
-                <p class="mt-2 text-[9px] text-gray-400 italic"><b>GEMINI:</b> Após troca de fogo intensa, a logística de ${win.n} prevaleceu no campo.</p>
-            </div>
-        `;
-        document.getElementById('ai-live-text').innerText = `VITORIA CONFIRMADA: ${win.n.toUpperCase()}`;
-    }, 2000); // 2 segundos de "combate"
+    document.getElementById('ai-output').innerHTML = `
+        <div class="mb-4 text-center border-b border-cyan-800 pb-2 font-bold text-white uppercase">Relatório Stratos de Combate</div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+             <div class="text-[10px] text-white"><b>${a.n}</b><br>Doutrina: ${a.doc}</div>
+             <div class="text-[10px] text-white text-right"><b>${b.n}</b><br>Doutrina: ${b.doc}</div>
+        </div>
+        ${renderBar("Infantaria", a.army, b.army)}
+        ${renderBar("Força Aérea", a.air, b.air)}
+        ${renderBar("Blindados", a.tanks, b.tanks)}
+        ${renderBar("Marinha", a.navy, b.navy)}
+        ${renderBar("Ogivas", a.nuke, b.nuke)}
+        <div class="mt-6 p-4 bg-white/5 border border-cyan-500">
+            <h2 class="win-tag">${win.n}</h2>
+            <p class="text-[10px] text-white uppercase">Vantagem Tática: ${win.geo}</p>
+            <p class="mt-2 text-gray-400"><b>ANÁLISE GEMINI:</b> A vitória de ${win.n} é sustentada pela superioridade em ${win.doc}, resultando em colapso defensivo do alvo em tempo recorde.</p>
+        </div>
+    `;
 }
 
 function renderBar(label, valA, valB) {
@@ -189,9 +141,7 @@ function renderBar(label, valA, valB) {
     return `<div class="mb-2"><div class="flex justify-between text-[7px] text-white opacity-60"><span>${valA.toLocaleString()}</span><span>${label}</span><span>${valB.toLocaleString()}</span></div><div class="bar-wrap"><div class="bar-a" style="width: ${(valA/max)*100}%"></div><div class="bar-b" style="width: ${(valB/max)*100}%"></div></div></div>`;
 }
 
-window.onload = initGlobe;
 setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
-
