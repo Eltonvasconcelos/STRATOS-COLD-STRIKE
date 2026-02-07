@@ -3,188 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | GLOBAL INTELLIGENCE ATLAS</title>
+    <title>STRATOS | TOTAL WAR DOCTRINE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="//unpkg.com/globe.gl"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --alert: #ff003c; --gold: #facc15; --bg: #000507; }
+        :root { --neon: #00f2ff; --warn: #facc15; --danger: #ff003c; --bg: #000507; }
         body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; overflow: hidden; margin: 0; }
         
-        /* TELA DE INÍCIO - APEX GATEWAY */
-        #gateway {
-            position: fixed; inset: 0; z-index: 5000; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: all 1.2s cubic-bezier(0.95, 0.05, 0.79, 0.03);
-        }
-
-        .radar {
-            width: 200px; height: 200px; border: 1px solid var(--neon); border-radius: 50%;
-            position: relative; background: radial-gradient(circle, rgba(0,242,255,0.1) 0%, transparent 70%);
-            margin-bottom: 30px;
-        }
-        .radar::after {
-            content: ""; position: absolute; width: 50%; height: 50%; background: var(--neon);
-            top: 0; left: 0; transform-origin: 100% 100%; border-radius: 100% 0 0 0;
-            opacity: 0.3; animation: scan 3s linear infinite;
-        }
-        @keyframes scan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .btn-access {
-            background: transparent; border: 1px solid var(--neon); color: var(--neon);
-            padding: 15px 40px; font-family: 'Orbitron', sans-serif; font-weight: 900;
-            letter-spacing: 5px; cursor: pointer; transition: 0.4s; position: relative;
-            overflow: hidden;
-        }
-        .btn-access:hover { background: var(--neon); color: #000; box-shadow: 0 0 50px var(--neon); }
-
-        /* INTERFACE PRINCIPAL */
-        #main-system { display: none; opacity: 0; transition: 1s; }
-        .terminal-panel { 
-            background: rgba(0, 15, 20, 0.9); border: 1px solid var(--neon);
-            backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
-        }
-        .stat-grid { display: grid; grid-template-cols: repeat(2, 1fr); gap: 10px; }
-        .data-label { font-size: 8px; color: var(--gold); opacity: 0.8; }
-        .data-value { font-size: 11px; color: #fff; font-weight: 700; }
+        #gateway { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
+        #main-system { display: none; opacity: 0; transition: 1s; height: 100vh; }
+        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.3; }
         
-        #globeViz { position: absolute; top: 0; z-index: 1; filter: brightness(0.6) saturate(1.2); }
-        .ui-container { position: relative; z-index: 100; height: 100vh; pointer-events: none; padding: 20px; display: flex; flex-direction: column; }
+        .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 10px; pointer-events: none; }
         .interactive { pointer-events: auto !important; }
+        .terminal { background: rgba(0, 10, 15, 0.95); border: 1px solid var(--neon); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
+        
+        .ai-report { font-size: 10px; color: #fff; height: 250px; overflow-y: auto; padding: 15px; background: rgba(0,5,10,0.8); line-height: 1.6; border-left: 2px solid var(--neon); }
+        .typing { border-right: 2px solid var(--neon); animation: blink 0.7s infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
 
-        input, select { background: #001015; border: 1px solid #004d55; color: #fff; padding: 10px; font-size: 11px; outline: none; }
-        .war-btn { background: var(--alert); color: #fff; font-family: 'Orbitron'; font-weight: 900; padding: 12px; width: 100%; margin-top: 10px; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+        .stat-badge { background: #001a1d; border: 1px solid #004d55; padding: 5px; text-align: center; }
+        .stat-val { color: #fff; font-weight: 800; font-size: 12px; display: block; }
+        .stat-lab { font-size: 7px; color: var(--neon); opacity: 0.7; text-transform: uppercase; }
+
+        .btn-war { background: var(--danger); color: white; font-family: 'Orbitron'; font-weight: 900; padding: 15px; width: 100%; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
     </style>
 </head>
 <body>
 
 <div id="gateway">
-    <div class="radar"></div>
-    <h1 class="font-orbitron text-2xl tracking-[15px] mb-2">STRATOS</h1>
-    <p class="text-[9px] mb-8 opacity-50">SISTEMA DE MONITORAMENTO DE DEFESA GLOBAL</p>
-    <button class="btn-access" onclick="bootSystem()">INICIALIZAR ACESSO</button>
-    <p class="text-[7px] mt-6 opacity-30 tracking-[3px]">ENCRYPTED WITH QUANTUM-LINK 5.0</p>
+    <h1 class="font-orbitron text-2xl tracking-[15px] mb-4">STRATOS CORE</h1>
+    <button class="border border-cyan-500 px-12 py-4 text-[10px] tracking-[5px]" onclick="boot()">INICIAR PROTOCOLO</button>
 </div>
 
 <div id="main-system">
     <div id="globeViz"></div>
-    <div class="ui-container">
-        <header class="interactive terminal-panel p-4 flex justify-between items-center mb-4">
+    <div class="hud">
+        <header class="interactive terminal p-3 flex justify-between mb-2">
             <div>
-                <h2 class="font-orbitron text-xs font-bold text-white">INTEL CORE v4.0</h2>
-                <p id="location-status" class="text-[7px] text-cyan-400">SATÉLITE: ATIVO // SINAL: ESTÁVEL</p>
+                <h2 class="font-orbitron text-[10px] font-black">SISTEMA DE ANÁLISE DOUTRINÁRIA</h2>
+                <p class="text-[6px] text-cyan-400">DATABASE MILITAR ATUALIZADO // DEFCON 2</p>
             </div>
-            <div id="clock" class="font-orbitron text-lg font-black">00:00:00</div>
+            <div id="clock" class="text-xs font-bold">00:00:00</div>
         </header>
 
-        <main class="flex-1 flex flex-col justify-end gap-4">
-            <div class="interactive terminal-panel p-5 w-full max-w-4xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <p class="data-label mb-1">NAÇÃO ATACANTE</p>
-                        <select id="p1" class="w-full mb-4" onchange="updateView('p1')"></select>
-                        <div id="data-p1" class="stat-grid"></div>
-                    </div>
-                    <div>
-                        <p class="data-label mb-1">NAÇÃO DEFENSORA</p>
-                        <select id="p2" class="w-full mb-4" onchange="updateView('p2')"></select>
-                        <div id="data-p2" class="stat-grid"></div>
-                    </div>
+        <main class="flex-1 flex flex-col justify-end gap-2">
+            <div class="interactive terminal p-4 w-full max-w-5xl mx-auto overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <select id="p1" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="updateInfo('p1')"></select>
+                    <select id="p2" class="bg-black border border-cyan-800 p-2 text-[10px]" onchange="updateInfo('p2')"></select>
                 </div>
-                <button class="war-btn" onclick="simularConflito()">ANALISAR PROJEÇÃO DE GUERRA</button>
+
+                <div class="ai-report mb-4" id="ai-output">
+                    > COMANDANTE, SELECIONE AS NAÇÕES PARA O RELATÓRIO TÁTICO...
+                </div>
+
+                <button class="btn-war" onclick="gerarGuerra()">EXECUTAR SIMULAÇÃO DE GUERRA TOTAL</button>
             </div>
-            
-            <div id="war-report" class="interactive terminal-panel p-4 hidden max-w-4xl mx-auto w-full border-t-4 border-red-600">
-                </div>
         </main>
     </div>
 </div>
 
 <script>
-    // DATABASE GLOBAL (Principais potências - Estrutura pronta para os 193)
-    const countries = {
-        usa: { n: "ESTADOS UNIDOS", lang: "Inglês", territory: "9.8M km²", pib: "$26.9T", army: 1390000, air: 13300, navy: 484, nuke: 5044, power: 100, doc: "Dominação Multi-Domínio" },
-        china: { n: "CHINA", lang: "Mandarim", territory: "9.5M km²", pib: "$19.3T", army: 2000000, air: 3300, navy: 730, nuke: 500, power: 98, doc: "Expansão de Cinturão" },
-        russia: { n: "RÚSSIA", lang: "Russo", territory: "17.1M km²", pib: "$2.2T", army: 1150000, air: 4180, navy: 598, nuke: 5580, power: 97, doc: "Guerra de Atrito" },
-        brazil: { n: "BRASIL", lang: "Português", territory: "8.5M km²", pib: "$2.1T", army: 360000, air: 665, navy: 112, nuke: 0, power: 76, doc: "Dissuasão de Fronteira" },
-        israel: { n: "ISRAEL", lang: "Hebraico", territory: "22k km²", pib: "$0.5T", army: 173000, air: 601, navy: 67, nuke: 90, power: 92, doc: "Defesa Ativa" },
-        ukraine: { n: "UCRÂNIA", lang: "Ucraniano", territory: "603k km²", pib: "$0.16T", army: 900000, air: 190, navy: 0, nuke: 0, power: 80, doc: "Resistência de Drones" },
-        india: { n: "ÍNDIA", lang: "Hindi/Inglês", territory: "3.2M km²", pib: "$3.7T", army: 1450000, air: 2210, navy: 295, nuke: 160, power: 89, doc: "Defesa de Duas Frentes" },
-        japan: { n: "JAPÃO", lang: "Japonês", territory: "377k km²", pib: "$4.4T", army: 247000, air: 1451, navy: 155, nuke: 0, power: 90, doc: "Autodefesa Marítima" },
-        france: { n: "FRANÇA", lang: "Francês", territory: "643k km²", pib: "$2.9T", army: 205000, air: 1004, navy: 128, nuke: 290, power: 88, doc: "Independência Estratégica" },
-        germany: { n: "ALEMANHA", lang: "Alemão", territory: "357k km²", pib: "$4.3T", army: 181000, air: 601, navy: 80, nuke: 0, power: 85, doc: "Pilar Europeu" }
+    const db = {
+        usa: { 
+            n: "ESTADOS UNIDOS", active: "1.39M", reserve: "790k", tanks: "5,500", air: "13,300", navy: "484", nuke: "5,044", 
+            strength: "PROJEÇÃO AÉREA/NAVAL", 
+            tactics: "Doutrina de Superioridade Total. Uso massivo de ataques furtivos (Stealth) e satélites para destruir o inimigo antes do contato visual.",
+            defense: "Escudo antimíssil multicamadas e frota de 11 porta-aviões garantindo que a guerra nunca chegue ao seu solo.",
+            lat: 37, lng: -95
+        },
+        brazil: { 
+            n: "BRASIL", active: "360k", reserve: "1.3M", tanks: "430", air: "665", navy: "112", nuke: "0", 
+            strength: "GUERRA DE SELVA / INFANTARIA", 
+            tactics: "Guerra de Resistência. Atrai o inimigo para o interior do território (Amazônia/Cerrado) para exaurir recursos estrangeiros.",
+            defense: "Estratégia de Dissuasão. Foco em defesa costeira e controle de fronteiras terrestres extensas.",
+            lat: -14, lng: -51
+        },
+        russia: { 
+            n: "RÚSSIA", active: "1.15M", reserve: "2M", tanks: "12,000", air: "4,180", navy: "598", nuke: "5,580", 
+            strength: "ARTILHARIA E FORÇA NUCLEAR", 
+            tactics: "Doutrina de Atrito. Uso esmagador de artilharia pesada e mísseis balísticos para saturar defesas inimigas.",
+            defense: "Defesa em Profundidade. Utiliza o vasto território e o clima para destruir linhas de suprimento invasoras.",
+            lat: 61, lng: 105
+        }
     };
 
-    function bootSystem() {
-        document.getElementById('gateway').style.transform = "scale(2)";
-        document.getElementById('gateway').style.opacity = "0";
-        setTimeout(() => {
-            document.getElementById('gateway').style.display = "none";
-            document.getElementById('main-system').style.display = "block";
-            setTimeout(() => document.getElementById('main-system').style.opacity = "1", 100);
-            initGlobe();
-        }, 1000);
+    let world;
+
+    function boot() {
+        document.getElementById('gateway').style.display = "none";
+        document.getElementById('main-system').style.display = "block";
+        setTimeout(() => document.getElementById('main-system').style.opacity = "1", 100);
+        initGlobe();
+        populate();
     }
 
-    function populateSelects() {
-        const selects = ['p1', 'p2'];
-        selects.forEach(s => {
-            const el = document.getElementById(s);
-            el.innerHTML = '<option value="">SELECIONE UM PAÍS...</option>';
-            Object.keys(countries).forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k; opt.innerText = countries[k].n;
-                el.appendChild(opt);
-            });
+    function populate() {
+        const s1 = document.getElementById('p1'); const s2 = document.getElementById('p2');
+        Object.keys(db).forEach(k => {
+            s1.add(new Option(db[k].n, k)); s2.add(new Option(db[k].n, k));
         });
     }
 
-    function updateView(id) {
-        const key = document.getElementById(id).value;
-        const panel = document.getElementById('data-' + id);
-        if(!countries[key]) { panel.innerHTML = ""; return; }
-        const c = countries[key];
-        panel.innerHTML = `
-            <div><p class="data-label">IDIOMA</p><p class="data-value">${c.lang}</p></div>
-            <div><p class="data-label">TERRITÓRIO</p><p class="data-value">${c.territory}</p></div>
-            <div><p class="data-label">PIB</p><p class="data-value">${c.pib}</p></div>
-            <div><p class="data-label">TANQUES</p><p class="data-value">${c.power*50}</p></div>
-            <div><p class="data-label">AVIÕES</p><p class="data-value">${c.air}</p></div>
-            <div><p class="data-label">OGIVAS</p><p class="data-value text-red-500">${c.nuke}</p></div>
-        `;
+    function updateInfo(id) {
+        const c = db[document.getElementById(id).value];
+        world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2 }, 1500);
+        typeAi(`> ANALISANDO ${c.n}:\n- Força Principal: ${c.strength}\n- Ativa: ${c.active} | Reserva: ${c.reserve}\n- Tanques: ${c.tanks} | Nukes: ${c.nuke}\n- Tática: ${c.tactics}`);
     }
 
-    function simularConflito() {
-        const aKey = document.getElementById('p1').value;
-        const bKey = document.getElementById('p2').value;
-        const report = document.getElementById('war-report');
-        if(!aKey || !bKey) return;
+    function typeAi(text) {
+        const out = document.getElementById('ai-output');
+        let i = 0;
+        const interval = setInterval(() => {
+            out.innerHTML = `> ` + text.substring(0, i).replace(/\n/g, '<br>') + `<span class="typing"></span>`;
+            i++;
+            if (i > text.length) { clearInterval(interval); out.innerHTML = `> ` + text.replace(/\n/g, '<br>'); }
+            out.scrollTop = out.scrollHeight;
+        }, 15);
+    }
 
-        const A = countries[aKey]; const B = countries[bKey];
-        const winner = A.power > B.power ? A : B;
-        report.classList.remove('hidden');
-        report.innerHTML = `
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-orbitron text-red-500 font-bold">PROJEÇÃO DE DESFECHO</h3>
-                <span class="text-[8px] bg-red-600 px-2 py-1 text-white">CONFIDENCIAL</span>
-            </div>
-            <p class="text-[11px] mb-4">Em um cenário de guerra total entre <b class="text-white">${A.n}</b> e <b class="text-white">${B.n}</b>, a superioridade estratégica é de <b class="text-green-400">${winner.n}</b>.</p>
-            <div class="grid grid-cols-3 gap-2 text-center text-[8px]">
-                <div class="border border-cyan-900 p-1">BAIXAS ESTIMADAS<br><b class="text-white">${Math.floor(Math.random()*15)}M</b></div>
-                <div class="border border-cyan-900 p-1">RISCO NUCLEAR<br><b class="text-white">${A.nuke > 0 || B.nuke > 0 ? 'CRÍTICO' : 'MÍNIMO'}</b></div>
-                <div class="border border-cyan-900 p-1">DURAÇÃO<br><b class="text-white">${Math.floor(Math.random()*48)} MESES</b></div>
-            </div>
-        `;
+    function gerarGuerra() {
+        const p1 = db[document.getElementById('p1').value];
+        const p2 = db[document.getElementById('p2').value];
+        const relatorio = `ANÁLISE DE CONFLITO: ${p1.n} vs ${p2.n}\n\nESTRATÉGIA DE ATAQUE (${p1.n}): ${p1.tactics}\n\nESTRATÉGIA DE DEFESA (${p2.n}): ${p2.defense}\n\nCONCLUSÃO DA IA: O conflito seria decidido pela ${p1.strength} enfrentando a ${p2.strength}. Risco de escalada nuclear: ${p1.nuke > 0 || p2.nuke > 0 ? 'ALTO' : 'NULO'}.`;
+        typeAi(relatorio);
     }
 
     function initGlobe() {
-        Globe()(document.getElementById('globeViz'))
+        world = Globe()(document.getElementById('globeViz'))
             .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
             .backgroundColor('rgba(0,0,0,0)').showAtmosphere(true).atmosphereColor('#00f2ff');
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-    populateSelects();
 </script>
 </body>
 </html>
+
