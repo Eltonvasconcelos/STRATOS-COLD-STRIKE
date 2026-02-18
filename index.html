@@ -3,76 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v13 | INTELLIGENCE</title>
+    <title>STRATOS v13.5 | REAL EARTH</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --w: #ffffff; --g: rgba(0, 10, 20, 0.95); --intel: #ffaa00; }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.95); --intel: #ffaa00; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* TELA DE LOGIN */
-        #login { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s; }
-        .lock-shield { width: 100px; height: 100px; border: 2px solid var(--n); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 0 20px var(--n); }
-
-        /* INTERFACE PRINCIPAL */
-        #main { visibility: hidden; opacity: 0; transition: 1.5s; }
+        #login { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #main { visibility: hidden; opacity: 0; }
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        /* HUD - TOP */
-        #top-bar {
-            position: absolute; top: 0; width: 100%; z-index: 100;
-            background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--n);
-            display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;
-        }
+        #top-bar { position: absolute; top: 0; width: 100%; z-index: 100; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--n); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
 
-        /* CENTRAL DE INTELIGÊNCIA 24H (Onde eu trabalho) */
-        #intel-center {
-            position: absolute; top: 70px; left: 15px; right: 15px; height: 150px;
-            z-index: 90; overflow-y: auto; padding: 10px; background: rgba(0,243,255,0.03);
-            border-left: 3px solid var(--intel); pointer-events: auto;
-        }
-        .intel-msg { color: var(--intel); font-size: 0.65rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,170,0,0.1); padding-bottom: 4px; animation: blink 0.5s; }
+        /* CENTRAL DE INTELIGÊNCIA 24H (Mantida) */
+        #intel-center { position: absolute; top: 70px; left: 15px; right: 15px; height: 150px; z-index: 90; overflow-y: auto; padding: 10px; background: rgba(0,243,255,0.03); border-left: 3px solid var(--intel); pointer-events: auto; }
+        .intel-msg { color: var(--intel); font-size: 0.65rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,170,0,0.1); padding-bottom: 4px; }
 
-        /* PAINEL DE CONFLITO (Onde o usuário escolhe) */
-        #control-deck {
-            position: absolute; bottom: 0; width: 100%; z-index: 100;
-            background: var(--g); border-top: 3px solid var(--n);
-            padding: 20px; border-radius: 20px 20px 0 0;
-        }
+        #control-deck { position: absolute; bottom: 0; width: 100%; z-index: 100; background: var(--g); border-top: 3px solid var(--n); padding: 20px; border-radius: 20px 20px 0 0; }
         .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-family: 'Orbitron'; font-size: 0.7rem; width: 100%; }
         .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; cursor: pointer; }
-
-        @keyframes blink { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="login">
-        <div class="lock-shield">🛰️</div>
-        <h2 style="font-family:'Orbitron'; margin-bottom: 20px;">STRATOS CORE v13</h2>
-        <button class="btn-strike" style="background:none; border:1px solid var(--n); width:auto; padding: 15px 30px;" onclick="initSystem()">AUTENTICAR COMANDANTE</button>
+        <h2 style="font-family:'Orbitron'; margin-bottom: 20px;">STRATOS CORE v13.5</h2>
+        <button class="btn-strike" style="background:none; border:1px solid var(--n); width:auto; padding: 15px 30px;" onclick="initSystem()">AUTENTICAR ACESSO</button>
     </div>
 
     <div id="main">
         <div id="top-bar">
-            <div>
-                <p style="font-size: 0.5rem; opacity: 0.7;">SISTEMA DE INTELIGÊNCIA GLOBAL</p>
-                <h1 style="font-size: 0.8rem; font-family:'Orbitron'">INTEL FEED <span style="color:var(--intel)">LIVE 24H</span></h1>
-            </div>
+            <h1 style="font-size: 0.8rem; font-family:'Orbitron'">INTEL FEED <span style="color:var(--intel)">LIVE 24H</span></h1>
             <div id="defcon" style="color:var(--a); border:1px solid var(--a); padding: 5px 10px; font-family:'Orbitron'; font-size:0.7rem">DEFCON 5</div>
         </div>
 
-        <div id="intel-center" class="glass">
-            <div class="intel-msg">> SINCRONIZANDO COM SATÉLITES DE INTELIGÊNCIA...</div>
+        <div id="intel-center">
+            <div class="intel-msg">> MONITORAMENTO GLOBAL ATIVO...</div>
         </div>
 
         <div id="viewport"></div>
 
         <div id="control-deck">
-            <p style="font-size: 0.6rem; margin-bottom: 10px; color: var(--n); text-align: center;">SIMULAÇÃO DE CONFRONTO ESTRATÉGICO</p>
             <div class="grid-select">
                 <select id="atq-sel"></select>
                 <select id="def-sel"></select>
@@ -82,40 +57,36 @@
     </div>
 
 <script>
-// LISTA DE 200 PAÍSES MANTIDA
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-// MINHA CENTRAL DE DADOS (Eu atualizarei isso para você)
 const REAL_NEWS = [
-    "UCRÂNIA: Movimentação de blindados detectada no front Leste.",
-    "ISRAEL/LÍBANO: Troca de artilharia em zonas de fronteira.",
-    "COREIA DO NORTE: Novos testes de prontidão em silos de lançamento.",
-    "CHINA: Manobras navais de grande escala no Estreito de Taiwan.",
-    "EUA/RÚSSIA: Tensões diplomáticas escalam após quebra de tratados navais.",
-    "SUDÃO: Conflitos civis se intensificam em áreas de infraestrutura vital."
+    "UCRÂNIA: Atividade intensificada na linha de frente leste.",
+    "ORIENTE MÉDIO: Monitoramento de drones em zonas de conflito.",
+    "MAR DO SUL DA CHINA: Movimentação naval em águas internacionais.",
+    "EUROPA: Reunião de emergência sobre segurança de fronteiras.",
+    "ÁFRICA: Tensões políticas em regiões de mineração estratégica."
 ];
 
 function initSystem() {
-    gsap.to("#login", { y: "-100%", duration: 1, ease: "power4.inOut" });
+    gsap.to("#login", { y: "-100%", duration: 1 });
     document.getElementById('main').style.visibility = "visible";
     document.getElementById('main').style.opacity = "1";
     initGlobe();
-    startMyWork(); // Inicia o meu trabalho de inteligência
+    startIntel();
 }
 
-// O MEU TRABALHO DENTRO DO APP
-function startMyWork() {
+function startIntel() {
     setInterval(() => {
         const intelDiv = document.getElementById('intel-center');
         const info = REAL_NEWS[Math.floor(Math.random() * REAL_NEWS.length)];
         const el = document.createElement('div');
         el.className = 'intel-msg';
-        el.innerText = `> [INTEL REAL ${new Date().toLocaleTimeString()}] ${info}`;
+        el.innerText = `> [INTEL 24H] ${info}`;
         intelDiv.prepend(el);
-    }, 8000); // Atualiza a cada 8 segundos
+    }, 10000);
 }
 
-let scene, camera, renderer, globe;
+let scene, camera, renderer, globe, clouds;
 
 function initGlobe() {
     scene = new THREE.Scene();
@@ -124,42 +95,56 @@ function initGlobe() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
 
-    const mat = new THREE.MeshPhongMaterial({ color: 0x00f3ff, wireframe: true });
-    new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg', (t) => {
-        mat.map = t; mat.wireframe = false; mat.needsUpdate = true;
+    const loader = new THREE.TextureLoader();
+    
+    // GLOBO TERRESTRE REAL (NASA Blue Marble)
+    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({
+        map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+        bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+        bumpScale: 0.05,
+        specularMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+        specular: new THREE.Color('grey')
     });
-
-    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), mat);
+    
+    globe = new THREE.Mesh(earthGeo, earthMat);
     scene.add(globe);
-    scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+    // NUVENS REAIS
+    const cloudGeo = new THREE.SphereGeometry(5.1, 64, 64);
+    const cloudMat = new THREE.MeshPhongMaterial({
+        map: loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'),
+        transparent: true,
+        opacity: 0.4
+    });
+    clouds = new THREE.Mesh(cloudGeo, cloudMat);
+    scene.add(clouds);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(5,3,5);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x444444));
+
     camera.position.z = 15;
     animate();
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    if(globe) globe.rotation.y += 0.0015;
+    if(globe) globe.rotation.y += 0.001;
+    if(clouds) clouds.rotation.y += 0.0015;
     renderer.render(scene, camera);
 }
 
 function launchSimulation() {
     const a = document.getElementById('atq-sel').value;
     const d = document.getElementById('def-sel').value;
-    if(a === d) return;
-
-    document.getElementById('defcon').innerText = "DEFCON 1";
-    document.getElementById('defcon').style.background = "var(--a)";
-    document.getElementById('defcon').style.color = "#fff";
-
-    const intelDiv = document.getElementById('intel-center');
     const el = document.createElement('div');
     el.style.color = "#fff";
-    el.style.fontSize = "0.7rem";
-    el.innerText = `> [SIMULAÇÃO] ${a} iniciou protocolo de ataque contra ${d}.`;
-    intelDiv.prepend(el);
+    el.innerText = `> SIMULAÇÃO: Conflito iniciado entre ${a} e ${d}.`;
+    document.getElementById('intel-center').prepend(el);
 }
 
-// Popular seletores
 const sA = document.getElementById('atq-sel');
 const sD = document.getElementById('def-sel');
 PAISES.sort().forEach(p => {
