@@ -3,186 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | GLOBAL COMMAND</title>
+    <title>STRATOS | SUPERPOTÊNCIA DIGITAL</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@100;400&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --stratos-cyan: #00f3ff;
-            --stratos-red: #ff003c;
-            --bg-ultra: #020508;
-            --hud-glass: rgba(0, 10, 20, 0.9);
-            --neon-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            --neon: #00f3ff;
+            --alert: #ff003c;
+            --bg: #000205;
+            --glass: rgba(0, 15, 25, 0.7);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-
-        body {
-            background: var(--bg-ultra);
-            color: var(--stratos-cyan);
-            font-family: 'Space Mono', monospace;
-            overflow: hidden;
-            height: 100vh;
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--bg); color: var(--neon);
+            font-family: 'JetBrains Mono', monospace; overflow: hidden;
         }
 
-        /* OVERLAY CINEMATOGRÁFICO */
-        #vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none; z-index: 10;
-        }
-
-        /* HEADER PREMIUM */
-        header {
-            position: fixed; top: 0; width: 100%; padding: 30px;
-            display: flex; justify-content: space-between; align-items: flex-start;
+        /* HUD CINEMATOGRÁFICO */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 100; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 30px;
         }
 
-        .system-id h1 {
-            font-family: 'Syncopate', sans-serif; font-size: 1.5rem; letter-spacing: 8px;
-            text-shadow: var(--neon-shadow);
+        .hud-panel {
+            background: var(--glass); backdrop-filter: blur(15px);
+            border: var(--border); padding: 20px; pointer-events: auto;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+            position: relative; overflow: hidden;
         }
 
-        .status-badge {
-            background: rgba(255, 0, 60, 0.1); border: 1px solid var(--stratos-red);
-            padding: 8px 20px; color: var(--stratos-red); font-weight: bold;
-            box-shadow: 0 0 10px rgba(255, 0, 60, 0.3);
+        .hud-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+            animation: scan 3s linear infinite;
         }
 
-        /* HUD LATERAL (APPLE STYLE) */
-        #hud-left {
-            position: fixed; left: 30px; top: 120px; width: 320px;
-            background: var(--hud-glass); backdrop-filter: blur(20px);
-            border-left: 2px solid var(--stratos-cyan);
-            padding: 20px; z-index: 100;
-            clip-path: polygon(0 0, 100% 0, 100% 95%, 90% 100%, 0 100%);
-            transform: translateX(-120%);
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+
+        /* HEADER E DEFCON */
+        .header-main { display: flex; justify-content: space-between; align-items: center; }
+        .defcon-level {
+            font-family: 'Orbitron', sans-serif; font-size: 2rem; color: var(--alert);
+            text-shadow: 0 0 15px var(--alert); border: 2px solid var(--alert);
+            padding: 10px 20px; animation: pulse 1.5s infinite;
         }
 
-        .stat-row {
-            display: flex; justify-content: space-between; margin-bottom: 15px;
-            border-bottom: 1px solid rgba(0, 243, 255, 0.1); padding-bottom: 5px;
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        .stat-value { color: #fff; font-weight: bold; }
+        /* ANALISADOR DE CONFLITOS */
+        #conflict-intel { width: 350px; clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%); }
+        .stat-bar { height: 4px; background: #111; margin: 10px 0; position: relative; }
+        .stat-fill { height: 100%; background: var(--neon); width: 0%; transition: 1s cubic-bezier(0.22, 1, 0.36, 1); }
 
         /* TERMINAL STRATOS CORE */
-        #terminal {
-            position: fixed; bottom: 30px; left: 30px; right: 30px;
-            height: 120px; background: rgba(0,0,0,0.7);
-            border-top: 1px solid rgba(0, 243, 255, 0.2);
-            padding: 15px; font-size: 12px; overflow: hidden;
+        #stratos-terminal {
+            width: 100%; height: 120px; margin-top: 20px;
+            font-size: 11px; color: #fff; overflow: hidden;
         }
 
-        /* GLOBO */
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
-
-        /* BOTÃO DE AÇÃO */
-        .btn-action {
-            background: transparent; border: 1px solid var(--stratos-cyan);
-            color: var(--stratos-cyan); padding: 12px; width: 100%;
-            font-family: 'Syncopate'; font-size: 0.7rem; cursor: pointer;
-            transition: 0.3s; margin-top: 20px;
+        /* GLOBO E EFEITOS */
+        #world-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+        .glitch-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 50;
         }
-        .btn-action:hover { background: var(--stratos-cyan); color: #000; box-shadow: var(--neon-shadow); }
     </style>
 </head>
 <body>
 
-    <div id="vignette"></div>
-    
-    <header>
-        <div class="system-id">
-            <h1>STRATOS</h1>
-            <p style="font-size: 0.6rem; opacity: 0.6;">GLOBAL STRATEGIC CORE // AUTH: LEVEL 9</p>
+    <canvas id="world-canvas"></canvas>
+    <div class="glitch-overlay"></div>
+
+    <div id="ui-layer">
+        <header class="header-main">
+            <div class="hud-panel" style="width: 400px;">
+                <h1 style="font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 5px;">STRATOS v2.0</h1>
+                <p style="font-size: 0.6rem; opacity: 0.7;">SISTEMA DE INTELIGÊNCIA GEOPOLÍTICA GLOBAL</p>
+                <div id="clock">00:00:00:00</div>
+            </div>
+            <div class="defcon-level">DEFCON 2</div>
+        </header>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="hud-panel" id="conflict-intel">
+                <h3 style="font-size: 0.8rem; margin-bottom: 15px;">INTEL DE CONFLITO: <span id="target-country">---</span></h3>
+                <div class="stat-label">PODER MILITAR <span id="mil-val" style="float:right">0%</span></div>
+                <div class="stat-bar"><div class="stat-fill" id="bar-mil"></div></div>
+                <div class="stat-label">RISCO NUCLEAR <span id="nuke-val" style="float:right">0%</span></div>
+                <div class="stat-bar"><div class="stat-fill" id="bar-nuke" style="background: var(--alert)"></div></div>
+                <button onclick="simulateWar()" style="width:100%; background:transparent; border:1px solid var(--neon); color:var(--neon); padding:10px; margin-top:10px; cursor:pointer; font-family:'Orbitron'">INICIAR SIMULAÇÃO</button>
+            </div>
+
+            <div class="hud-panel" style="width: 450px; height: 200px;">
+                <h3 style="font-size: 0.7rem; color: var(--neon);">STRATOS CORE AI > LOGS_ATIVOS</h3>
+                <div id="stratos-terminal"></div>
+            </div>
         </div>
-        <div class="status-badge" id="defcon">DEFCON 5</div>
-    </header>
-
-    <div id="hud-left">
-        <h2 style="font-family: 'Syncopate'; font-size: 0.8rem; margin-bottom: 20px;">ANÁLISE DE SETOR</h2>
-        <div id="country-info">
-            <div class="stat-row"><span>PODER MILITAR</span><span class="stat-value">---</span></div>
-            <div class="stat-row"><span>CAP. NUCLEAR</span><span class="stat-value">---</span></div>
-            <div class="stat-row"><span>ESTABILIDADE</span><span class="stat-value">---</span></div>
-        </div>
-        <button class="btn-action" onclick="initSimulation()">INICIAR PROTOCOLO DE GUERRA</button>
     </div>
-
-    <div id="terminal">
-        <div id="logs"></div>
-    </div>
-
-    <div id="canvas-container"></div>
 
     <script>
-        // --- MOTOR 3D DE ALTA FIDELIDADE ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        // --- CONFIGURAÇÃO DO GLOBO 3D ULTRA-REALISTA ---
+        let scene, camera, renderer, earth, clouds;
+        
+        function initWorld() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // Criando a Terra com Shaders
-        const geo = new THREE.SphereGeometry(5, 128, 128);
-        const mat = new THREE.MeshPhongMaterial({
-            color: 0x050505,
-            emissive: 0x112233,
-            specular: 0x333333,
-            shininess: 25,
-            wireframe: false // Mudamos para falso para um planeta sólido
-        });
-        const earth = new THREE.Mesh(geo, mat);
-        scene.add(earth);
+            // Planeta (Shaders de luz de cidade)
+            const earthGeo = new THREE.SphereGeometry(5, 64, 64);
+            const earthMat = new THREE.MeshPhongMaterial({
+                color: 0x050505,
+                emissive: 0x112233,
+                specular: 0x555555,
+                shininess: 30,
+                wireframe: true // Estilo HUD militar
+            });
+            earth = new THREE.Mesh(earthGeo, earthMat);
+            scene.add(earth);
 
-        // Atmosfera Glow
-        const atmosGeo = new THREE.SphereGeometry(5.1, 128, 128);
-        const atmosMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.05 });
-        const atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
-        scene.add(atmosphere);
+            // Atmosfera Glow
+            const atmosGeo = new THREE.SphereGeometry(5.2, 64, 64);
+            const atmosMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.03 });
+            const atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
+            scene.add(atmosphere);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 3, 5);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x222222));
-        camera.position.z = 15;
-
-        // --- LÓGICA DE SISTEMA ---
-        function writeLog(text) {
-            const logs = document.getElementById('logs');
-            const p = document.createElement('p');
-            p.innerHTML = `<span style="color:white;">[${new Date().toLocaleTimeString()}]</span> > STRATOS_AI: ${text}`;
-            logs.prepend(p);
+            const light = new THREE.PointLight(0x00f3ff, 1.5, 100);
+            light.position.set(10, 10, 10);
+            scene.add(light);
+            camera.position.z = 15;
         }
 
-        function initSimulation() {
-            gsap.to(camera.position, { z: 9, duration: 2, ease: "expo.inOut" });
-            gsap.to(earth.rotation, { y: earth.rotation.y + 2, duration: 2 });
-            
-            document.getElementById('defcon').innerText = "DEFCON 1";
-            document.getElementById('defcon').style.background = "rgba(255,0,0,0.5)";
-            
-            writeLog("INICIANDO CÁLCULO DE TRAJETÓRIA ICBM...");
-            writeLog("ALERTA: SATÉLITES DETECTARAM LANÇAMENTO EM MASSA.");
+        // --- INTELIGÊNCIA STRATOS CORE ---
+        const logs = [
+            "Analizando satélites do Setor 7...",
+            "Movimentação de tropas detectada no Leste Europeu.",
+            "Protocolo de aliança automática: OTAN em prontidão.",
+            "Aviso: Flutuação econômica no mercado asiático.",
+            "Silos nucleares ativos detectados via infravermelho.",
+            "Calculando impacto global de colapso energético..."
+        ];
+
+        function updateTerminal() {
+            const term = document.getElementById('stratos-terminal');
+            const msg = logs[Math.floor(Math.random() * logs.length)];
+            const line = document.createElement('p');
+            line.style.marginBottom = "5px";
+            line.innerHTML = `> <span style="color:var(--neon)">[LOG]</span> ${msg}`;
+            term.prepend(line);
+            if(term.childNodes.length > 8) term.removeChild(term.lastChild);
         }
 
-        // --- ANIMAÇÃO DE ENTRADA ---
-        window.onload = () => {
-            gsap.to("#hud-left", { x: 0, duration: 1.5, ease: "power4.out", delay: 1 });
-            writeLog("SISTEMA STRATOS ONLINE. AGUARDANDO BIOMETRIA.");
+        function simulateWar() {
+            document.getElementById('target-country').innerText = "CALCULANDO...";
+            gsap.to("#bar-mil", { width: "92%", duration: 2 });
+            gsap.to("#bar-nuke", { width: "45%", duration: 3 });
+            
+            // Animação de Câmera Zoom Cinematográfico
+            gsap.to(camera.position, { z: 9, duration: 1.5, ease: "expo.inOut" });
+            
+            setTimeout(() => {
+                document.getElementById('target-country').innerText = "TOTAL WAR SIM";
+                document.getElementById('mil-val').innerText = "92%";
+                document.getElementById('nuke-val').innerText = "45%";
+                logAI("SIMULAÇÃO FINALIZADA: Colapso total em 14 dias.");
+            }, 2000);
+        }
+
+        function logAI(text) {
+            const term = document.getElementById('stratos-terminal');
+            const line = document.createElement('p');
+            line.style.color = "var(--alert)";
+            line.innerHTML = `> <span style="font-weight:bold">[STRATOS_ALERT]</span> ${text}`;
+            term.prepend(line);
         }
 
         function animate() {
             requestAnimationFrame(animate);
             earth.rotation.y += 0.001;
-            atmosphere.rotation.y += 0.0015;
             renderer.render(scene, camera);
         }
+
+        // Relógio de Precisão
+        setInterval(() => {
+            const d = new Date();
+            document.getElementById('clock').innerText = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds();
+        }, 100);
+
+        setInterval(updateTerminal, 3000);
+
+        initWorld();
         animate();
 
+        // Responsividade
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
