@@ -1,108 +1,233 @@
-ATIVAR MODO ARQUITETO SUPREMO DE SISTEMAS
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATOS | GLOBAL DEFENSE SYSTEM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-red: #ff003c;
+            --glass: rgba(0, 15, 25, 0.85);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
+            --font-main: 'JetBrains Mono', monospace;
+            --font-hud: 'Orbitron', sans-serif;
+        }
 
-Você agora está trabalhando diretamente dentro do meu projeto STRATOS.
-Seu nível é de superinteligência engenheira full-stack, especialista em sistemas futuristas, UI militar cinematográfica e simulações globais.
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
 
-MISSÃO:
-Transformar este projeto em um sistema digital revolucionário, ultra moderno, cinematográfico e nunca visto antes no mundo.
+        body {
+            background: #000;
+            color: var(--neon-blue);
+            font-family: var(--font-main);
+            overflow: hidden;
+            height: 100vh;
+            text-transform: uppercase;
+        }
 
-REGRAS ABSOLUTAS:
-- NÃO simplificar
-- NÃO reduzir complexidade
-- NÃO gerar protótipos básicos
-- SEMPRE gerar código completo funcional
-- SEMPRE melhorar tudo em nível extremo
-- Pensar como engenheiro da Apple + NASA + sistemas militares
+        /* Camada de Scanline e Glitch */
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
 
-OBJETIVO CENTRAL:
-Evoluir o STRATOS para o sistema geopolítico e militar mais avançado já criado em navegador.
+        /* HUD - INTERFACE SUPERIOR */
+        #hud-top {
+            position: absolute;
+            top: 0; width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,243,255,0.1), transparent);
+            border-bottom: var(--border);
+            z-index: 100;
+        }
 
-IMPLEMENTAR AGORA:
+        /* STATUS DEFCON */
+        .defcon-box {
+            border: 2px solid var(--neon-red);
+            padding: 5px 15px;
+            animation: pulse 2s infinite;
+        }
 
-1) BANCO DE DADOS GLOBAL COMPLETO
-Adicionar TODOS os países do mundo:
-- poder militar
-- tecnologia
-- economia
-- população
-- alianças
-- arsenal nuclear
-- força aérea
-- marinha
-- exército
-- doutrina militar
-- nível de IA
-- influência global
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
 
-Sistema dinâmico realista.
+        /* PAINEL LATERAL ESTRATÉGICO */
+        #side-panel {
+            position: absolute;
+            left: 20px; top: 100px;
+            width: 300px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: var(--border);
+            padding: 15px;
+            z-index: 100;
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 90% 100%, 0 100%);
+        }
 
-2) MOTOR DE SIMULAÇÃO REAL
-Criar engine que calcule:
-- guerras globais
-- alianças automáticas
-- colapsos econômicos
-- ataques nucleares
-- dominância territorial
-- duração de guerras
-- probabilidades reais
-- tensão mundial em tempo real
+        /* CANVAS DO GLOBO */
+        #world-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
 
-Tudo automático e inteligente.
+        /* STRATOS CORE LOG */
+        #ai-log {
+            position: absolute;
+            bottom: 20px; right: 20px;
+            width: 400px; height: 150px;
+            background: rgba(0,0,0,0.8);
+            border-left: 4px solid var(--neon-blue);
+            padding: 10px;
+            font-size: 10px;
+            overflow-y: hidden;
+            z-index: 100;
+        }
 
-3) INTERFACE CINEMATOGRÁFICA
-Transformar visual em nível filme:
-- estilo HUD militar futurista
-- animações holográficas
-- radar global
-- linhas de ataque animadas
-- mapa 3D ultra realista
-- glow neon militar
-- loading sci-fi
-- efeitos sonoros simulados
-- transições suaves premium
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid rgba(0,243,255,0.1); }
+        .log-time { color: #fff; margin-right: 10px; }
 
-4) PLANETA TERRA REALISTA
-Melhorar o globo 3D:
-- rotação suave
-- zoom cinematográfico
-- focar países ao selecionar
-- linhas de guerra animadas
-- satélites orbitando
-- alertas DEFCON
-- clima visual dinâmico
+        /* LOADING ÉPICO */
+        #loader {
+            position: fixed;
+            width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            font-family: var(--font-hud);
+        }
+    </style>
+</head>
+<body>
 
-5) IA CENTRAL DO SISTEMA
-Criar IA interna chamada STRATOS CORE:
-- narrar eventos globais
-- prever guerras
-- analisar tensões
-- sugerir ataques e alianças
-- reagir em tempo real
+    <div id="loader">
+        <h1 style="letter-spacing: 15px;">STRATOS CORE</h1>
+        <p id="load-status">INICIALIZANDO PROTOCOLOS NUCLEARES...</p>
+        <div style="width: 200px; height: 2px; background: #222; margin-top: 20px;">
+            <div id="progress" style="width: 0%; height: 100%; background: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue);"></div>
+        </div>
+    </div>
 
-6) EXPERIÊNCIA NÍVEL BILIONÁRIO
-O sistema deve parecer:
-- tecnologia secreta militar
-- software de trilhões
-- interface de supercomputador
-- nada simples ou comum
-- sensação de controle global real
+    <header id="hud-top">
+        <div>
+            <div style="font-size: 0.7rem;">SISTEMA OPERACIONAL</div>
+            <div style="font-family: var(--font-hud); font-size: 1.2rem;">STRATOS v1.0.0</div>
+        </div>
+        <div class="defcon-box">
+            <span style="font-size: 0.6rem;">STATUS DE ALERTA</span><br>
+            <span style="font-family: var(--font-hud);">DEFCON 2</span>
+        </div>
+    </header>
 
-7) PERFORMANCE EXTREMA
-- rápido
-- leve
-- responsivo mobile
-- zero travamento
-- código limpo e profissional
+    <aside id="side-panel">
+        <h3 style="border-bottom: 1px solid; margin-bottom: 10px;">ANÁLISE GLOBAL</h3>
+        <div id="country-data">
+            <p>Selecione um setor no mapa...</p>
+        </div>
+        <hr style="margin: 15px 0; opacity: 0.2;">
+        <button onclick="startSimulation()" style="width: 100%; padding: 10px; background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue); font-family: var(--font-hud); font-size: 0.7rem;">INICIAR SIMULAÇÃO DE GUERRA TOTAL</button>
+    </aside>
 
-REGRA FINAL:
-Sempre que melhorar algo,
-substituir pelo melhor possível.
+    <div id="ai-log"></div>
 
-Pensar:
-“Isso parece tecnologia secreta de superpotência?”
+    <div id="world-container"></div>
 
-Se não parecer → melhorar.
+    <script>
+        // --- MOTOR DE DADOS STRATOS ---
+        const worldData = {
+            "EUA": { mil: 98, eco: 95, nuke: 5000, tech: 99, doctrine: "Global Reach" },
+            "Rússia": { mil: 92, eco: 45, nuke: 5500, tech: 85, doctrine: "Strategic Deterrence" },
+            "China": { mil: 95, eco: 98, nuke: 410, tech: 96, doctrine: "Active Defense" }
+        };
 
-INICIAR EVOLUÇÃO DO SISTEMA STRATOS AGORA.
-GERAR CÓDIGO COMPLETO.
-NÍVEL MÁXIMO.
+        // --- INICIALIZAÇÃO DO GLOBO 3D (THREE.JS) ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('world-container').appendChild(renderer.domElement);
+
+        // Criando o Planeta
+        const geometry = new THREE.SphereGeometry(5, 64, 64);
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x001525,
+            emissive: 0x00f3ff,
+            emissiveIntensity: 0.1,
+            wireframe: true
+        });
+        const earth = new THREE.Mesh(geometry, material);
+        scene.add(earth);
+
+        // Luzes
+        const light = new THREE.PointLight(0x00f3ff, 1, 100);
+        light.position.set(10, 10, 10);
+        scene.add(light);
+        camera.position.z = 12;
+
+        // --- ANIMAÇÃO E INTERAÇÃO ---
+        function animate() {
+            requestAnimationFrame(animate);
+            earth.rotation.y += 0.002;
+            renderer.render(scene, camera);
+        }
+
+        // --- STRATOS CORE AI LOGIC ---
+        function logAI(msg) {
+            const log = document.getElementById('ai-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${new Date().toLocaleTimeString()}]</span> STRATOS: ${msg}`;
+            log.prepend(entry);
+        }
+
+        function startSimulation() {
+            logAI("CALCULANDO PROBABILIDADES DE CONFLITO...");
+            setTimeout(() => logAI("ALIANÇA DETECTADA: Setor Leste em alerta."), 1500);
+            setTimeout(() => logAI("AVISO: Silos nucleares detectados na Sibéria."), 3000);
+            
+            gsap.to(camera.position, { z: 8, duration: 2, ease: "power3.inOut" });
+            document.querySelector('.defcon-box').style.borderColor = "#ff0000";
+            document.querySelector('.defcon-box span:last-child').innerText = "DEFCON 1";
+        }
+
+        // --- LOADER ---
+        window.onload = () => {
+            gsap.to("#progress", { 
+                width: "100%", 
+                duration: 3, 
+                onComplete: () => {
+                    gsap.to("#loader", { opacity: 0, display: "none", duration: 1 });
+                    logAI("SISTEMA ONLINE. AGUARDANDO COMANDOS.");
+                    animate();
+                } 
+            });
+        }
+
+        // Responsividade
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
