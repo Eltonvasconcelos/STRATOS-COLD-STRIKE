@@ -3,117 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v17 | AUDIO OPS</title>
+    <title>STRATOS v17.2 | COMMAND & CONQUER</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --intel: #ffaa00; --win: #00ff88; --bg: rgba(0, 10, 20, 0.7); }
+        :root { --n: #00f3ff; --a: #ff003c; --intel: #ffaa00; --win: #00ff88; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* HEADER */
-        #header { position: absolute; top: 0; width: 100%; z-index: 500; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); border-bottom: 1px solid rgba(0,243,255,0.2); }
+        /* HEADER E STATUS */
+        #header { position: absolute; top: 0; width: 100%; z-index: 500; padding: 10px 15px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--n); }
+        .status-light { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--win); box-shadow: 0 0 10px var(--win); }
 
-        /* FEED GLOBAL (RESTAURADO) */
-        #intel-feed { position: absolute; top: 60px; left: 10px; right: 10px; height: 100px; z-index: 400; overflow-y: auto; background: var(--bg); border-left: 3px solid var(--intel); padding: 8px; backdrop-filter: blur(5px); }
-        .intel-line { color: var(--intel); font-size: 0.6rem; margin-bottom: 4px; opacity: 0.9; }
+        /* INTEL FEED (TOP) */
+        #intel-feed { position: absolute; top: 55px; left: 10px; right: 10px; height: 95px; z-index: 400; overflow-y: auto; background: rgba(0,10,20,0.6); border-left: 3px solid var(--intel); padding: 8px; backdrop-filter: blur(5px); }
+        .msg { color: var(--intel); font-size: 0.6rem; margin-bottom: 4px; border-bottom: 1px solid rgba(255,170,0,0.1); }
 
-        /* ÁREA DE CONFLITO (VEREDITO DETALHADO) */
-        #ops-center { position: absolute; top: 170px; left: 10px; right: 10px; height: 230px; z-index: 400; background: var(--bg); border: 1px solid var(--n); border-radius: 4px; padding: 12px; overflow-y: auto; backdrop-filter: blur(10px); }
-        .win-tag { background: var(--win); color: #000; padding: 2px 6px; font-weight: bold; font-size: 0.7rem; border-radius: 3px; }
-        .loss-tag { background: var(--a); color: #fff; padding: 2px 6px; font-weight: bold; font-size: 0.7rem; border-radius: 3px; }
+        /* SETOR DE OPERAÇÕES (CENTRO - Onde você sublinhou) */
+        #ops-sector { position: absolute; top: 165px; left: 10px; right: 10px; height: 230px; z-index: 400; background: rgba(0,10,20,0.7); border: 1px solid var(--n); border-radius: 4px; padding: 12px; overflow-y: auto; backdrop-filter: blur(10px); }
+        .vitory-card { margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; border-left: 4px solid var(--win); }
+        .winner-text { color: var(--win); font-weight: 900; font-family: 'Orbitron'; font-size: 0.8rem; text-transform: uppercase; }
 
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        /* CONTROLES */
-        #deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: #000; padding: 20px; border-top: 2px solid var(--n); }
-        .btn-war { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
-        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 12px; width: 100%; font-size: 0.7rem; margin-bottom: 10px; }
-
-        /* ANIMAÇÃO DE ALERTA */
-        .war-alert { animation: pulse-red 0.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: inset 0 0 10px var(--a); } 50% { box-shadow: inset 0 0 30px var(--a); } 100% { box-shadow: inset 0 0 10px var(--a); } }
+        /* DECK DE COMANDO (BOTTOM) */
+        #deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: #000; padding: 20px; border-top: 2px solid var(--n); border-radius: 20px 20px 0 0; }
+        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 14px; width: 100%; font-size: 0.75rem; margin-bottom: 12px; border-radius: 5px; }
+        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 22px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(255,0,60,0.4); }
+        
+        /* ALERTA VISUAL */
+        .flash { animation: screen-flash 0.2s ease-out; }
+        @keyframes screen-flash { from { background: rgba(255,0,60,0.5); } to { background: transparent; } }
     </style>
 </head>
 <body>
 
     <div id="header">
-        <h1 style="font-family:'Orbitron'; font-size: 0.8rem;">STRATOS <span style="color:#fff">v17.0</span></h1>
-        <div style="font-size: 0.5rem; color: var(--a);" id="audio-status">AUDIO: STANDBY</div>
+        <h1 style="font-family:'Orbitron'; font-size: 0.75rem;">STRATOS <span style="color:var(--win)">LIVE</span></h1>
+        <div style="font-size: 0.5rem;"><span class="status-light"></span> SAT_LINK: ACTIVE</div>
     </div>
 
     <div id="intel-feed"></div>
 
-    <div id="ops-center">
-        <p style="font-size: 0.5rem; opacity: 0.5;">[ SISTEMA DE ANÁLISE DE COMBATE ]</p>
-        <div id="combat-report"></div>
+    <div id="ops-sector">
+        <p style="font-size: 0.5rem; opacity: 0.4; margin-bottom: 10px;">[ CENTRAL DE RELATÓRIOS DE GUERRA ]</p>
+        <div id="battle-log"></div>
     </div>
 
     <div id="viewport"></div>
 
     <div id="deck">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <select id="atq"></select>
-            <select id="def"></select>
+            <select id="sel-atq"></select>
+            <select id="sel-def"></select>
         </div>
-        <button class="btn-war" onclick="startWarSequence()">Iniciar Operação</button>
+        <button class="btn-strike" onclick="initSimulation()">Iniciar Operação</button>
     </div>
 
 <script>
-// PAISES (Mantidos 100%)
+// MANTENDO A LISTA DE PAÍSES INTEGRALMENTE
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-const INTEL_NEWS = [
-    "MOVIMENTAÇÃO: Tropas detectadas via infravermelho no leste.",
-    "CIBERNETICA: Ataque massivo derruba rede elétrica regional.",
-    "SATELLITE: Lançamento de silo não identificado detectado.",
-    "DIPLOMACIA: Acordos rompidos. Alerta de combate nível 4."
+const INTEL_ALERTS = [
+    "UCRÂNIA: Sistemas de defesa S-400 ativados em massa.",
+    "MAR DO SUL DA CHINA: Frota naval rompe perímetro de segurança.",
+    "EUROPA: Ciberataque detectado em infraestrutura de gás.",
+    "ORIENTE MÉDIO: Satélites confirmam prontidão nuclear nível 3."
 ];
 
-const CONSEQUENCIAS = ["Infraestrutura colapsada", "Domínio aéreo estabelecido", "Recuo estratégico forçado", "Capitulação do governo central", "Resistência urbana intensificada"];
+const DETALHES_MORTE = ["Infraestrutura Totalmente Arrasada", "Defesa Aérea Neutralizada", "Capitulação Incondicional", "Governo Exilado", "Cidades sob Domínio"];
 
-let audioCtx, droneNode;
+let audioCtx, drone;
 
-// GERADOR DE SOM TÁTICO (Drone de Suspense)
-function initAudio() {
+function setupAudio() {
     if(audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Oscilador de baixa frequência (Drone)
-    droneNode = audioCtx.createOscillator();
+    drone = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    droneNode.type = 'sawtooth';
-    droneNode.frequency.setValueAtTime(40, audioCtx.currentTime); 
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-    
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(200, audioCtx.currentTime);
-
-    droneNode.connect(filter);
-    filter.connect(gain);
+    drone.type = 'sine';
+    drone.frequency.setValueAtTime(40, audioCtx.currentTime); // Som grave de tensão
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    drone.connect(gain);
     gain.connect(audioCtx.destination);
-    droneNode.start();
-    document.getElementById('audio-status').innerText = "AUDIO: LIVE TRANSMISSION";
-    document.getElementById('audio-status').style.color = "var(--win)";
+    drone.start();
 }
 
-function playAlertSound() {
+function playImpact() {
     const osc = audioCtx.createOscillator();
     const g = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
     osc.connect(g);
     g.connect(audioCtx.destination);
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.5);
+    osc.stop(audioCtx.currentTime + 0.8);
 }
 
 let scene, camera, renderer, globe;
 
-function initThree() {
+function initWorld() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -130,62 +121,61 @@ function initThree() {
         })
     );
     scene.add(globe);
-    scene.add(new THREE.AmbientLight(0x444444));
-    const sun = new THREE.DirectionalLight(0xffffff, 1);
-    sun.position.set(5,3,5);
-    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 1.2));
     camera.position.z = 15;
-    
+
     setInterval(() => {
-        const feed = document.getElementById('intel-feed');
-        const div = document.createElement('div');
-        div.className = "intel-line";
-        div.innerText = `> [IA GLOBAL] ${INTEL_NEWS[Math.floor(Math.random()*INTEL_NEWS.length)]}`;
-        feed.prepend(div);
-    }, 8000);
+        const f = document.getElementById('intel-feed');
+        const d = document.createElement('div');
+        d.className = "msg";
+        d.innerText = `> [ALERTA REAL] ${INTEL_ALERTS[Math.floor(Math.random()*INTEL_ALERTS.length)]}`;
+        f.prepend(d);
+    }, 9000);
 
     animate();
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    globe.rotation.y += 0.001;
+    globe.rotation.y += 0.0008;
     renderer.render(scene, camera);
 }
 
-function startWarSequence() {
-    initAudio();
-    playAlertSound();
-    
-    const a = document.getElementById('atq').value;
-    const d = document.getElementById('def').value;
+function initSimulation() {
+    setupAudio();
+    playImpact();
+    document.body.classList.add('flash');
+    setTimeout(() => document.body.classList.remove('flash'), 200);
+
+    const a = document.getElementById('sel-atq').value;
+    const d = document.getElementById('sel-def').value;
     if(a === d) return;
 
-    document.body.classList.add('war-alert');
-    setTimeout(() => document.body.classList.remove('war-alert'), 1000);
-
-    const chance = Math.floor(Math.random() * 101);
-    const vencedor = chance > 50 ? a : d;
+    const winProb = Math.floor(Math.random() * 101);
+    const vencedor = winProb > 50 ? a : d;
     const perdedor = vencedor === a ? d : a;
-    const desc = CONSEQUENCIAS[Math.floor(Math.random()*CONSEQUENCIAS.length)];
+    const desc = DETALHES_MORTE[Math.floor(Math.random()*DETALHES_MORTE.length)];
 
-    const report = document.getElementById('combat-report');
-    report.innerHTML = `
-        <div style="margin-top:15px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom:10px;">
-            <p style="font-size:0.7rem; color:#fff; margin-bottom:5px;">⚔️ CONFLITO: ${a} vs ${d}</p>
-            <p><span class="win-tag">VENCEDOR: ${vencedor}</span></p>
-            <p style="font-size:0.6rem; color:var(--win); margin-top:5px;">Probabilidade de Vitória: ${chance}%</p>
-            <p style="font-size:0.55rem; color:var(--a); margin-top:3px;">RESULTADO: ${desc} em ${perdedor}.</p>
+    const log = document.getElementById('battle-log');
+    const card = document.createElement('div');
+    card.className = "vitory-card";
+    card.innerHTML = `
+        <div style="font-size:0.6rem; color:var(--n); opacity:0.8;">SIMULAÇÃO TERMINADA: ${a} vs ${d}</div>
+        <div class="winner-text">VENCEDOR: ${vencedor}</div>
+        <div style="font-size:0.65rem; color:#fff; margin-top:5px;">
+            Status: ${desc} em ${perdedor}. <br>
+            Probabilidade de Vitória: ${winProb}%
         </div>
-    ` + report.innerHTML;
+    `;
+    log.prepend(card);
 }
 
 PAISES.sort().forEach(p => {
-    document.getElementById('atq').innerHTML += `<option>${p}</option>`;
-    document.getElementById('def').innerHTML += `<option>${p}</option>`;
+    document.getElementById('sel-atq').innerHTML += `<option>${p}</option>`;
+    document.getElementById('sel-def').innerHTML += `<option>${p}</option>`;
 });
 
-window.onload = initThree;
+window.onload = initWorld;
 </script>
 </body>
 </html>
