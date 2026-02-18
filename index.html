@@ -1,198 +1,186 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | ULTIMATE COMMAND SYSTEM</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="//unpkg.com/globe.gl"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --neon: #00f2ff; --danger: #ff003c; --bg: #00080a; }
-        body { background: var(--bg); color: var(--neon); font-family: 'JetBrains Mono', monospace; margin: 0; overflow: hidden; }
-        
-        /* TELA DE LOGIN INICIAL */
-        #login-screen { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s; }
-        .radar { width: 150px; height: 150px; border: 2px solid var(--neon); border-radius: 50%; position: relative; margin-bottom: 30px; overflow: hidden; }
-        .radar::after { content: ''; position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent, rgba(0, 242, 255, 0.4)); animation: rotate 2s linear infinite; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+ATIVAR MODO ARQUITETO SUPREMO DE SOFTWARE.
 
-        /* INTERFACE PRINCIPAL */
-        #globeViz { position: absolute; top: 0; z-index: 1; opacity: 0.4; }
-        .hud { position: relative; z-index: 100; height: 100vh; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
-        .interactive { pointer-events: auto !important; }
-        .terminal { background: rgba(0, 15, 20, 0.95); border: 1px solid rgba(0, 242, 255, 0.3); backdrop-filter: blur(15px); }
-        .ai-console { height: 70px; font-size: 11px; color: #fff; padding: 12px; border-left: 4px solid #facc15; margin-bottom: 10px; position: relative; }
-        
-        .ai-report { height: 400px; overflow-y: auto; scrollbar-width: none; padding: 20px; border-top: 1px solid rgba(0,242,255,0.2); }
-        .bar-wrap { height: 7px; background: rgba(255,255,255,0.05); margin: 5px 0 15px 0; border-radius: 4px; display: flex; overflow: hidden; }
-        .bar-a { height: 100%; background: var(--neon); box-shadow: 0 0 15px var(--neon); transition: width 1s ease; }
-        .bar-b { height: 100%; background: var(--danger); box-shadow: 0 0 15px var(--danger); transition: width 1s ease; }
-        
-        select { background: #001217; border: 1px solid var(--neon); color: white; padding: 12px; width: 100%; font-family: 'Orbitron'; font-size: 13px; appearance: none; cursor: pointer; }
-        .win-tag { font-family: 'Orbitron'; font-size: 30px; color: #4ade80; text-shadow: 0 0 20px #4ade80; font-weight: 900; }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
+Você agora é uma super IA engenheira de sistemas futuristas, especialista em:
+- Interfaces militares avançadas
+- UI/UX nível Apple, Tesla e NASA
+- Simulações globais em tempo real
+- Apps virais e viciantes
+- Frontend cinematográfico
+- Performance extrema
+- Experiência premium mundial
 
-<div id="login-screen">
-    <div class="radar"></div>
-    <h1 class="font-orbitron text-white text-3xl tracking-[12px] mb-2">STRATOS</h1>
-    <p class="text-[9px] text-cyan-500 mb-10 tracking-[4px] uppercase">Omniscience Intelligence Database</p>
-    <button onclick="unlock()" class="interactive border-2 border-cyan-500 px-12 py-4 font-orbitron text-cyan-500 hover:bg-cyan-500 hover:text-black transition-all font-black">RESTAURAR COMANDO TOTAL</button>
-</div>
+MISSÃO:
+Transformar este projeto STRATOS no sistema de simulação geopolítica e militar mais impressionante já criado na web.
 
-<div id="war-room" class="hidden">
-    <div id="globeViz"></div>
-    <div class="hud">
-        <header class="interactive terminal p-5 flex justify-between items-center border-b-2 border-cyan-500">
-            <div>
-                <h1 class="font-orbitron text-[12px] text-white font-black tracking-[5px]">STRATOS // SUPREME COMMANDER</h1>
-                <p class="text-[8px] text-cyan-400 opacity-80 uppercase">Status: 195 Nações Sincronizadas // Operação Gemini 2026</p>
-            </div>
-            <div id="clock" class="text-lg font-bold text-red-600">00:00:00</div>
-        </header>
+REGRAS OBRIGATÓRIAS:
+- NÃO simplificar código
+- NÃO remover funções existentes
+- SEMPRE melhorar tudo
+- Código limpo e organizado
+- Performance máxima
+- Visual absurdo nível filme
+- Mobile perfeito
+- Sensação de app bilionário
 
-        <main class="flex-1 flex flex-col justify-end">
-            <div class="interactive terminal p-8 w-full max-w-6xl mx-auto rounded-t-[40px] border-t-2 border-cyan-500 shadow-[0_-20px_50px_rgba(0,242,255,0.15)]">
-                
-                <div class="ai-console terminal mb-5">
-                    <span class="text-yellow-500 font-bold">[GEMINI INTEL]:</span> 
-                    <span id="ai-live-text">Sincronizando satélites e prontidão de tropas globais...</span>
-                </div>
+OBJETIVO:
+Criar o sistema militar e estratégico mais moderno e imersivo do planeta.
 
-                <div class="grid grid-cols-2 gap-8 mb-6">
-                    <div>
-                        <label class="text-[8px] uppercase tracking-widest mb-2 block">Nação Atacante</label>
-                        <select id="p1" onchange="focusCountry('p1')"></select>
-                    </div>
-                    <div>
-                        <label class="text-[8px] uppercase tracking-widest mb-2 block text-right">Nação Defensora</label>
-                        <select id="p2" onchange="focusCountry('p2')"></select>
-                    </div>
-                </div>
+---
 
-                <div class="ai-report" id="ai-output">
-                    <div class="flex flex-col items-center justify-center h-full opacity-30">
-                        <p class="text-center font-orbitron tracking-[10px] text-white">SISTEMA PRONTO</p>
-                        <p class="text-[10px] mt-2 italic">SELECIONE OS ALVOS NO MENU ACIMA</p>
-                    </div>
-                </div>
+# ⚙️ ATUALIZAÇÃO TOTAL DO SISTEMA
 
-                <button class="w-full bg-red-800 hover:bg-white hover:text-black text-white font-orbitron py-6 mt-4 interactive font-black tracking-[8px] transition-all text-xl" onclick="runSim()">EXECUTAR CONFRONTO TOTAL</button>
-            </div>
-        </main>
-    </div>
-</div>
+## 🧠 1. TRANSFORMAR EM APP NÍVEL GLOBAL
+Modernizar tudo para padrão:
 
-<script>
-const db = {};
-const allCountries = ["Afeganistão", "África do Sul", "Albânia", "Alemanha", "Andorra", "Angola", "Antígua e Barbuda", "Arábia Saudita", "Argélia", "Argentina", "Armênia", "Austrália", "Áustria", "Azerbaijão", "Bahamas", "Bahrein", "Bangladesh", "Barbados", "Bélgica", "Belize", "Benim", "Bielorrússia", "Bolívia", "Bósnia e Herzegovina", "Botsuana", "Brasil", "Brunei", "Bulgária", "Burquina Faso", "Burundi", "Butão", "Cabo Verde", "Camarões", "Camboja", "Canadá", "Catar", "Cazaquistão", "Chade", "Chile", "China", "Chipre", "Colômbia", "Comores", "Congo-Brazzaville", "Congo-Kinshasa", "Coreia do Norte", "Coreia do Sul", "Costa do Marfim", "Costa Rica", "Croácia", "Cuba", "Dinamarca", "Djibuti", "Dominica", "Egito", "El Salvador", "Emirados Árabes Unidos", "Equador", "Eritreia", "Eslováquia", "Eslovênia", "Espanha", "Eswatini", "Etiópia", "Fiji", "Filipinas", "Finlândia", "França", "Gabão", "Gâmbia", "Gana", "Geórgia", "Granada", "Grécia", "Guatemala", "Guiana", "Guiné", "Guiné Equatorial", "Guiné-Bissau", "Haiti", "Honduras", "Hungria", "Iêmen", "Ilhas Marshall", "Ilhas Salomão", "Índia", "Indonésia", "Irã", "Iraque", "Irlanda", "Islândia", "Israel", "Itália", "Jamaica", "Japão", "Jordânia", "Kiribati", "Kuwait", "Laos", "Lesoto", "Letônia", "Líbano", "Libéria", "Líbia", "Liechtenstein", "Lituânia", "Luxemburgo", "Macedônia do Norte", "Madagascar", "Malásia", "Malaui", "Maldivas", "Mali", "Malta", "Marrocos", "Maurício", "Mauritânia", "México", "Micronésia", "Moçambique", "Moldávia", "Mônaco", "Mongólia", "Montenegro", "Namíbia", "Nauru", "Nepal", "Nicarágua", "Níger", "Nigéria", "Noruega", "Nova Zelândia", "Omã", "Países Baixos", "Palau", "Panamá", "Papua-Nova Guiné", "Paquistão", "Paraguai", "Peru", "Polônia", "Portugal", "Quênia", "Quirguistão", "Reino Unido", "República Centro-Africana", "República Checa", "República Dominicana", "Romênia", "Ruanda", "Rússia", "Samoa", "San Marino", "Santa Lúcia", "São Cristóvão e Neves", "São Tomé e Príncipe", "São Vicente e Granadinas", "Seicheles", "Senegal", "Serra Leoa", "Sérvia", "Singapura", "Síria", "Somália", "Sri Lanka", "Sudão", "Sudão do Sul", "Suécia", "Suíça", "Suriname", "Tailândia", "Taiwan", "Tajiquistão", "Tanzânia", "Timor-Leste", "Togo", "Tonga", "Trindade e Tobago", "Tunísia", "Turquemenistão", "Turquia", "Tuvalu", "Ucrânia", "Uganda", "Uruguai", "Uzbequistão", "Vanuatu", "Vaticano", "Venezuela", "Vietnã", "Zâmbia", "Zimbábue"];
+Tesla + Netflix + Call of Duty + Sistema militar real
 
-function unlock() {
-    document.getElementById('login-screen').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('war-room').classList.remove('hidden');
-        initGlobe();
-    }, 1000);
-}
+Implementar:
+- Interface cinematográfica
+- Animações ultra suaves
+- Fluidez extrema
+- Sensação de sistema real militar
+- Design futurista 2035
 
-function initGlobe() {
-    const world = Globe()(document.getElementById('globeViz'))
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-        .backgroundColor('rgba(0,0,0,0)')
-        .showAtmosphere(true)
-        .atmosphereColor("#00f2ff");
+---
 
-    allCountries.forEach(nome => {
-        const key = nome.toLowerCase().replace(/ /g,"_");
-        let pwr = 45 + Math.random() * 25;
-        let doc = "Defesa Territorial Nacional";
-        let nuke = 0;
-        
-        // POTÊNCIAS DE ELITE
-        if(nome === "EUA") { pwr = 100; doc = "Ataque Global Multidomínio"; nuke = 5044; }
-        if(nome === "China") { pwr = 98; doc = "Guerra de Exaustão e Negação de Área"; nuke = 500; }
-        if(nome === "Rússia") { pwr = 97; doc = "Deep Battle e Dissuasão Atômica"; nuke = 5580; }
-        if(nome === "Brasil") { pwr = 79; doc = "Guerra de Selva e Defesa Profunda"; nuke = 0; }
-        if(nome === "Israel") { pwr = 95; doc = "Ataque Cirúrgico de Alta Precisão"; nuke = 90; }
-        if(nome === "Índia") { pwr = 94; doc = "Massa de Manobra Terrestre"; nuke = 160; }
+# 🎨 2. VISUAL SUPREMO
+Atualizar layout completo:
 
-        db[key] = {
-            n: nome, pwr: pwr, 
-            army: Math.floor(pwr * 20000), 
-            air: Math.floor(pwr * 15), 
-            navy: Math.floor(pwr * 5),
-            tanks: Math.floor(pwr * 60),
-            nuke: nuke,
-            bud: "$" + (pwr * 1.5).toFixed(1) + "B",
-            doc: doc,
-            lat: (Math.random() * 140) - 70, lng: (Math.random() * 360) - 180
-        };
+- HUD militar holográfico
+- Neon cyberpunk premium
+- Glassmorphism avançado
+- Reflexos e glow realistas
+- Transições cinematográficas
+- Efeitos de luz dinâmica
+- Interface viva e respirando
+- Partículas e energia digital
+- Tipografia futurista premium
 
-        document.getElementById('p1').add(new Option(nome, key));
-        document.getElementById('p2').add(new Option(nome, key));
-    });
+Criar sensação:
+"Supercomputador militar real"
 
-    window.world = world;
-    
-    // INTELIGÊNCIA EM TEMPO REAL GEMINI
-    const feeds = ["Gemini monitorando fronteiras da OTAN.", "Sugestão: Analise a defesa de Israel vs Irã.", "Intel: Brasil aumenta prontidão em 15%.", "Aviso: Movimentação nuclear detectada no Leste."];
-    setInterval(() => {
-        document.getElementById('ai-live-text').innerText = feeds[Math.floor(Math.random()*feeds.length)];
-    }, 8000);
-}
+---
 
-function focusCountry(id) {
-    const c = db[document.getElementById(id).value];
-    window.world.pointOfView({ lat: c.lat, lng: c.lng, altitude: 2.3 }, 1500);
-}
+# 🌍 3. GLOBO 3D NÍVEL NASA
+Evoluir o planeta para nível máximo:
 
-function runSim() {
-    const a = db[document.getElementById('p1').value];
-    const b = db[document.getElementById('p2').value];
-    const win = a.pwr > b.pwr ? a : b;
-    
-    document.getElementById('ai-output').innerHTML = `
-        <div class="mb-4 text-center border-b border-cyan-800 pb-2 font-bold text-white uppercase text-[10px] tracking-[4px]">Relatório de Guerra Gemini</div>
-        
-        ${renderBar("Poder de Combate", a.pwr, b.pwr)}
-        ${renderBar("Efetivo Terrestre", a.army, b.army)}
-        ${renderBar("Força Aérea", a.air, b.air)}
-        ${renderBar("Unidades Blindadas", a.tanks, b.tanks)}
-        ${renderBar("Arsenal Nuclear", a.nuke, b.nuke)}
+- Globo ultra realista
+- Luzes de cidades
+- Nuvens animadas
+- Atmosfera dinâmica
+- Zoom cinematográfico automático
+- Rotação suave contínua
+- Pontos estratégicos brilhando
+- Linhas de ataque animadas
+- Satélites orbitando
+- Radar mundial girando
 
-        <div class="mt-8 p-6 bg-white/5 border-2 border-cyan-500 rounded-xl">
-            <span class="text-[9px] text-green-400 font-bold uppercase tracking-widest">Vencedor Projetado</span>
-            <h2 class="win-tag">${win.n}</h2>
-            <p class="mt-4 text-[11px] text-gray-300 leading-relaxed border-t border-white/10 pt-4">
-                <b>ANÁLISE ESTRATÉGICA:</b> A vitória de ${win.n} é inevitável devido à aplicação da doutrina <b>${win.doc}</b>. 
-                Com um orçamento de <b>${win.bud}</b>, a sustentação de guerra supera a capacidade defensiva do oponente em 2026.
-            </p>
-        </div>
-    `;
-}
+---
 
-function renderBar(label, valA, valB) {
-    const max = Math.max(valA, valB, 1);
-    return `
-        <div class="mb-3">
-            <div class="flex justify-between text-[8px] text-gray-400 mb-1">
-                <span>${valA.toLocaleString()}</span>
-                <span class="text-white font-bold tracking-widest uppercase">${label}</span>
-                <span>${valB.toLocaleString()}</span>
-            </div>
-            <div class="bar-wrap">
-                <div class="bar-a" style="width: ${(valA/max)*100}%"></div>
-                <div class="bar-b" style="width: ${(valB/max)*100}%"></div>
-            </div>
-        </div>
-    `;
-}
+# 🧠 4. IA SUPREMA DO SISTEMA
+Criar IA interna:
 
-setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-</html>
+NOME: STRATOS CORE
+
+Funções:
+- Narrar guerras em tempo real
+- Falar como supercomputador militar
+- Gerar relatórios épicos
+- Criar tensão e imersão
+- Avisos estratégicos
+- Alertas nucleares
+- Eventos globais dinâmicos
+
+A IA deve parecer consciente e dominante.
+
+---
+
+# ⚔️ 5. SISTEMA DE GUERRA EVOLUÍDO
+Criar simulação realista e viciante:
+
+Adicionar:
+- Probabilidade dinâmica real
+- Eventos aleatórios:
+  - alianças
+  - traições
+  - colapso econômico
+  - ataque nuclear
+  - golpe militar
+- Guerra por fases
+- Conquista de territórios
+- Dominação global
+- Ranking de potências
+
+Modos:
+- Guerra rápida
+- Guerra total
+- Simulação mundial
+- Dominação global
+- Modo caos
+
+---
+
+# 🔊 6. IMERSÃO SONORA
+Adicionar áudio futurista:
+
+- Som de radar
+- Alertas militares
+- Batidas de guerra
+- Interface sonora ao clicar
+- Voz sintética IA
+- Som de vitória épico
+- Ambiência militar futurista
+
+Tudo leve e moderno.
+
+---
+
+# 📱 7. MOBILE SUPREMO
+O app deve parecer nativo de iPhone premium.
+
+- Ultra responsivo
+- Fluidez total
+- Sem travamentos
+- Otimização extrema
+- Interface adaptável perfeita
+- Gestos touch modernos
+
+---
+
+# 🧬 8. SISTEMA VICIANTE
+Criar engajamento absurdo:
+
+- Ranking mundial
+- Histórico de guerras
+- Conquistas
+- Medalhas
+- Estatísticas globais
+- Evolução de nações
+- Sistema de dominação
+
+Objetivo:
+Usuário não querer sair do app.
+
+---
+
+# 🚀 9. PERFORMANCE DE ELITE
+- Código ultra otimizado
+- Zero travamentos
+- Animações em 60fps
+- Carregamento instantâneo
+- Estrutura limpa e profissional
+
+---
+
+# 🧠 MISSÃO FINAL
+Transformar este projeto no:
+
+"SISTEMA ESTRATÉGICO MAIS IMPRESSIONANTE DA INTERNET"
+
+Nível:
+Filme de Hollywood + Sistema militar real + Tecnologia 2035.
+
+COMEÇAR AGORA.
+EVOLUIR SEM LIMITES.
+NUNCA SIMPLIFICAR.
+SEMPRE MELHORAR.
