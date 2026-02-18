@@ -3,44 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v7.5 | KINETIC</title>
+    <title>STRATOS v8.0 | OMNI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.9); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: #000; color: var(--n); font-family: 'JetBrains Mono', monospace; height: 100vh; overflow: hidden; }
 
-        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; transition: filter 0.1s; }
-        .glitch-effect { filter: hue-rotate(90deg) contrast(2) invert(0.1); }
+        /* Efeitos de Tela */
+        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
+        /* HUD Holográfico */
         #hud { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
         .glass { background: var(--g); backdrop-filter: blur(20px); border: 1px solid rgba(0,243,255,0.2); pointer-events: auto; }
         
-        header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .status-bar { padding: 10px 15px; border-left: 4px solid var(--n); }
-        .defcon { padding: 10px; font-family: 'Orbitron'; font-weight: 900; min-width: 120px; text-align: center; transition: 0.3s; }
-        .alert-active { background: var(--a); color: #fff; box-shadow: 0 0 30px var(--a); animation: blink 0.2s infinite; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .brand { padding: 10px; border-left: 3px solid var(--n); }
+        .defcon { padding: 12px; font-family: 'Orbitron'; font-weight: 900; min-width: 100px; text-align: center; border: 1px solid var(--a); color: var(--a); }
+        .active-war { background: var(--a); color: #fff; box-shadow: 0 0 20px var(--a); animation: pulse 0.5s infinite; }
 
-        #terminal { flex-grow: 1; margin: 15px 0; overflow-y: hidden; font-size: 0.7rem; }
-        .log-entry { margin-bottom: 5px; padding: 8px; border-left: 2px solid var(--n); background: rgba(0,243,255,0.05); animation: slideIn 0.2s ease-out; }
-        .log-win { border-left-color: #0f0; color: #8f8; }
-        .log-fail { border-left-color: var(--a); color: #f88; }
+        /* Log Retrátil */
+        #terminal { flex-grow: 1; margin: 10px 0; overflow-y: auto; font-size: 0.65rem; max-height: 30%; mask-image: linear-gradient(to bottom, transparent, black 20%); }
+        .log { margin-bottom: 4px; padding: 5px 10px; border-left: 2px solid var(--n); background: rgba(0,243,255,0.05); }
 
-        .cmd-deck { padding: 25px; border-radius: 20px 20px 0 0; border-top: 4px solid var(--n); }
-        .sel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; width: 100%; border-radius: 5px; }
+        /* Deck de Comando */
+        .deck { padding: 20px; border-radius: 25px 25px 0 0; border-top: 5px solid var(--n); }
+        .selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; font-size: 0.7rem; width: 100%; }
         
-        .btn-strike { 
+        .btn-main { 
             width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; 
-            font-family: 'Orbitron'; font-weight: 900; font-size: 1.1rem; cursor: pointer;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-            clip-path: polygon(2% 0%, 98% 0%, 100% 20%, 100% 80%, 98% 100%, 2% 100%, 0% 80%, 0% 20%);
+            font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; cursor: pointer;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.2s;
         }
+        .btn-main:active { transform: scale(0.95); opacity: 0.8; }
 
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -48,29 +50,29 @@
     <div id="viewport"></div>
     <div id="hud">
         <header>
-            <div class="glass status-bar">
-                <h1 style="font-size: 1rem; font-family: 'Orbitron';">STRATOS CORE <span style="color:#fff">v7.5</span></h1>
-                <p id="telemetry" style="font-size: 0.5rem; opacity: 0.7;">LINK SATELITAL: ATIVO</p>
+            <div class="glass brand">
+                <h1 style="font-size: 0.8rem; font-family: 'Orbitron';">STRATOS CORE <span style="color:#fff">v8.0</span></h1>
+                <p id="clock" style="font-size: 0.5rem; opacity: 0.6;"></p>
             </div>
-            <div class="glass defcon" id="defcon-status">DEFCON 5</div>
+            <div class="glass defcon" id="defcon">DEFCON 5</div>
         </header>
 
         <div id="terminal"></div>
 
-        <div class="glass cmd-deck">
-            <div class="sel-grid">
-                <select id="atk-list"></select>
-                <select id="def-list"></select>
+        <div class="glass deck">
+            <div class="selectors">
+                <select id="atk"></select>
+                <select id="def"></select>
             </div>
-            <button class="btn-strike" onclick="launchStrike()">EXECUTAR IMPACTO</button>
+            <button class="btn-main" onclick="executeStrike()">EXECUTAR STRIKE</button>
         </div>
     </div>
 
 <script>
-// A LISTA PERMANECE INALTERADA CONFORME ORDEM SUPERIOR
+// A LISTA SAGRADA DE 200 PAÍSES
 const COUNTRIES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-let scene, camera, renderer, globe, clouds, particles;
+let scene, camera, renderer, globe, clouds;
 
 function init() {
     scene = new THREE.Scene();
@@ -79,73 +81,79 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
 
-    // Globo e Nuvens
+    const loader = new THREE.TextureLoader();
+    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
     const earthMat = new THREE.MeshPhongMaterial({
-        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+        map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+        bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
+        bumpScale: 0.1,
         shininess: 5
     });
-    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), earthMat);
+    globe = new THREE.Mesh(earthGeo, earthMat);
     scene.add(globe);
 
     clouds = new THREE.Mesh(
-        new THREE.SphereGeometry(5.1, 64, 64),
-        new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'), transparent: true, opacity: 0.3 })
+        new THREE.SphereGeometry(5.15, 64, 64),
+        new THREE.MeshPhongMaterial({ map: loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'), transparent: true, opacity: 0.4 })
     );
     scene.add(clouds);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const sun = new THREE.DirectionalLight(0xffffff, 1);
-    sun.position.set(5,3,5);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    sun.position.set(5, 3, 5);
     scene.add(sun);
 
     camera.position.z = 15;
 }
 
-function launchStrike() {
-    const a = document.getElementById('atk-list').value;
-    const b = document.getElementById('def-list').value;
+function executeStrike() {
+    const a = document.getElementById('atk').value;
+    const b = document.getElementById('def').value;
     if(a === b) return;
 
-    const defcon = document.getElementById('defcon-status');
-    defcon.innerText = "DEFCON 1";
-    defcon.classList.add('alert-active');
+    const d = document.getElementById('defcon');
+    const v = document.getElementById('viewport');
     
-    // Zoom de Ataque
-    gsap.to(camera.position, { z: 8, duration: 0.5, yoyo: true, repeat: 1 });
-    addLog(`🚀 MÍSSEIS LANÇADOS: ${a} alvo -> ${b}`);
-
-    setTimeout(() => {
-        const success = Math.random() > 0.5;
-        if(success) {
-            document.getElementById('viewport').classList.add('glitch-effect');
-            addLog(`💥 IMPACTO CONFIRMADO: ${b} sofreu danos críticos.`, "log-win");
-            setTimeout(() => document.getElementById('viewport').classList.remove('glitch-effect'), 500);
+    d.classList.add('active-war');
+    d.innerText = "DEFCON 1";
+    
+    addLog(`⚠️ LANÇAMENTO DETECTADO: ${a} -> ${b}`);
+    
+    // Simulação de Voo e Impacto
+    gsap.to(camera.position, { z: 10, duration: 1.5, ease: "power2.inOut", onComplete: () => {
+        const win = Math.random() > 0.5;
+        if(win) {
+            v.classList.add('shake');
+            addLog(`💥 IMPACTO CRÍTICO em ${b}. Defesas colapsaram.`, "color:#ff9999");
+            setTimeout(() => v.classList.remove('shake'), 500);
         } else {
-            addLog(`🛡️ INTERCEPTADO: Defesa de ${b} neutralizou o ataque.`, "log-fail");
+            addLog(`🛡️ INTERCEPTADO. Escudo balístico de ${b} ativo.`);
         }
-    }, 1000);
+        gsap.to(camera.position, { z: 15, duration: 2 });
+    }});
 }
 
-function addLog(msg, type) {
+function addLog(m, style="") {
     const t = document.getElementById('terminal');
     const l = document.createElement('div');
-    l.className = `log-entry ${type || ''}`;
-    l.innerHTML = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+    l.className = 'log';
+    l.style = style;
+    l.innerHTML = `> [${new Date().toLocaleTimeString()}] ${m}`;
     t.prepend(l);
 }
 
 init();
 function animate() {
     requestAnimationFrame(animate);
-    globe.rotation.y += 0.001;
-    clouds.rotation.y += 0.0012;
-    document.getElementById('telemetry').innerText = `COORDENADAS: ${Math.random().toFixed(4)}N / ${Math.random().toFixed(4)}W`;
+    globe.rotation.y += 0.0015;
+    clouds.rotation.y += 0.002;
+    document.getElementById('clock').innerText = `SISTEMA OPERACIONAL: ${new Date().toLocaleString()}`;
     renderer.render(scene, camera);
 }
 animate();
 
-const sA = document.getElementById('atk-list');
-const sD = document.getElementById('def-list');
+const sA = document.getElementById('atk');
+const sD = document.getElementById('def');
 COUNTRIES.sort().forEach(c => {
     sA.innerHTML += `<option>${c}</option>`;
     sD.innerHTML += `<option>${c}</option>`;
@@ -153,3 +161,4 @@ COUNTRIES.sort().forEach(c => {
 </script>
 </body>
 </html>
+
