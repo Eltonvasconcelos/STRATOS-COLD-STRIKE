@@ -3,154 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS CORE v9.2</title>
+    <title>STRATOS v10 | DEFCON</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.9); }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.95); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: var(--n); font-family: 'JetBrains Mono', monospace; height: 100vh; overflow: hidden; }
 
-        /* TELA 1: LOGIN (MELHORADA) */
+        /* --- TELA 1: LOGIN (VISUAL DE ALTA SEGURANÇA) --- */
         #screen-login {
             position: fixed; inset: 0; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #001a1a 0%, #000 100%);
-            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+            background: #000; transition: transform 1s cubic-bezier(1, 0, 0, 1);
         }
-        .scanner-line { width: 100%; height: 2px; background: var(--n); position: absolute; top: 0; box-shadow: 0 0 15px var(--n); animation: moveScan 3s infinite; }
-        .login-box { padding: 30px; border: 1px solid var(--n); text-align: center; backdrop-filter: blur(10px); }
-        .btn-access { background: none; border: 1px solid var(--n); color: var(--n); padding: 15px 40px; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; margin-top: 20px; }
-        .btn-access:hover { background: var(--n); color: #000; box-shadow: 0 0 20px var(--n); }
-
-        /* TELA 2: COMANDO (MELHORADA) */
-        #screen-main { position: relative; height: 100vh; display: flex; flex-direction: column; visibility: hidden; }
+        .data-stream { position: absolute; top: 0; width: 100%; height: 100%; opacity: 0.1; font-size: 10px; overflow: hidden; pointer-events: none; line-height: 1; }
+        .auth-card { z-index: 101; padding: 40px; border: 1px solid var(--n); background: var(--g); border-radius: 5px; text-align: center; box-shadow: 0 0 50px rgba(0,243,255,0.2); }
+        .scanner-bar { width: 100%; height: 4px; background: var(--n); margin: 20px 0; box-shadow: 0 0 15px var(--n); animation: scan 2s infinite ease-in-out; }
+        
+        /* --- TELA 2: COMANDO --- */
+        #screen-main { position: relative; height: 100vh; visibility: hidden; opacity: 0; transition: 1s; }
         #viewport { position: absolute; inset: 0; z-index: 1; }
+        .interface { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
         
-        .hud-overlay { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
-        .glass { background: var(--g); backdrop-filter: blur(10px); border: 1px solid rgba(0,243,255,0.2); pointer-events: auto; }
+        .header-v10 { display: flex; justify-content: space-between; align-items: flex-start; }
+        .glass-panel { background: var(--g); border: 1px solid rgba(0,243,255,0.3); backdrop-filter: blur(10px); pointer-events: auto; }
         
-        #log-terminal { flex-grow: 1; margin: 15px 0; overflow-y: auto; padding: 10px; font-size: 0.7rem; border-left: 2px solid var(--n); background: rgba(0,0,0,0.5); }
-        .log-line { margin-bottom: 5px; padding: 5px; animation: blinkIn 0.1s; }
+        #terminal-v10 { flex-grow: 1; margin: 15px 0; padding: 15px; overflow-y: auto; font-size: 0.7rem; border-left: 3px solid var(--n); }
+        .log-item { margin-bottom: 8px; border-bottom: 1px solid rgba(0,243,255,0.1); padding-bottom: 4px; }
+        .alert-red { color: var(--a); font-weight: bold; animation: glitch 0.2s infinite; }
 
-        .control-panel { padding: 20px; border-top: 4px solid var(--n); border-radius: 20px 20px 0 0; }
-        .sel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; font-size: 0.7rem; }
+        .bottom-deck { padding: 20px; border-top: 5px solid var(--n); border-radius: 30px 30px 0 0; }
+        .sel-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-family: 'Orbitron'; font-size: 0.75rem; width: 100%; outline: none; }
         
-        .btn-execute { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; font-size: 1.2rem; clip-path: polygon(0 15%, 5% 0, 95% 0, 100% 15%, 100% 85%, 95% 100%, 5% 100%, 0 85%); }
+        .btn-war { 
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 22px; 
+            font-family: 'Orbitron'; font-weight: 900; font-size: 1.1rem; cursor: pointer;
+            clip-path: polygon(0% 20%, 5% 0%, 95% 0%, 100% 20%, 100% 80%, 95% 100%, 5% 100%, 0% 80%);
+        }
 
-        @keyframes moveScan { 0% { top: 0%; } 100% { top: 100%; } }
-        @keyframes blinkIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scan { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(10px); } }
+        @keyframes glitch { 0% { opacity: 1; transform: skew(0); } 50% { opacity: 0.8; transform: skew(2deg); } 100% { opacity: 1; transform: skew(0); } }
     </style>
 </head>
 <body>
 
     <div id="screen-login">
-        <div class="scanner-line"></div>
-        <div class="login-box">
-            <h1 style="font-family: 'Orbitron'; font-size: 1.2rem; margin-bottom: 10px;">STRATOS v9.2</h1>
-            <p style="font-size: 0.6rem; opacity: 0.6; letter-spacing: 2px;">ENCRYPTED SURVEILLANCE SYSTEM</p>
-            <button class="btn-access" onclick="enterSystem()">AUTENTICAR ACESSO</button>
+        <div class="data-stream" id="stream"></div>
+        <div class="auth-card">
+            <h1 style="font-family: 'Orbitron'; letter-spacing: 5px;">STRATOS</h1>
+            <div class="scanner-bar"></div>
+            <p style="font-size: 0.6rem; margin-bottom: 20px;">BIOMETRIC AUTH REQUIRED</p>
+            <button class="btn-war" style="background:none; border:1px solid var(--n); font-size: 0.8rem;" onclick="accessGranted()">DESBLOQUEAR TERMINAL</button>
         </div>
     </div>
 
     <div id="screen-main">
         <div id="viewport"></div>
-        <div class="hud-overlay">
-            <header style="display:flex; justify-content:space-between">
-                <div class="glass" style="padding:10px">
-                    <p style="font-size:0.5rem">SATELLITE LINK: ACTIVE</p>
-                    <h2 style="font-family:'Orbitron'; font-size:0.8rem">STRATOS CORE</h2>
+        <div class="interface">
+            <header class="header-v10">
+                <div class="glass-panel" style="padding: 10px 20px;">
+                    <h2 style="font-family: 'Orbitron'; font-size: 0.9rem;">SISTEMA <span style="color:#fff">V10</span></h2>
+                    <p id="latlong" style="font-size: 0.5rem; opacity: 0.7;">LAT: -- / LNG: --</p>
                 </div>
-                <div class="glass" id="defcon-box" style="padding:10px; color:var(--a); border:1px solid var(--a); font-family:'Orbitron'">DEFCON 5</div>
+                <div class="glass-panel" id="defcon-v10" style="padding: 10px 20px; font-family: 'Orbitron'; color: var(--a);">DEFCON 5</div>
             </header>
 
-            <div id="log-terminal" class="glass">
-                <div class="log-line">> SISTEMA INICIALIZADO. AGUARDANDO COMANDO...</div>
+            <div id="terminal-v10" class="glass-panel">
+                <div class="log-item">> CONEXÃO SATELLITAL ESTABELECIDA...</div>
             </div>
 
-            <div class="glass control-panel">
-                <div class="sel-row">
-                    <select id="atq-sel"></select>
-                    <select id="def-sel"></select>
+            <div class="glass-panel bottom-deck">
+                <div class="sel-box">
+                    <select id="atq"></select>
+                    <select id="def"></select>
                 </div>
-                <button class="btn-execute" onclick="runSimulation()">EXECUTAR IMPACTO</button>
+                <button class="btn-war" onclick="triggerWar()">INICIAR SEQUÊNCIA</button>
             </div>
         </div>
     </div>
 
 <script>
-// LISTA SAGRADA MANTIDA
-const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
+// LISTA ABSOLUTA - 200 PAÍSES
+const LISTA = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-function enterSystem() {
-    const login = document.getElementById('screen-login');
-    login.style.transform = 'translateY(-100%)';
-    setTimeout(() => {
-        document.getElementById('screen-main').style.visibility = 'visible';
-        init3D();
-    }, 400);
+// Gerador de Stream de Dados no Login
+const stream = document.getElementById('stream');
+for(let i=0; i<200; i++) { stream.innerHTML += Math.random().toString(36).substring(2, 15) + " "; }
+
+function accessGranted() {
+    gsap.to("#screen-login", { y: "-100%", duration: 1.2, ease: "expo.inOut" });
+    document.getElementById('screen-main').style.visibility = "visible";
+    document.getElementById('screen-main').style.opacity = "1";
+    initWorld();
 }
 
 let scene, camera, renderer, globe;
 
-function init3D() {
+function initWorld() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
 
-    const mat = new THREE.MeshPhongMaterial({ color: 0x00f3ff, wireframe: true });
+    const mat = new THREE.MeshPhongMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.3 });
     new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg', (t) => {
-        mat.map = t; mat.wireframe = false; mat.needsUpdate = true;
+        mat.map = t; mat.wireframe = false; mat.opacity = 1; mat.needsUpdate = true;
     });
 
     globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), mat);
     scene.add(globe);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
     camera.position.z = 15;
-    animate();
+    renderLoop();
 }
 
-function animate() {
-    requestAnimationFrame(animate);
+function renderLoop() {
+    requestAnimationFrame(renderLoop);
     if(globe) globe.rotation.y += 0.002;
+    document.getElementById('latlong').innerText = `LAT: ${(Math.random()*90).toFixed(4)} | LNG: ${(Math.random()*180).toFixed(4)}`;
     renderer.render(scene, camera);
 }
 
-function runSimulation() {
-    const a = document.getElementById('atq-sel').value;
-    const d = document.getElementById('def-sel').value;
+function triggerWar() {
+    const a = document.getElementById('atq').value;
+    const d = document.getElementById('def').value;
     if(a === d) return;
 
-    const term = document.getElementById('log-terminal');
+    const term = document.getElementById('terminal-v10');
     const log = document.createElement('div');
-    log.className = 'log-line';
-    
-    document.getElementById('defcon-box').innerText = "DEFCON 1";
-    document.getElementById('defcon-box').style.background = "var(--a)";
-    document.getElementById('defcon-box').style.color = "#fff";
-
-    log.innerHTML = `🚀 [${new Date().toLocaleTimeString()}] LANÇAMENTO: ${a} alvo -> ${d}`;
+    log.className = 'log-item alert-red';
+    log.innerHTML = `⚠️ ALERTA: ${a} iniciou agressão contra ${d}.`;
     term.prepend(log);
 
+    document.getElementById('defcon-v10').innerText = "DEFCON 1";
+    gsap.to(camera.position, { z: 11, duration: 0.5, yoyo: true, repeat: 1 });
+
     setTimeout(() => {
-        const success = Math.random() > 0.5;
+        const win = Math.random() > 0.5;
         const res = document.createElement('div');
-        res.className = 'log-line';
-        res.style.color = success ? "#0f0" : "#f00";
-        res.innerHTML = success ? `💥 IMPACTO CONFIRMADO: ${d} sofreu danos críticos.` : `🛡️ FALHA: Defesas de ${d} repeliram ${a}.`;
+        res.className = 'log-item';
+        res.style.color = win ? "#0f0" : "#f00";
+        res.innerHTML = win ? `[SUCESSO] ${a} estabeleceu domínio sobre ${d}.` : `[FALHA] ${d} aniquilou o invasor.`;
         term.prepend(res);
     }, 1500);
 }
 
-const sA = document.getElementById('atq-sel');
-const sD = document.getElementById('def-sel');
-PAISES.sort().forEach(p => {
-    sA.innerHTML += `<option>${p}</option>`;
-    sD.innerHTML += `<option>${p}</option>`;
+// Popular Listas
+const s1 = document.getElementById('atq');
+const s2 = document.getElementById('def');
+LISTA.sort().forEach(p => {
+    s1.innerHTML += `<option>${p}</option>`;
+    s2.innerHTML += `<option>${p}</option>`;
 });
 </script>
 </body>
