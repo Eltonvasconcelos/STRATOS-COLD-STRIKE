@@ -3,92 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v13.5 | REAL EARTH</title>
+    <title>STRATOS v13.8 | ESTRATÉGIA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.95); --intel: #ffaa00; }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 5, 10, 0.9); --intel: #ffaa00; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        #login { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #main { visibility: hidden; opacity: 0; }
+        /* HEADER */
+        #top-bar { position: fixed; top: 0; width: 100%; z-index: 500; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--n); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+
+        /* TERMINAL ÚNICO E INTELIGENTE */
+        #intel-center { 
+            position: absolute; top: 60px; left: 10px; right: 10px; 
+            height: 35vh; z-index: 400; overflow-y: auto; padding: 10px; 
+            background: rgba(0,0,0,0.6); border-left: 3px solid var(--n);
+            scroll-behavior: smooth; pointer-events: auto;
+        }
+        .intel-msg { color: var(--intel); font-size: 0.65rem; margin-bottom: 6px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,170,0,0.1); }
+        .combat-msg { color: #fff; font-size: 0.7rem; margin-bottom: 6px; font-weight: bold; border-left: 2px solid var(--a); padding-left: 5px; }
+
+        /* GLOBO REAL */
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        #top-bar { position: absolute; top: 0; width: 100%; z-index: 100; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--n); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
-
-        /* CENTRAL DE INTELIGÊNCIA 24H (Mantida) */
-        #intel-center { position: absolute; top: 70px; left: 15px; right: 15px; height: 150px; z-index: 90; overflow-y: auto; padding: 10px; background: rgba(0,243,255,0.03); border-left: 3px solid var(--intel); pointer-events: auto; }
-        .intel-msg { color: var(--intel); font-size: 0.65rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,170,0,0.1); padding-bottom: 4px; }
-
-        #control-deck { position: absolute; bottom: 0; width: 100%; z-index: 100; background: var(--g); border-top: 3px solid var(--n); padding: 20px; border-radius: 20px 20px 0 0; }
-        .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-family: 'Orbitron'; font-size: 0.7rem; width: 100%; }
-        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; cursor: pointer; }
+        /* PAINEL DE COMANDO */
+        #control-deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: var(--g); border-top: 2px solid var(--n); padding: 15px; border-radius: 15px 15px 0 0; }
+        .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 12px; font-size: 0.75rem; width: 100%; border-radius: 5px; }
+        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div id="login">
-        <h2 style="font-family:'Orbitron'; margin-bottom: 20px;">STRATOS CORE v13.5</h2>
-        <button class="btn-strike" style="background:none; border:1px solid var(--n); width:auto; padding: 15px 30px;" onclick="initSystem()">AUTENTICAR ACESSO</button>
+    <div id="top-bar">
+        <h1 style="font-size: 0.7rem; font-family:'Orbitron'">STRATOS <span style="color:var(--intel)">LIVE FEED</span></h1>
+        <div id="defcon" style="color:var(--a); border:1px solid var(--a); padding: 3px 8px; font-size:0.6rem">DEFCON 5</div>
     </div>
 
-    <div id="main">
-        <div id="top-bar">
-            <h1 style="font-size: 0.8rem; font-family:'Orbitron'">INTEL FEED <span style="color:var(--intel)">LIVE 24H</span></h1>
-            <div id="defcon" style="color:var(--a); border:1px solid var(--a); padding: 5px 10px; font-family:'Orbitron'; font-size:0.7rem">DEFCON 5</div>
-        </div>
+    <div id="intel-center">
+        <div class="intel-msg">> INICIALIZANDO NÚCLEO DE INTELIGÊNCIA...</div>
+    </div>
 
-        <div id="intel-center">
-            <div class="intel-msg">> MONITORAMENTO GLOBAL ATIVO...</div>
-        </div>
+    <div id="viewport"></div>
 
-        <div id="viewport"></div>
-
-        <div id="control-deck">
-            <div class="grid-select">
-                <select id="atq-sel"></select>
-                <select id="def-sel"></select>
-            </div>
-            <button class="btn-strike" onclick="launchSimulation()">INICIAR SEQUÊNCIA DE COMBATE</button>
+    <div id="control-deck">
+        <div class="grid-select">
+            <select id="atq-sel"></select>
+            <select id="def-sel"></select>
         </div>
+        <button class="btn-strike" onclick="launchSimulation()">Executar Conflito</button>
     </div>
 
 <script>
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-const REAL_NEWS = [
-    "UCRÂNIA: Atividade intensificada na linha de frente leste.",
-    "ORIENTE MÉDIO: Monitoramento de drones em zonas de conflito.",
-    "MAR DO SUL DA CHINA: Movimentação naval em águas internacionais.",
-    "EUROPA: Reunião de emergência sobre segurança de fronteiras.",
-    "ÁFRICA: Tensões políticas em regiões de mineração estratégica."
+const INTEL_DB = [
+    "RÚSSIA: Novas divisões blindadas avistam fronteira ucraniana.",
+    "IRÃ: Alerta de defesa aérea elevado após movimentos em Israel.",
+    "EUA: Porta-aviões posicionado no Mar da China Meridional.",
+    "COREIA DO NORTE: Atividade suspeita em complexos nucleares.",
+    "OTAN: Simulação de defesa cibernética iniciada na Europa.",
+    "AMÉRICA DO SUL: Monitoramento intensificado em zonas de selva."
 ];
-
-function initSystem() {
-    gsap.to("#login", { y: "-100%", duration: 1 });
-    document.getElementById('main').style.visibility = "visible";
-    document.getElementById('main').style.opacity = "1";
-    initGlobe();
-    startIntel();
-}
-
-function startIntel() {
-    setInterval(() => {
-        const intelDiv = document.getElementById('intel-center');
-        const info = REAL_NEWS[Math.floor(Math.random() * REAL_NEWS.length)];
-        const el = document.createElement('div');
-        el.className = 'intel-msg';
-        el.innerText = `> [INTEL 24H] ${info}`;
-        intelDiv.prepend(el);
-    }, 10000);
-}
 
 let scene, camera, renderer, globe, clouds;
 
-function initGlobe() {
+function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -96,61 +78,71 @@ function initGlobe() {
     document.getElementById('viewport').appendChild(renderer.domElement);
 
     const loader = new THREE.TextureLoader();
-    
-    // GLOBO TERRESTRE REAL (NASA Blue Marble)
-    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
     const earthMat = new THREE.MeshPhongMaterial({
         map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
         bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
-        bumpScale: 0.05,
-        specularMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
-        specular: new THREE.Color('grey')
+        bumpScale: 0.1
     });
     
-    globe = new THREE.Mesh(earthGeo, earthMat);
+    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), earthMat);
     scene.add(globe);
 
-    // NUVENS REAIS
-    const cloudGeo = new THREE.SphereGeometry(5.1, 64, 64);
     const cloudMat = new THREE.MeshPhongMaterial({
         map: loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'),
-        transparent: true,
-        opacity: 0.4
+        transparent: true, opacity: 0.3
     });
-    clouds = new THREE.Mesh(cloudGeo, cloudMat);
+    clouds = new THREE.Mesh(new THREE.SphereGeometry(5.1, 64, 64), cloudMat);
     scene.add(clouds);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1.2);
-    light.position.set(5,3,5);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x444444));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.3);
+    sun.position.set(5, 3, 5);
+    scene.add(sun, new THREE.AmbientLight(0x333333));
 
     camera.position.z = 15;
+    
+    // Iniciar Feed IA
+    setInterval(() => {
+        postMsg(INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)], "intel");
+    }, 9000);
+
     animate();
 }
 
 function animate() {
     requestAnimationFrame(animate);
     if(globe) globe.rotation.y += 0.001;
-    if(clouds) clouds.rotation.y += 0.0015;
+    if(clouds) clouds.rotation.y += 0.0012;
     renderer.render(scene, camera);
+}
+
+function postMsg(text, type) {
+    const term = document.getElementById('intel-center');
+    const div = document.createElement('div');
+    div.className = type === "intel" ? "intel-msg" : "combat-msg";
+    div.innerText = `> [${new Date().toLocaleTimeString()}] ${text}`;
+    term.appendChild(div); // Adiciona no fim
+    term.scrollTop = term.scrollHeight; // Rola automático para baixo
 }
 
 function launchSimulation() {
     const a = document.getElementById('atq-sel').value;
     const d = document.getElementById('def-sel').value;
-    const el = document.createElement('div');
-    el.style.color = "#fff";
-    el.innerText = `> SIMULAÇÃO: Conflito iniciado entre ${a} e ${d}.`;
-    document.getElementById('intel-center').prepend(el);
+    if(a === d) return;
+    
+    postMsg(`LANÇAMENTO: ${a} atacou ${d}. Impacto iminente.`, "combat");
+    document.getElementById('defcon').innerText = "DEFCON 1";
+    document.getElementById('defcon').style.background = "var(--a)";
 }
 
-const sA = document.getElementById('atq-sel');
-const sD = document.getElementById('def-sel');
+// Popular países
+const s1 = document.getElementById('atq-sel');
+const s2 = document.getElementById('def-sel');
 PAISES.sort().forEach(p => {
-    sA.innerHTML += `<option>${p}</option>`;
-    sD.innerHTML += `<option>${p}</option>`;
+    s1.innerHTML += `<option>${p}</option>`;
+    s2.innerHTML += `<option>${p}</option>`;
 });
+
+window.onload = init;
 </script>
 </body>
 </html>
