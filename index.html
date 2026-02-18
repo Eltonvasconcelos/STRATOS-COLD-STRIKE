@@ -1,78 +1,265 @@
-<section id="war-selector" class="hud-panel" style="position: absolute; left: 50%; transform: translateX(-50%); top: 120px; width: 80%; display: flex; justify-content: space-around; z-index: 1000;">
-    
-    <div class="country-slot">
-        <label>INVASOR (AGRESSOR)</label>
-        <select id="attacker-select" class="military-select">
-            <option value="eua">ESTADOS UNIDOS</option>
-            <option value="russia">RÚSSIA</option>
-            <option value="china">CHINA</option>
-            <option value="brasil">BRASIL</option>
-        </select>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATOS | SISTEMA DE SIMULAÇÃO GLOBAL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #00f3ff;
+            --alert: #ff003c;
+            --glass: rgba(0, 15, 25, 0.9);
+            --border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #000;
+            color: var(--neon);
+            font-family: 'JetBrains Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        /* Fundo de Grade Militar */
+        body::before {
+            content: "";
+            position: absolute; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        /* HEADER */
+        header {
+            padding: 20px;
+            border-bottom: var(--border);
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.8);
+            position: relative; z-index: 10;
+        }
+
+        .defcon {
+            border: 2px solid var(--alert);
+            color: var(--alert);
+            padding: 5px 15px;
+            font-family: 'Orbitron';
+            animation: pulse 2s infinite;
+        }
+
+        /* CENTRAL DE COMANDO */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .war-room {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .country-card {
+            background: var(--glass);
+            border: var(--border);
+            padding: 20px;
+            width: 45%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        select {
+            width: 100%;
+            background: #000;
+            color: var(--neon);
+            border: 1px solid var(--neon);
+            padding: 10px;
+            font-family: 'Orbitron';
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .btn-simulate {
+            background: transparent;
+            border: 2px solid var(--neon);
+            color: var(--neon);
+            padding: 15px 40px;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 3px;
+        }
+
+        .btn-simulate:hover {
+            background: var(--neon);
+            color: #000;
+            box-shadow: 0 0 30px var(--neon);
+        }
+
+        /* RESULTADOS E TERMINAL */
+        #result-panel {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(0,0,0,0.9);
+            border: var(--border);
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.8rem;
+            margin-top: 15px;
+        }
+
+        .winner-anim {
+            font-family: 'Orbitron';
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 20px 0;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon);
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <p style="font-size: 0.6rem;">SISTEMA OPERACIONAL</p>
+        <h1 style="font-family: 'Orbitron'; font-size: 1.2rem;">STRATOS CORE V4.0</h1>
+    </div>
+    <div class="defcon">ALERTA DEFCON 1</div>
+</header>
+
+<div class="main-container">
+    <div class="war-room">
+        <div class="country-card" id="card-atk">
+            <h2 style="font-size: 0.7rem; color: var(--alert);">AGRESSOR (INVASÃO)</h2>
+            <select id="select-atk" onchange="updatePreview('atk')"></select>
+            <div id="stats-atk" class="stat-grid"></div>
+        </div>
+
+        <div style="align-self: center; font-family: 'Orbitron'; font-size: 2rem;">VS</div>
+
+        <div class="country-card" id="card-def">
+            <h2 style="font-size: 0.7rem;">ALVO (DEFESA)</h2>
+            <select id="select-def" onchange="updatePreview('def')"></select>
+            <div id="stats-def" class="stat-grid"></div>
+        </div>
     </div>
 
-    <div class="vs-badge">VS</div>
+    <button class="btn-simulate" onclick="runWarSimulation()">EXECUTAR SIMULAÇÃO</button>
 
-    <div class="country-slot">
-        <label>ALVO (DEFENSOR)</label>
-        <select id="defender-select" class="military-select">
-            <option value="china">CHINA</option>
-            <option value="russia">RÚSSIA</option>
-            <option value="ucrania">UCRÂNIA</option>
-            <option value="eua">ESTADOS UNIDOS</option>
-        </select>
+    <div id="result-panel">
+        <div id="loading-text">CALCULANDO TRAJETÓRIAS E PROBABILIDADES...</div>
+        <div id="battle-report"></div>
     </div>
-</section>
-
-<style>
-    .military-select {
-        background: #000; color: var(--neon); border: 1px solid var(--neon);
-        padding: 10px; font-family: 'Orbitron'; width: 250px;
-    }
-    .vs-badge {
-        font-family: 'Orbitron'; font-size: 2rem; color: var(--alert);
-        align-self: center; text-shadow: 0 0 10px var(--alert);
-    }
-    .country-slot { text-align: center; }
-</style>
+</div>
 
 <script>
-// --- BANCO DE DADOS MILITAR (EXEMPLO DE ESTRUTURA) ---
-const MILITARY_DB = {
-    "eua": { nome: "EUA", tropas: 1350000, tanques: 6612, caças: 1957, nuke: 5550, treinamento: 9.8, budget: 801 },
-    "russia": { nome: "Rússia", tropas: 850000, tanques: 12420, caças: 772, nuke: 6255, treinamento: 8.5, budget: 66 },
-    "china": { nome: "China", tropas: 2000000, tanques: 5250, caças: 1200, nuke: 350, treinamento: 8.0, budget: 293 },
-    "brasil": { nome: "Brasil", tropas: 360000, tanques: 439, caças: 42, nuke: 0, treinamento: 7.5, budget: 18 }
-};
+    // BANCO DE DADOS GLOBAL ESTRATÉGICO
+    const MILITARY_DATA = {
+        "EUA": { tropas: 1350000, tanques: 6612, avioes: 1957, navios: 484, nuke: 5550, treino: 9.8, economia: 100 },
+        "Rússia": { tropas: 1100000, tanques: 12566, avioes: 773, navios: 605, nuke: 6255, treino: 8.5, economia: 60 },
+        "China": { tropas: 2000000, tanques: 5250, avioes: 1200, navios: 777, nuke: 410, treino: 8.2, economia: 95 },
+        "Brasil": { tropas: 360000, tanques: 439, avioes: 42, navios: 112, nuke: 0, treino: 7.5, economia: 55 },
+        "Ucrânia": { tropas: 500000, tanques: 2100, avioes: 69, navios: 38, nuke: 0, treino: 9.0, economia: 30 },
+        "Israel": { tropas: 170000, tanques: 2200, avioes: 241, navios: 67, nuke: 90, treino: 9.9, economia: 70 },
+        "Irã": { tropas: 610000, tanques: 4071, avioes: 160, navios: 101, nuke: 0, treino: 7.8, economia: 45 }
+    };
 
-function calcularConfronto() {
-    const atk = MILITARY_DB[document.getElementById('attacker-select').value];
-    const def = MILITARY_DB[document.getElementById('defender-select').value];
-
-    // CÁLCULO DE PODER (LÓGICA DE SIMULAÇÃO)
-    // Fórmula: (Tropas*1 + Tanques*5 + Caças*10) * Treinamento
-    const atkPower = (atk.tropas * 1 + atk.tanques * 5 + atk.caças * 10) * atk.treinamento;
-    const defPower = (def.tropas * 1 + def.tanques * 5 + def.caças * 10) * def.treinamento * 1.5; // +50% Bônus Defensivo
-
-    const probVitoriaAtk = (atkPower / (atkPower + defPower)) * 100;
-
-    exibirResultado(atk, def, probVitoriaAtk.toFixed(2));
-}
-
-function exibirResultado(atk, def, prob) {
-    const term = document.getElementById('stratos-terminal');
-    term.innerHTML = ""; // Limpa para o relatório
+    const selects = [document.getElementById('select-atk'), document.getElementById('select-def')];
     
-    logAI(`--- RELATÓRIO ESTRATÉGICO STRATOS ---`);
-    logAI(`INVASOR: ${atk.nome} vs DEFENSOR: ${def.nome}`);
-    logAI(`Vantagem Tecnológica: ${atk.budget > def.budget ? atk.nome : def.nome}`);
-    logAI(`Arsenal Nuclear: ${atk.nuke > 0 ? 'DETECTADO' : 'NENHUM'}`);
-    
-    let veredito = prob > 50 ? `PROBABILIDADE DE SUCESSO DA INVASÃO: ${prob}%` : `PROBABILIDADE DE FRACASSO: ${(100-prob).toFixed(2)}%`;
-    
-    setTimeout(() => {
-        logAI(`<span style="color:var(--neon); font-size:14px">${veredito}</span>`);
-        // Animação do Globo para os países
-        moverCameraParaConflito();
-    }, 1500);
-}
+    // Popular selects
+    Object.keys(MILITARY_DATA).forEach(country => {
+        selects.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = country;
+            opt.innerHTML = country;
+            s.appendChild(opt);
+        });
+    });
+
+    function updatePreview(type) {
+        const country = document.getElementById(`select-${type}`).value;
+        const data = MILITARY_DATA[country];
+        const container = document.getElementById(`stats-${type}`);
+        container.innerHTML = `
+            <span>SOLDADOS: ${data.tropas.toLocaleString()}</span>
+            <span>TANQUES: ${data.tanques}</span>
+            <span>AVIÕES: ${data.avioes}</span>
+            <span>NAVIO: ${data.navios}</span>
+            <span>NUKE: ${data.nuke}</span>
+            <span>TREINO: ${data.treino}</span>
+        `;
+    }
+
+    function runWarSimulation() {
+        const atkKey = document.getElementById('select-atk').value;
+        const defKey = document.getElementById('select-def').value;
+        
+        if(atkKey === defKey) return alert("SELECIONE PAÍSES DIFERENTES");
+
+        const atk = MILITARY_DATA[atkKey];
+        const def = MILITARY_DATA[defKey];
+        const panel = document.getElementById('result-panel');
+        
+        panel.style.display = 'block';
+        document.getElementById('battle-report').innerHTML = "";
+        
+        // CÁLCULO DE PODER REAL (ALGORITMO STRATOS)
+        // Peso: Nuke(100) + Aviões(10) + Tanques(5) + Tropas(1) + Navios(8) * Treino
+        let pwrAtk = (atk.tropas*0.1 + atk.tanques*5 + atk.avioes*15 + atk.navios*10 + atk.nuke*500) * (atk.treino/10);
+        let pwrDef = (def.tropas*0.1 + def.tanques*5 + def.avioes*15 + def.navios*10 + def.nuke*500) * (def.treino/10) * 1.5; // Bônus defesa
+
+        let total = pwrAtk + pwrDef;
+        let chanceAtk = (pwrAtk / total) * 100;
+
+        // Animação de carregamento
+        gsap.fromTo("#loading-text", {opacity: 0}, {opacity: 1, repeat: 3, duration: 0.5, onComplete: () => {
+            document.getElementById('loading-text').innerHTML = "ANÁLISE CONCLUÍDA";
+            showWinner(atkKey, defKey, chanceAtk);
+        }});
+    }
+
+    function showWinner(atkName, defName, chance) {
+        const report = document.getElementById('battle-report');
+        const vitoriaAtk = chance > 50;
+        const vencedor = vitoriaAtk ? atkName : defName;
+        
+        report.innerHTML = `
+            <div class="winner-anim">VENCEDOR PROVÁVEL: ${vencedor}</div>
+            <p>CHANCE DE SUCESSO DO INVASOR (${atkName}): ${chance.toFixed(1)}%</p>
+            <p>RESISTÊNCIA DO DEFENSOR (${defName}): ${(100-chance).toFixed(1)}%</p>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid var(--neon); opacity: 0.3;">
+            <p style="font-size: 0.7rem;">*Cálculo baseado em atrito militar, logística de defesa e superioridade aérea.</p>
+        `;
+    }
+
+    // Inicializar previews
+    updatePreview('atk');
+    updatePreview('def');
 </script>
+
+</body>
+</html>
+
