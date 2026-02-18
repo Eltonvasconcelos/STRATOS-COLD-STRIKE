@@ -3,101 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v20 | SOVEREIGN</title>
+    <title>STRATOS v20 | ABSOLUTE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --intel: #ffaa00; --win: #00ff88; --glass: rgba(0, 10, 20, 0.75); }
+        :root { --n: #00f3ff; --a: #ff003c; --win: #00ff88; --bg: rgba(0, 10, 20, 0.85); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* TELA DE ACESSO - VISUAL DE ALTA TECNOLOGIA */
-        #access-screen {
-            position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle, #001a1a 0%, #000 100%);
+        /* TELA DE AUTENTICAÇÃO (RECONSTRUÍDA) */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 9999; background: #000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer;
         }
         .retina-scanner {
-            width: 200px; height: 200px; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer;
-        }
-        .scanner-ring {
-            position: absolute; inset: 0; border: 2px dashed var(--n); border-radius: 50%;
-            animation: rotate 10s linear infinite; opacity: 0.5;
-        }
-        .scanner-ring-inner {
-            position: absolute; inset: 20px; border: 2px solid var(--a); border-radius: 50%;
-            clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%); animation: rotate-rev 4s linear infinite;
+            width: 220px; height: 220px; border: 2px dashed var(--n);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            position: relative; animation: rotate 10s linear infinite;
         }
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes rotate-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-        
-        .scan-line {
+        .scanner-line {
             position: absolute; width: 100%; height: 2px; background: var(--n);
-            box-shadow: 0 0 15px var(--n); animation: scan-v 2s ease-in-out infinite;
+            box-shadow: 0 0 15px var(--n); animation: scan 2s ease-in-out infinite;
         }
-        @keyframes scan-v { 0%, 100% { top: 20%; } 50% { top: 80%; } }
+        @keyframes scan { 0%, 100% { top: 0%; } 50% { top: 100%; } }
 
-        /* FUNDO COM O GLOBO */
+        /* FUNDO COM O PLANETA */
         #viewport { position: fixed; inset: 0; z-index: 1; }
 
-        /* INTERFACE FLUTUANTE */
-        #ui-wrapper {
-            position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column;
-            pointer-events: none; opacity: 0; transition: 1.5s ease;
+        /* INTERFACE HUD (FLUTUANTE) */
+        #hud {
+            position: relative; z-index: 10; height: 100vh; width: 100%;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 15px; pointer-events: none; opacity: 0;
         }
-        #ui-wrapper.active { opacity: 1; pointer-events: all; }
+        #hud.active { opacity: 1; pointer-events: all; }
 
-        /* FEED DE NOTÍCIAS (GLASSMORPHISM) */
-        #top-intel {
-            height: 180px; padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-            overflow-y: hidden; border-bottom: 1px solid rgba(0,243,255,0.1);
+        .glass-panel {
+            background: var(--bg); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 15px;
         }
-        .news-item { font-size: 0.65rem; color: var(--intel); margin-bottom: 5px; text-transform: uppercase; }
 
-        /* ÁREA DE RESULTADO (CENTRO) */
-        #combat-result {
-            flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .vitory-card {
-            background: var(--glass); border: 1px solid var(--n); border-left: 5px solid var(--win);
-            padding: 20px; border-radius: 4px; backdrop-filter: blur(10px); width: 100%; max-width: 350px;
-            transform: translateY(20px); opacity: 0; transition: 0.5s;
-        }
-        .vitory-card.show { transform: translateY(0); opacity: 1; }
+        /* FEED DE NOTÍCIAS (TOP) */
+        #intel-feed { height: 30vh; overflow-y: auto; margin-bottom: 10px; }
+        .log-text { font-size: 0.65rem; color: #ffaa00; margin-bottom: 5px; border-left: 2px solid #ffaa00; padding-left: 5px; }
 
-        /* CONTROLES (BASE) */
-        #bottom-deck {
-            background: linear-gradient(to top, #000 70%, transparent);
-            padding: 25px 20px; display: flex; flex-direction: column; gap: 10px;
-        }
-        select {
-            background: #000; color: var(--n); border: 1px solid var(--n);
-            padding: 12px; font-size: 0.8rem; border-radius: 2px;
+        /* LOG DE BATALHA (CENTER) */
+        #battle-log { flex: 1; overflow-y: auto; margin: 10px 0; border: 1px solid rgba(0, 243, 255, 0.1); }
+        .win-msg { color: var(--win); font-family: 'Orbitron'; font-weight: 900; font-size: 0.9rem; margin-top: 5px; }
+
+        /* CONTROLES (BOTTOM) */
+        #controls { pointer-events: all; }
+        select { 
+            width: 100%; background: #000; color: var(--n); border: 1px solid var(--n); 
+            padding: 12px; margin-bottom: 8px; font-size: 0.75rem; border-radius: 4px;
         }
         .btn-war {
-            background: var(--a); color: #fff; border: none; padding: 20px;
-            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 3px;
-            cursor: pointer; box-shadow: 0 0 20px rgba(255,0,60,0.3);
-            clip-path: polygon(0 15%, 95% 0, 100% 85%, 5% 100%);
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 20px;
+            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255,0,60,0.3);
         }
     </style>
 </head>
 <body>
 
-    <div id="access-screen" onclick="startSystem()">
+    <div id="auth-screen" onclick="startSystem()">
         <div class="retina-scanner">
-            <div class="scanner-ring"></div>
-            <div class="scanner-ring-inner"></div>
-            <div class="scan-line"></div>
-            <div style="color:var(--n); font-size: 0.5rem; font-weight: bold;">RETINA ID</div>
+            <div class="scanner-line"></div>
+            <div style="width: 50%; height: 50%; border: 1px solid var(--n); border-radius: 50%;"></div>
         </div>
-        <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 8px; font-size: 0.8rem;">STRATOS OS</h1>
-        <p style="font-size: 0.5rem; opacity: 0.4; margin-top: 10px;">TOQUE PARA AUTENTICAR</p>
+        <h2 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 4px;">STRATOS OS</h2>
+        <p style="font-size: 0.6rem; opacity: 0.5; margin-top: 10px;">TOQUE PARA AUTENTICAR</p>
     </div>
 
     <div id="viewport"></div>
 
-    <div id="ui-wrapper">
-        <div id="top-intel">
-            <div style="display: flex
+    <div id="hud">
+        <div id="intel-feed" class="glass-panel">
+            <p style="font-size: 0.5rem; margin-bottom: 10px; color: var(--n);">[ MONITORAMENTO GLOBAL EM TEMPO REAL ]</p>
+            <div id="news-stream"></div>
+        </div>
+
+        <div id="battle-log" class="glass-panel">
+            <p style="font-size: 0.5rem; opacity: 0.5;">[ TERMINAL DE CONFLITOS ]</p>
+            <div id="results-container"></div>
+        </div>
+
+        <div id="controls">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <select id="atq-select"></select>
+                <select id="def-select"></select>
+            </div>
+            <button class="btn-war" onclick="triggerWar()">INICIAR OPERAÇÃO</button>
+        </div>
+    </div>
+
+<script>
+// PAISES (100% PRESERVADOS)
+const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
+
+let audioCtx;
+
+function setupAudio() {
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(40, audioCtx.currentTime); // Drone de tensão
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+}
+
+function startSystem() {
+    setupAudio();
+    gsap.to("#auth-screen", { opacity: 0, duration: 1, onComplete: () => {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('hud').classList.add('active');
+        init3D();
+    }});
+}
+
+let scene, camera, renderer, globe;
+
+function init3D() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('viewport').appendChild(renderer.domElement);
+
+    const loader = new THREE.TextureLoader();
+    const geometry = new THREE.SphereGeometry(5, 64, 64);
+    const material = new THREE.MeshPhongMaterial({
+        map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+        bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+        bumpScale: 0.15,
+        shininess: 10
+    });
+    globe = new THREE.Mesh(geometry, material);
+    scene.add(globe);
+    scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 0.8));
+    camera.position.z = 12;
+
+    // News Feed Sim
+    setInterval(() => {
+        const stream = document.getElementById('news-stream');
+        const news = ["EUA: Movimentação naval detectada no Pacífico.","RÚSSIA: Novas baterias Patriot ativadas em Kiev.","CHINA: Manobras de larga escala no Estreito de Taiwan.","OTAN: Alerta de cibersegurança nível 4."];
+        const div = document.createElement('div');
+        div.className = "log-text";
+        div.innerText = `> [INTEL] ${news[Math.floor(Math.random()*news.length)]}`;
+        stream.prepend(div);
+    }, 4500);
+
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    globe.rotation.y += 0.001;
+    renderer.render(scene, camera);
+}
+
+function triggerWar() {
+    const a = document.getElementById('atq-select').value;
+    const d = document.getElementById('def-select').value;
+    if(a === d) return;
+
+    const winProb = Math.floor(Math.random() * 101);
+    const vencedor = winProb > 50 ? a : d;
+    const perdedor = vencedor === a ? d : a;
+
+    const res = document.getElementById('results-container');
+    const div = document.createElement('div');
+    div.style.marginBottom = "15px";
+    div.innerHTML = `
+        <p style="font-size:0.6rem; opacity:0.6;">GUERRA: ${a} vs ${d}</p>
+        <div class="win-msg">VENCEDOR: ${vencedor}</div>
+        <p style="font-size:0.6rem; color:var(--a);">ESTADO: Forças de ${perdedor} neutralizadas.</p>
+    `;
+    res.prepend(div);
+}
+
+PAISES.sort().forEach(p => {
+    document.getElementById('atq-select').innerHTML += `<option>${p}</option>`;
+    document.getElementById('def-select').innerHTML += `<option>${p}</option>`;
+});
+</script>
+</body>
+</html>
