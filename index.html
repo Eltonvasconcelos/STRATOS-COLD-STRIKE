@@ -3,149 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STRATOS | GLOBAL WAR SIMULATOR</title>
+    <title>STRATOS | GLOBAL INTEL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@100;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.9); }
-        body, html { margin: 0; padding: 0; background: #000; color: var(--n); font-family: 'JetBrains Mono'; overflow: hidden; height: 100vh; }
-        
-        /* Camada 3D */
-        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        :root { --neon: #00f3ff; --warn: #ff003c; --panel: rgba(0, 8, 15, 0.95); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; color: var(--neon); font-family: 'JetBrains Mono'; overflow: hidden; }
 
-        /* TELA 1: ENTRADA */
-        #intro-overlay {
+        /* Renderizador de Satélite */
+        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* Overlay de Comando */
+        #hud-overlay {
+            position: fixed; z-index: 10; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 30px; pointer-events: none;
+        }
+
+        .glass-panel {
+            background: var(--panel); border: 1px solid var(--neon);
+            backdrop-filter: blur(15px); padding: 20px; pointer-events: auto;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);
+        }
+
+        /* Seletor Estilizado */
+        select {
+            background: #000; color: var(--neon); border: 1px solid var(--neon);
+            padding: 12px; font-family: 'Orbitron'; width: 100%; margin-top: 10px;
+        }
+
+        .power-tag {
+            background: var(--warn); color: #fff; padding: 4px 8px;
+            font-size: 0.6rem; font-weight: bold; margin-top: 10px; display: inline-block;
+        }
+
+        .btn-war {
+            width: 100%; padding: 15px; margin-top: 20px; background: transparent;
+            border: 2px solid var(--warn); color: var(--warn); font-family: 'Orbitron';
+            cursor: pointer; transition: 0.3s; font-weight: 900;
+        }
+        .btn-war:hover { background: var(--warn); color: #fff; box-shadow: 0 0 20px var(--warn); }
+
+        #intro-screen {
             position: fixed; z-index: 100; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            padding-bottom: 10vh; background: radial-gradient(circle, transparent 20%, #000 100%);
+            background: #000; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; transition: 1.5s;
         }
-        .btn-enter {
-            background: transparent; border: 2px solid var(--n); color: var(--n);
-            padding: 20px 60px; font-family: 'Orbitron'; font-size: 1.2rem; cursor: pointer;
-            letter-spacing: 5px; transition: 0.5s; box-shadow: 0 0 20px rgba(0,243,255,0.2);
-        }
-        .btn-enter:hover { background: var(--n); color: #000; box-shadow: 0 0 50px var(--n); }
-
-        /* TELA 2: COMANDO (ESCONDIDA INICIALMENTE) */
-        #command-center {
-            position: fixed; z-index: 50; width: 100%; height: 100%;
-            display: none; opacity: 0; flex-direction: column; padding: 20px;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-        }
-        .hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: auto; width: 100%; }
-        .panel { background: var(--g); border: 1px solid var(--n); padding: 20px; position: relative; }
-        select { width: 100%; background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; margin-top: 10px; }
-        
-        .stat-row { display: flex; justify-content: space-between; font-size: 0.7rem; margin: 8px 0; border-bottom: 1px solid rgba(0,243,255,0.1); }
-        .win-chance { font-family: 'Orbitron'; font-size: 2.5rem; text-align: center; margin-top: 20px; text-shadow: 0 0 20px var(--n); }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container"></div>
-
-    <div id="intro-overlay">
-        <h1 style="font-family: 'Orbitron'; letter-spacing: 15px; margin-bottom: 20px; font-size: 3rem;">STRATOS</h1>
-        <button class="btn-enter" onclick="engageSystem()">INICIAR SISTEMA</button>
+    <div id="intro-screen">
+        <h1 style="font-family: 'Orbitron'; letter-spacing: 20px; font-size: 3rem; text-shadow: 0 0 20px var(--neon);">STRATOS</h1>
+        <p style="margin: 20px 0; opacity: 0.5;">INICIALIZANDO MAPEAMENTO DE SATÉLITE...</p>
+        <button class="btn-war" style="width: 300px; border-color: var(--neon); color: var(--neon);" onclick="bootSystem()">ACESSAR TERMINAL</button>
     </div>
 
-    <div id="command-center">
-        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--n); padding-bottom: 10px; margin-bottom: 20px;">
-            <span style="font-family: 'Orbitron';">SISTEMA DE GUERRA GLOBAL v5.0</span>
-            <span style="color: var(--a); font-weight: bold;">DEFCON 1 ATIVO</span>
-        </div>
+    <div id="viewport"></div>
 
-        <div class="hud-grid">
-            <div class="panel">
-                <h2 style="font-size: 0.8rem; color: var(--a);">AGRESSOR (ATACANTE)</h2>
-                <select id="atk-select" onchange="updateUI('atk')"></select>
-                <div id="atk-stats" style="margin-top:20px;"></div>
+    <div id="hud-overlay">
+        <header style="display: flex; justify-content: space-between;">
+            <div class="glass-panel" style="width: 350px;">
+                <p style="font-size: 0.6rem; opacity: 0.7;">REDE DE INTELIGÊNCIA GLOBAL</p>
+                <h2 style="font-family: 'Orbitron';">SISTEMA ATIVO</h2>
             </div>
-            <div class="panel">
-                <h2 style="font-size: 0.8rem;">ALVO (DEFENSOR)</h2>
-                <select id="def-select" onchange="updateUI('def')"></select>
-                <div id="def-stats" style="margin-top:20px;"></div>
+            <div class="glass-panel" style="color: var(--warn); border-color: var(--warn);">
+                <span id="defcon-status">DEFCON 5</span>
             </div>
-        </div>
+        </header>
 
-        <div class="panel" style="margin-top: 20px; text-align: center;">
-            <button class="btn-enter" style="font-size: 0.9rem;" onclick="runSimulation()">PROCESSAR CONFRONTO</button>
-            <div id="result-display"></div>
-        </div>
+        <main style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="glass-panel" style="width: 400px;">
+                <h3 style="font-size: 0.8rem; margin-bottom: 15px;">CONFIGURAR TEATRO DE GUERRA</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="font-size: 0.7rem;">INVASOR:</label>
+                    <select id="atk-sel" onchange="updateIntel('atk')"></select>
+                    <div id="atk-power" class="power-tag">CARREGANDO...</div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.7rem;">DEFENSOR:</label>
+                    <select id="def-sel" onchange="updateIntel('def')"></select>
+                    <div id="def-power" class="power-tag">CARREGANDO...</div>
+                </div>
+
+                <button class="btn-war" onclick="triggerWar()">INICIAR CONFRONTO SIMULADO</button>
+            </div>
+
+            <div class="glass-panel" style="width: 450px; height: 250px; font-size: 0.7rem;">
+                <h3 style="color: var(--neon); border-bottom: 1px solid; margin-bottom: 10px;">RELATÓRIO DE INTELIGÊNCIA</h3>
+                <div id="intel-logs" style="height: 180px; overflow: hidden;"></div>
+            </div>
+        </main>
     </div>
 
 <script>
-// --- BANCO DE DADOS MILITAR (200+ PAÍSES SIMULADOS) ---
-// Aqui integramos a lógica de cálculo real que você exigiu.
-const COUNTRIES = {
-    "EUA": { m: 1400000, t: 6600, a: 13000, n: 5500, p: 9.8 },
-    "Rússia": { m: 1100000, t: 12000, a: 4000, n: 6000, p: 8.5 },
-    "China": { m: 2000000, t: 5000, a: 3000, n: 400, p: 8.0 },
-    "Brasil": { m: 360000, t: 450, a: 600, n: 0, p: 7.5 },
-    "Israel": { m: 170000, t: 2200, a: 600, n: 90, p: 9.9 }
-    // O sistema aceita a expansão para 200 itens mantendo a performance.
+// --- BANCO DE DADOS ESTRATÉGICO (EXEMPLO DE EXPANSÃO PARA 200+) ---
+const WORLD_INTEL = {
+    "Estados Unidos": { mil: 98, nuke: 5500, tech: 100, army: 1350000, tanks: 6600, air: 13000, strength: "SUPREMACIA TECNOLÓGICA E AÉREA" },
+    "Rússia": { mil: 92, nuke: 6200, tech: 85, army: 1100000, tanks: 12500, air: 4000, strength: "ARSENAL NUCLEAR E FORÇA BLINDADA" },
+    "China": { mil: 95, nuke: 450, tech: 95, army: 2000000, tanks: 5200, air: 3200, strength: "CAPACIDADE INDUSTRIAL E INFANTARIA" },
+    "Brasil": { mil: 65, nuke: 0, tech: 70, army: 360000, tanks: 450, air: 650, strength: "RESERVAS NATURAIS E PROFUNDIDADE ESTRATÉGICA" },
+    "Israel": { mil: 88, nuke: 90, tech: 99, army: 170000, tanks: 2200, air: 600, strength: "INTELIGÊNCIA E DEFESA ANTIMÍSSIL (IRON DOME)" },
+    "Índia": { mil: 90, nuke: 160, tech: 80, army: 1450000, tanks: 4600, air: 2100, strength: "MASSA DEMOGRÁFICA E DISSUASÃO REGIONAL" }
 };
 
-// --- MOTOR 3D (THREE.JS) ---
-let scene, camera, renderer, globe;
-function init3D() {
+// --- MOTOR 3D SATÉLITE ---
+let scene, camera, renderer, earth;
+function initSatellite() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('canvas-container').appendChild(renderer.domElement);
+    document.getElementById('viewport').appendChild(renderer.domElement);
 
     const geo = new THREE.SphereGeometry(5, 64, 64);
-    const mat = new THREE.MeshPhongMaterial({
-        color: 0x001a2d, emissive: 0x00f3ff, emissiveIntensity: 0.2, wireframe: true
+    // TEXTURA DE SATÉLITE (NASA)
+    const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg');
+    const mat = new THREE.MeshPhongMaterial({ 
+        map: texture,
+        bumpMap: texture,
+        bumpScale: 0.05,
+        specular: new THREE.Color('grey')
     });
-    globe = new THREE.Mesh(geo, mat);
-    scene.add(globe);
+    earth = new THREE.Mesh(geo, mat);
+    scene.add(earth);
 
-    const light = new THREE.PointLight(0xffffff, 1);
-    light.position.set(10, 10, 10);
-    scene.add(light);
-    camera.position.z = 12;
+    const light = new THREE.AmbientLight(0x404040, 2); scene.add(light);
+    const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5,3,5); scene.add(sun);
+    camera.position.z = 15;
 }
 
-// --- TRANSIÇÃO CINEMATOGRÁFICA ---
-function engageSystem() {
-    gsap.to(camera.position, { z: 7, duration: 2, ease: "power3.inOut" });
-    gsap.to("#intro-overlay", { opacity: 0, display: "none", duration: 1 });
-    setTimeout(() => {
-        document.getElementById('command-center').style.display = 'flex';
-        gsap.to("#command-center", { opacity: 1, duration: 1 });
-    }, 1000);
+function bootSystem() {
+    gsap.to("#intro-screen", { opacity: 0, pointerEvents: 'none', duration: 1.5 });
+    gsap.to(camera.position, { z: 11, duration: 2, ease: "power2.inOut" });
 }
 
-// --- LÓGICA DE GUERRA ---
-function runSimulation() {
-    const a = COUNTRIES[document.getElementById('atk-select').value];
-    const d = COUNTRIES[document.getElementById('def-select').value];
-    
-    // Fórmula de Atrito Stratos: Soldados + (Tanques*5) + (Caças*15) + (Nukes*500) * Treino
-    let pAtk = (a.m + a.t*5 + a.a*15 + a.n*500) * a.p;
-    let pDef = (d.m + d.t*5 + d.a*15 + d.n*500) * d.p * 1.5; // Bônus defensivo de 50%.
-
-    let chance = (pAtk / (pAtk + pDef)) * 100;
-    
-    document.getElementById('result-display').innerHTML = `
-        <div class="win-chance">${chance.toFixed(1)}%</div>
-        <p>PROBABILIDADE DE SUCESSO DO INVASOR</p>
-    `;
+function updateIntel(type) {
+    const country = document.getElementById(`${type}-sel`).value;
+    const data = WORLD_INTEL[country];
+    document.getElementById(`${type}-power`).innerText = `PONTO FORTE: ${data.strength}`;
+    addLog(`DADOS ATUALIZADOS: ${country} selecionado para o setor de ${type === 'atk' ? 'ataque' : 'defesa'}.`);
 }
 
-// Inicialização
-init3D();
-function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.002; renderer.render(scene, camera); }
+function addLog(msg) {
+    const container = document.getElementById('intel-logs');
+    const p = document.createElement('p');
+    p.innerHTML = `<span style="color:var(--warn)">[SYSTEM]</span> ${msg}`;
+    container.prepend(p);
+}
+
+function triggerWar() {
+    document.getElementById('defcon-status').innerText = "DEFCON 1";
+    gsap.to(camera.position, { z: 8, duration: 1, yoyo: true, repeat: 1 });
+    addLog("ALERTA: Iniciando simulação de impacto global...");
+}
+
+initSatellite();
+function animate() { requestAnimationFrame(animate); earth.rotation.y += 0.001; renderer.render(scene, camera); }
 animate();
 
-// Popular lista de países
-const selects = [document.getElementById('atk-select'), document.getElementById('def-select')];
-Object.keys(COUNTRIES).forEach(c => {
-    selects.forEach(s => s.innerHTML += `<option value="${c}">${c}</option>`);
+// Popular Listas
+const atks = document.getElementById('atk-sel');
+const defs = document.getElementById('def-sel');
+Object.keys(WORLD_INTEL).forEach(name => {
+    atks.innerHTML += `<option>${name}</option>`;
+    defs.innerHTML += `<option>${name}</option>`;
 });
+updateIntel('atk'); updateIntel('def');
 </script>
 </body>
 </html>
