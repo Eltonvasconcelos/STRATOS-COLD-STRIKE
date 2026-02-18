@@ -1,215 +1,132 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | SUPERPOTÊNCIA DIGITAL</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@100;400&display=swap" rel="stylesheet">
+<script>
 
-    <style>
-        :root {
-            --neon: #00f3ff;
-            --alert: #ff003c;
-            --bg: #000205;
-            --glass: rgba(0, 15, 25, 0.7);
-            --border: 1px solid rgba(0, 243, 255, 0.3);
-        }
+// ===============================
+// LISTA COMPLETA DE PAÍSES DO MUNDO
+// ===============================
+const listaPaises = [
+"Afghanistan","Albania","Algeria","Argentina","Armenia","Australia","Austria",
+"Azerbaijan","Bahamas","Bahrain","Bangladesh","Belarus","Belgium","Belize",
+"Bolivia","Brazil","Bulgaria","Cambodia","Cameroon","Canada","Chile","China",
+"Colombia","Costa Rica","Croatia","Cuba","Czech Republic","Denmark","Dominican Republic",
+"Ecuador","Egypt","El Salvador","Estonia","Ethiopia","Finland","France","Georgia",
+"Germany","Ghana","Greece","Guatemala","Haiti","Honduras","Hungary","Iceland","India",
+"Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan",
+"Kazakhstan","Kenya","Kuwait","Latvia","Lebanon","Libya","Lithuania","Luxembourg",
+"Malaysia","Mexico","Moldova","Mongolia","Morocco","Nepal","Netherlands","New Zealand",
+"Nicaragua","Nigeria","North Korea","Norway","Oman","Pakistan","Panama","Paraguay",
+"Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Saudi Arabia",
+"Serbia","Singapore","Slovakia","South Africa","South Korea","Spain","Sri Lanka",
+"Sudan","Sweden","Switzerland","Syria","Taiwan","Thailand","Tunisia","Turkey",
+"Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay",
+"Uzbekistan","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
+];
 
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--bg); color: var(--neon);
-            font-family: 'JetBrains Mono', monospace; overflow: hidden;
-        }
+// ===============================
+// BANCO MILITAR GLOBAL (AUTO)
+// gera dados simulados realistas
+// ===============================
+const paises = {};
 
-        /* HUD CINEMATOGRÁFICO */
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 100; pointer-events: none;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 30px;
-        }
+listaPaises.forEach(nome => {
 
-        .hud-panel {
-            background: var(--glass); backdrop-filter: blur(15px);
-            border: var(--border); padding: 20px; pointer-events: auto;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
-            position: relative; overflow: hidden;
-        }
+paises[nome.toLowerCase()] = {
+nome: nome,
+soldados: Math.floor(Math.random()*900000)+20000,
+tanques: Math.floor(Math.random()*4000),
+avioes: Math.floor(Math.random()*900),
+navios: Math.floor(Math.random()*400),
+porta_avioes: Math.floor(Math.random()*3),
+nuclear: Math.random() > 0.92 ? Math.floor(Math.random()*400)+20 : 0,
+orcamento: Math.floor(Math.random()*300),
+treinamento: Math.floor(Math.random()*100),
+tecnologia: Math.floor(Math.random()*100),
+logistica: Math.floor(Math.random()*100)
+};
 
-        .hud-panel::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            animation: scan 3s linear infinite;
-        }
+});
 
-        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+// ===============================
+// CALCULO DE PODER MILITAR
+// ===============================
+function calcularPoder(p){
 
-        /* HEADER E DEFCON */
-        .header-main { display: flex; justify-content: space-between; align-items: center; }
-        .defcon-level {
-            font-family: 'Orbitron', sans-serif; font-size: 2rem; color: var(--alert);
-            text-shadow: 0 0 15px var(--alert); border: 2px solid var(--alert);
-            padding: 10px 20px; animation: pulse 1.5s infinite;
-        }
+let poder =
+(p.soldados * 0.05) +
+(p.tanques * 2) +
+(p.avioes * 3) +
+(p.navios * 2.5) +
+(p.porta_avioes * 120) +
+(p.nuclear * 8) +
+(p.orcamento * 1.5) +
+(p.treinamento * 2) +
+(p.tecnologia * 2.5) +
+(p.logistica * 2);
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+return poder;
+}
 
-        /* ANALISADOR DE CONFLITOS */
-        #conflict-intel { width: 350px; clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%); }
-        .stat-bar { height: 4px; background: #111; margin: 10px 0; position: relative; }
-        .stat-fill { height: 100%; background: var(--neon); width: 0%; transition: 1s cubic-bezier(0.22, 1, 0.36, 1); }
+// ===============================
+// SIMULAÇÃO DE GUERRA
+// ===============================
+function simular(){
 
-        /* TERMINAL STRATOS CORE */
-        #stratos-terminal {
-            width: 100%; height: 120px; margin-top: 20px;
-            font-size: 11px; color: #fff; overflow: hidden;
-        }
+let atk = document.getElementById("atk").value.toLowerCase();
+let def = document.getElementById("def").value.toLowerCase();
+let out = document.getElementById("resultado");
 
-        /* GLOBO E EFEITOS */
-        #world-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
-        .glitch-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px);
-            pointer-events: none; z-index: 50;
-        }
-    </style>
-</head>
-<body>
+let A = paises[atk];
+let D = paises[def];
 
-    <canvas id="world-canvas"></canvas>
-    <div class="glitch-overlay"></div>
+if(!A || !D){
+out.innerHTML = "Erro selecionar países";
+return;
+}
 
-    <div id="ui-layer">
-        <header class="header-main">
-            <div class="hud-panel" style="width: 400px;">
-                <h1 style="font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 5px;">STRATOS v2.0</h1>
-                <p style="font-size: 0.6rem; opacity: 0.7;">SISTEMA DE INTELIGÊNCIA GEOPOLÍTICA GLOBAL</p>
-                <div id="clock">00:00:00:00</div>
-            </div>
-            <div class="defcon-level">DEFCON 2</div>
-        </header>
+let poderA = calcularPoder(A);
+let poderD = calcularPoder(D);
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div class="hud-panel" id="conflict-intel">
-                <h3 style="font-size: 0.8rem; margin-bottom: 15px;">INTEL DE CONFLITO: <span id="target-country">---</span></h3>
-                <div class="stat-label">PODER MILITAR <span id="mil-val" style="float:right">0%</span></div>
-                <div class="stat-bar"><div class="stat-fill" id="bar-mil"></div></div>
-                <div class="stat-label">RISCO NUCLEAR <span id="nuke-val" style="float:right">0%</span></div>
-                <div class="stat-bar"><div class="stat-fill" id="bar-nuke" style="background: var(--alert)"></div></div>
-                <button onclick="simulateWar()" style="width:100%; background:transparent; border:1px solid var(--neon); color:var(--neon); padding:10px; margin-top:10px; cursor:pointer; font-family:'Orbitron'">INICIAR SIMULAÇÃO</button>
-            </div>
+// vantagem territorial defensor
+poderD *= 1.15;
 
-            <div class="hud-panel" style="width: 450px; height: 200px;">
-                <h3 style="font-size: 0.7rem; color: var(--neon);">STRATOS CORE AI > LOGS_ATIVOS</h3>
-                <div id="stratos-terminal"></div>
-            </div>
-        </div>
-    </div>
+let total = poderA + poderD;
+let chanceA = ((poderA/total)*100).toFixed(1);
+let chanceD = ((poderD/total)*100).toFixed(1);
 
-    <script>
-        // --- CONFIGURAÇÃO DO GLOBO 3D ULTRA-REALISTA ---
-        let scene, camera, renderer, earth, clouds;
-        
-        function initWorld() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
+let vencedor = poderA > poderD ? A.nome : D.nome;
 
-            // Planeta (Shaders de luz de cidade)
-            const earthGeo = new THREE.SphereGeometry(5, 64, 64);
-            const earthMat = new THREE.MeshPhongMaterial({
-                color: 0x050505,
-                emissive: 0x112233,
-                specular: 0x555555,
-                shininess: 30,
-                wireframe: true // Estilo HUD militar
-            });
-            earth = new THREE.Mesh(earthGeo, earthMat);
-            scene.add(earth);
+out.innerHTML = `
+<h2>SIMULAÇÃO GLOBAL DE CONFLITO</h2>
+Atacante: ${A.nome}<br>
+Defensor: ${D.nome}<br><br>
 
-            // Atmosfera Glow
-            const atmosGeo = new THREE.SphereGeometry(5.2, 64, 64);
-            const atmosMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.03 });
-            const atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
-            scene.add(atmosphere);
+Poder militar atacante: ${Math.floor(poderA)}<br>
+Poder militar defensor: ${Math.floor(poderD)}<br><br>
 
-            const light = new THREE.PointLight(0x00f3ff, 1.5, 100);
-            light.position.set(10, 10, 10);
-            scene.add(light);
-            camera.position.z = 15;
-        }
+Chance vitória ${A.nome}: ${chanceA}%<br>
+Chance vitória ${D.nome}: ${chanceD}%<br><br>
 
-        // --- INTELIGÊNCIA STRATOS CORE ---
-        const logs = [
-            "Analizando satélites do Setor 7...",
-            "Movimentação de tropas detectada no Leste Europeu.",
-            "Protocolo de aliança automática: OTAN em prontidão.",
-            "Aviso: Flutuação econômica no mercado asiático.",
-            "Silos nucleares ativos detectados via infravermelho.",
-            "Calculando impacto global de colapso energético..."
-        ];
+🏆 Vencedor provável: <b>${vencedor}</b>
+`;
+}
 
-        function updateTerminal() {
-            const term = document.getElementById('stratos-terminal');
-            const msg = logs[Math.floor(Math.random() * logs.length)];
-            const line = document.createElement('p');
-            line.style.marginBottom = "5px";
-            line.innerHTML = `> <span style="color:var(--neon)">[LOG]</span> ${msg}`;
-            term.prepend(line);
-            if(term.childNodes.length > 8) term.removeChild(term.lastChild);
-        }
+// ===============================
+// POPULAR SELECT AUTOMATICO
+// ===============================
+window.onload = () => {
 
-        function simulateWar() {
-            document.getElementById('target-country').innerText = "CALCULANDO...";
-            gsap.to("#bar-mil", { width: "92%", duration: 2 });
-            gsap.to("#bar-nuke", { width: "45%", duration: 3 });
-            
-            // Animação de Câmera Zoom Cinematográfico
-            gsap.to(camera.position, { z: 9, duration: 1.5, ease: "expo.inOut" });
-            
-            setTimeout(() => {
-                document.getElementById('target-country').innerText = "TOTAL WAR SIM";
-                document.getElementById('mil-val').innerText = "92%";
-                document.getElementById('nuke-val').innerText = "45%";
-                logAI("SIMULAÇÃO FINALIZADA: Colapso total em 14 dias.");
-            }, 2000);
-        }
+let atk = document.getElementById("atk");
+let def = document.getElementById("def");
 
-        function logAI(text) {
-            const term = document.getElementById('stratos-terminal');
-            const line = document.createElement('p');
-            line.style.color = "var(--alert)";
-            line.innerHTML = `> <span style="font-weight:bold">[STRATOS_ALERT]</span> ${text}`;
-            term.prepend(line);
-        }
+listaPaises.forEach(p => {
+atk.innerHTML += `<option value="${p.toLowerCase()}">${p}</option>`;
+def.innerHTML += `<option value="${p.toLowerCase()}">${p}</option>`;
+});
 
-        function animate() {
-            requestAnimationFrame(animate);
-            earth.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        }
+}
+<select id="atk"></select>
+<select id="def"></select>
 
-        // Relógio de Precisão
-        setInterval(() => {
-            const d = new Date();
-            document.getElementById('clock').innerText = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + ":" + d.getMilliseconds();
-        }, 100);
+<button onclick="simular()">SIMULAR GUERRA</button>
 
-        setInterval(updateTerminal, 3000);
-
-        initWorld();
-        animate();
-
-        // Responsividade
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-</html>
+<div id="resultado"></div>
+</script>
