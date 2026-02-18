@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v17.2 | COMMAND & CONQUER</title>
+    <title>STRATOS v18 | TOTAL CONTROL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -12,99 +12,143 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* HEADER E STATUS */
-        #header { position: absolute; top: 0; width: 100%; z-index: 500; padding: 10px 15px; display: flex; justify-content: space-between; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--n); }
-        .status-light { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: var(--win); box-shadow: 0 0 10px var(--win); }
+        /* TELA INICIAL (LOGIN BIOMÉTRICO) */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 5000; background: radial-gradient(circle, #001a1a 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        .bio-scanner {
+            width: 180px; height: 180px; border: 3px solid var(--n); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            box-shadow: 0 0 50px rgba(0,243,255,0.2); margin-bottom: 30px;
+        }
+        .scan-line {
+            position: absolute; width: 110%; height: 4px; background: var(--n);
+            box-shadow: 0 0 20px var(--n); animation: scan-anim 2.5s ease-in-out infinite;
+        }
+        @keyframes scan-anim { 0%, 100% { top: 10%; } 50% { top: 90%; } }
 
-        /* INTEL FEED (TOP) */
-        #intel-feed { position: absolute; top: 55px; left: 10px; right: 10px; height: 95px; z-index: 400; overflow-y: auto; background: rgba(0,10,20,0.6); border-left: 3px solid var(--intel); padding: 8px; backdrop-filter: blur(5px); }
-        .msg { color: var(--intel); font-size: 0.6rem; margin-bottom: 4px; border-bottom: 1px solid rgba(255,170,0,0.1); }
+        /* INTERFACE PRINCIPAL */
+        #main-ui { opacity: 0; visibility: hidden; transition: 2s; }
 
-        /* SETOR DE OPERAÇÕES (CENTRO - Onde você sublinhou) */
-        #ops-sector { position: absolute; top: 165px; left: 10px; right: 10px; height: 230px; z-index: 400; background: rgba(0,10,20,0.7); border: 1px solid var(--n); border-radius: 4px; padding: 12px; overflow-y: auto; backdrop-filter: blur(10px); }
-        .vitory-card { margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px; border-left: 4px solid var(--win); }
-        .winner-text { color: var(--win); font-weight: 900; font-family: 'Orbitron'; font-size: 0.8rem; text-transform: uppercase; }
+        /* INTEL FEED EXPANDIDO (TOP) */
+        #intel-feed {
+            position: absolute; top: 15px; left: 10px; right: 10px; height: 160px; /* Aumentado */
+            z-index: 400; overflow-y: auto; background: rgba(0,0,0,0.8); 
+            border: 1px solid rgba(0,243,255,0.3); border-top: 4px solid var(--intel);
+            padding: 10px; backdrop-filter: blur(10px);
+        }
+        .msg-real { color: var(--intel); font-size: 0.65rem; margin-bottom: 6px; border-bottom: 1px solid rgba(255,170,0,0.1); padding-bottom: 2px; }
+
+        /* ÁREA DE OPERAÇÕES (Onde você sublinhou) */
+        #ops-center {
+            position: absolute; top: 190px; left: 10px; right: 10px; height: 180px;
+            z-index: 400; background: rgba(0,15,25,0.7); border: 1px solid var(--n);
+            border-radius: 5px; padding: 12px; overflow-y: auto; backdrop-filter: blur(8px);
+        }
+        .win-tag { color: var(--win); font-weight: 900; font-size: 0.9rem; font-family: 'Orbitron'; margin: 5px 0; }
 
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        /* DECK DE COMANDO (BOTTOM) */
-        #deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: #000; padding: 20px; border-top: 2px solid var(--n); border-radius: 20px 20px 0 0; }
-        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 14px; width: 100%; font-size: 0.75rem; margin-bottom: 12px; border-radius: 5px; }
-        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 22px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 20px rgba(255,0,60,0.4); }
-        
-        /* ALERTA VISUAL */
-        .flash { animation: screen-flash 0.2s ease-out; }
-        @keyframes screen-flash { from { background: rgba(255,0,60,0.5); } to { background: transparent; } }
+        /* DECK DE COMANDO */
+        #deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: #000; padding: 20px; border-top: 2px solid var(--n); }
+        .btn-main { 
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; 
+            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+        }
+        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div id="header">
-        <h1 style="font-family:'Orbitron'; font-size: 0.75rem;">STRATOS <span style="color:var(--win)">LIVE</span></h1>
-        <div style="font-size: 0.5rem;"><span class="status-light"></span> SAT_LINK: ACTIVE</div>
-    </div>
-
-    <div id="intel-feed"></div>
-
-    <div id="ops-sector">
-        <p style="font-size: 0.5rem; opacity: 0.4; margin-bottom: 10px;">[ CENTRAL DE RELATÓRIOS DE GUERRA ]</p>
-        <div id="battle-log"></div>
-    </div>
-
-    <div id="viewport"></div>
-
-    <div id="deck">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <select id="sel-atq"></select>
-            <select id="sel-def"></select>
+    <div id="login-screen">
+        <div class="bio-scanner">
+            <div class="scan-line"></div>
+            <span style="font-size: 3rem; filter: drop-shadow(0 0 10px var(--n));">👁️</span>
         </div>
-        <button class="btn-strike" onclick="initSimulation()">Iniciar Operação</button>
+        <h2 style="font-family:'Orbitron'; color: var(--n); letter-spacing: 4px;">AUTENTICAÇÃO REQUERIDA</h2>
+        <p style="font-size: 0.6rem; opacity: 0.5; margin: 15px 0 30px;">STRATOS SECURITY PROTOCOL v18.0</p>
+        <button class="btn-main" style="background:none; border: 1px solid var(--n); width:auto; padding: 15px 50px;" onclick="accessSystem()">INICIAR SCANNER</button>
+    </div>
+
+    <div id="main-ui">
+        <div id="intel-feed">
+            <p style="font-size: 0.5rem; color: var(--intel); margin-bottom: 5px;">[ TRANSMISSÃO GLOBAL LIVE 24H ]</p>
+            <div id="news-container"></div>
+        </div>
+
+        <div id="ops-center">
+            <p style="font-size: 0.5rem; opacity: 0.4;">[ RELATÓRIOS DE SIMULAÇÃO TÁTICA ]</p>
+            <div id="battle-history"></div>
+        </div>
+
+        <div id="viewport"></div>
+
+        <div id="deck">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <select id="atq"></select>
+                <select id="def"></select>
+            </div>
+            <button class="btn-main" onclick="runWar()">EXECUTAR CONFLITO</button>
+        </div>
     </div>
 
 <script>
-// MANTENDO A LISTA DE PAÍSES INTEGRALMENTE
+// LISTA DE PAÍSES (100% MANTIDA)
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-const INTEL_ALERTS = [
-    "UCRÂNIA: Sistemas de defesa S-400 ativados em massa.",
-    "MAR DO SUL DA CHINA: Frota naval rompe perímetro de segurança.",
-    "EUROPA: Ciberataque detectado em infraestrutura de gás.",
-    "ORIENTE MÉDIO: Satélites confirmam prontidão nuclear nível 3."
+const INTEL_DB = [
+    "RÚSSIA: Novas divisões blindadas detectadas na fronteira.",
+    "MAR DO SUL DA CHINA: Porta-aviões EUA entra em modo de silêncio.",
+    "ORIENTE MÉDIO: Alerta nuclear elevado após teste não identificado.",
+    "EUROPA: Ataque hacker massivo derruba sistemas bancários.",
+    "ÁFRICA: Movimentação de mercenários em zonas de mineração."
 ];
 
-const DETALHES_MORTE = ["Infraestrutura Totalmente Arrasada", "Defesa Aérea Neutralizada", "Capitulação Incondicional", "Governo Exilado", "Cidades sob Domínio"];
-
-let audioCtx, drone;
+let audioCtx, drone, music;
 
 function setupAudio() {
     if(audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // DRONE GRAVE (Tensão)
     drone = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const gDrone = audioCtx.createGain();
     drone.type = 'sine';
-    drone.frequency.setValueAtTime(40, audioCtx.currentTime); // Som grave de tensão
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    drone.connect(gain);
-    gain.connect(audioCtx.destination);
+    drone.frequency.setValueAtTime(45, audioCtx.currentTime);
+    gDrone.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    drone.connect(gDrone).connect(audioCtx.destination);
     drone.start();
+
+    // RUÍDO DE SUSPENSE (Música)
+    music = audioCtx.createOscillator();
+    const gMusic = audioCtx.createGain();
+    music.type = 'triangle';
+    music.frequency.setValueAtTime(60, audioCtx.currentTime);
+    gMusic.gain.setValueAtTime(0.02, audioCtx.currentTime);
+    music.connect(gMusic).connect(audioCtx.destination);
+    music.start();
+
+    // Oscilação da música para dar tensão
+    setInterval(() => {
+        music.frequency.exponentialRampToValueAtTime(Math.random() * 40 + 50, audioCtx.currentTime + 2);
+    }, 2000);
 }
 
-function playImpact() {
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-    osc.connect(g);
-    g.connect(audioCtx.destination);
-    g.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.8);
+function accessSystem() {
+    setupAudio();
+    gsap.to("#login-screen", { scale: 1.5, opacity: 0, duration: 1.2, ease: "power4.in", onComplete: () => {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-ui').style.visibility = 'visible';
+        document.getElementById('main-ui').style.opacity = '1';
+        initThree();
+    }});
 }
 
 let scene, camera, renderer, globe;
 
-function initWorld() {
+function initThree() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -124,13 +168,14 @@ function initWorld() {
     scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 1.2));
     camera.position.z = 15;
 
+    // News Feed Loop
     setInterval(() => {
-        const f = document.getElementById('intel-feed');
+        const container = document.getElementById('news-container');
         const d = document.createElement('div');
-        d.className = "msg";
-        d.innerText = `> [ALERTA REAL] ${INTEL_ALERTS[Math.floor(Math.random()*INTEL_ALERTS.length)]}`;
-        f.prepend(d);
-    }, 9000);
+        d.className = "msg-real";
+        d.innerText = `> [LOG ${new Date().toLocaleTimeString()}] ${INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)]}`;
+        container.prepend(d);
+    }, 6000);
 
     animate();
 }
@@ -141,41 +186,31 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-function initSimulation() {
-    setupAudio();
-    playImpact();
-    document.body.classList.add('flash');
-    setTimeout(() => document.body.classList.remove('flash'), 200);
-
-    const a = document.getElementById('sel-atq').value;
-    const d = document.getElementById('sel-def').value;
+function runWar() {
+    const a = document.getElementById('atq').value;
+    const d = document.getElementById('def').value;
     if(a === d) return;
 
-    const winProb = Math.floor(Math.random() * 101);
-    const vencedor = winProb > 50 ? a : d;
+    const prob = Math.floor(Math.random() * 101);
+    const vencedor = prob > 50 ? a : d;
     const perdedor = vencedor === a ? d : a;
-    const desc = DETALHES_MORTE[Math.floor(Math.random()*DETALHES_MORTE.length)];
 
-    const log = document.getElementById('battle-log');
+    const hist = document.getElementById('battle-history');
     const card = document.createElement('div');
-    card.className = "vitory-card";
+    card.style.marginBottom = "12px";
     card.innerHTML = `
-        <div style="font-size:0.6rem; color:var(--n); opacity:0.8;">SIMULAÇÃO TERMINADA: ${a} vs ${d}</div>
-        <div class="winner-text">VENCEDOR: ${vencedor}</div>
-        <div style="font-size:0.65rem; color:#fff; margin-top:5px;">
-            Status: ${desc} em ${perdedor}. <br>
-            Probabilidade de Vitória: ${winProb}%
-        </div>
+        <div style="font-size:0.6rem; color:#fff; opacity:0.7;">⚔️ OPERAÇÃO: ${a} vs ${d}</div>
+        <div class="win-tag">VENCEDOR: ${vencedor}</div>
+        <div style="font-size:0.55rem; color:var(--win);">PROBABILIDADE DE VITÓRIA: ${prob}%</div>
+        <div style="font-size:0.55rem; color:var(--a);">STATUS: Forças de ${perdedor} em colapso.</div>
     `;
-    log.prepend(card);
+    hist.prepend(card);
 }
 
 PAISES.sort().forEach(p => {
-    document.getElementById('sel-atq').innerHTML += `<option>${p}</option>`;
-    document.getElementById('sel-def').innerHTML += `<option>${p}</option>`;
+    document.getElementById('atq').innerHTML += `<option>${p}</option>`;
+    document.getElementById('def').innerHTML += `<option>${p}</option>`;
 });
-
-window.onload = initWorld;
 </script>
 </body>
 </html>
