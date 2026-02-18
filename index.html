@@ -3,162 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v8.0 | OMNI</title>
+    <title>STRATOS | ACCESS REQUIRED</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.9); }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: var(--n); font-family: 'JetBrains Mono', monospace; height: 100vh; overflow: hidden; }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 10, 20, 0.95); }
+        * { margin: 0; padding: 0; box-sizing: border-box; overflow: hidden; }
+        body { background: #000; color: var(--n); font-family: 'JetBrains Mono', monospace; height: 100vh; }
 
-        /* Efeitos de Tela */
-        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
-
-        /* HUD Holográfico */
-        #hud { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
-        .glass { background: var(--g); backdrop-filter: blur(20px); border: 1px solid rgba(0,243,255,0.2); pointer-events: auto; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .brand { padding: 10px; border-left: 3px solid var(--n); }
-        .defcon { padding: 12px; font-family: 'Orbitron'; font-weight: 900; min-width: 100px; text-align: center; border: 1px solid var(--a); color: var(--a); }
-        .active-war { background: var(--a); color: #fff; box-shadow: 0 0 20px var(--a); animation: pulse 0.5s infinite; }
-
-        /* Log Retrátil */
-        #terminal { flex-grow: 1; margin: 10px 0; overflow-y: auto; font-size: 0.65rem; max-height: 30%; mask-image: linear-gradient(to bottom, transparent, black 20%); }
-        .log { margin-bottom: 4px; padding: 5px 10px; border-left: 2px solid var(--n); background: rgba(0,243,255,0.05); }
-
-        /* Deck de Comando */
-        .deck { padding: 20px; border-radius: 25px 25px 0 0; border-top: 5px solid var(--n); }
-        .selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; font-size: 0.7rem; width: 100%; }
-        
-        .btn-main { 
-            width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; 
-            font-family: 'Orbitron'; font-weight: 900; font-size: 1rem; cursor: pointer;
-            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); transition: 0.2s;
+        /* TELA INICIAL (SPLASH) */
+        #splash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #001a1a 0%, #000 100%);
+            z-index: 100; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: 1s ease-in-out;
         }
-        .btn-main:active { transform: scale(0.95); opacity: 0.8; }
+        .lock-icon {
+            width: 80px; height: 80px; border: 2px solid var(--n);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; margin-bottom: 20px;
+            box-shadow: 0 0 20px var(--n); animation: pulse 2s infinite;
+        }
+        #biometric-btn {
+            background: none; border: 1px solid var(--n); color: var(--n);
+            padding: 15px 30px; font-family: 'Orbitron'; cursor: pointer;
+            letter-spacing: 2px; position: relative; overflow: hidden;
+        }
+        #biometric-btn::after {
+            content: ''; position: absolute; top: -100%; left: 0;
+            width: 100%; height: 100%; background: var(--n);
+            opacity: 0.2; animation: scan 2s infinite;
+        }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* SISTEMA PRINCIPAL (OCULTO INICIALMENTE) */
+        #main-system { opacity: 0; visibility: hidden; transition: 1.5s; }
+
+        /* CANVAS E HUD (Mantendo v9.0) */
+        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #hud { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
+        .glass { background: var(--g); backdrop-filter: blur(15px); border: 1px solid var(--n); pointer-events: auto; }
+        
+        header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .deck { padding: 20px; border-radius: 20px 20px 0 0; border-top: 4px solid var(--n); }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; width: 100%; }
+        .btn-strike { width: 100%; background: var(--a); color: #fff; padding: 20px; font-family: 'Orbitron'; font-weight: 900; border: none; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
+
+        @keyframes scan { 0% { top: -100%; } 100% { top: 100%; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div id="viewport"></div>
-    <div id="hud">
-        <header>
-            <div class="glass brand">
-                <h1 style="font-size: 0.8rem; font-family: 'Orbitron';">STRATOS CORE <span style="color:#fff">v8.0</span></h1>
-                <p id="clock" style="font-size: 0.5rem; opacity: 0.6;"></p>
-            </div>
-            <div class="glass defcon" id="defcon">DEFCON 5</div>
-        </header>
+    <div id="splash">
+        <div class="lock-icon">🔒</div>
+        <h2 style="font-family: 'Orbitron'; margin-bottom: 30px; font-size: 0.8rem;">STRATOS SECURITY INTERFACE</h2>
+        <button id="biometric-btn" onclick="authenticate()">INICIAR SCANNER BIOMÉTRICO</button>
+        <p id="status-text" style="margin-top: 20px; font-size: 0.6rem; opacity: 0.5;">AGUARDANDO CREDENCIAIS...</p>
+    </div>
 
-        <div id="terminal"></div>
+    <div id="main-system">
+        <div id="viewport"></div>
+        <div id="hud">
+            <header>
+                <div class="glass" style="padding:10px; border-left:4px solid var(--n)">
+                    <h1 style="font-size: 0.8rem; font-family: 'Orbitron';">STRATOS CORE <span style="color:#fff">v9.0</span></h1>
+                    <p style="font-size: 0.5rem; opacity: 0.7;">ACESSO AUTORIZADO: NÍVEL 5</p>
+                </div>
+                <div class="glass" id="defcon" style="padding:10px; color:var(--a); border:1px solid var(--a); font-family:'Orbitron'">DEFCON 5</div>
+            </header>
 
-        <div class="glass deck">
-            <div class="selectors">
-                <select id="atk"></select>
-                <select id="def"></select>
+            <div id="terminal" style="flex-grow:1"></div>
+
+            <div class="glass deck">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                    <select id="s1"></select>
+                    <select id="s2"></select>
+                </div>
+                <button class="btn-strike" onclick="launch()">INICIAR CONFLITO</button>
             </div>
-            <button class="btn-main" onclick="executeStrike()">EXECUTAR STRIKE</button>
         </div>
     </div>
 
 <script>
-// A LISTA SAGRADA DE 200 PAÍSES
-const COUNTRIES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
+// LISTA INTEGRAL
+const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-let scene, camera, renderer, globe, clouds;
+function authenticate() {
+    const btn = document.getElementById('biometric-btn');
+    const status = document.getElementById('status-text');
+    btn.innerText = "SCANNEANDO...";
+    
+    setTimeout(() => {
+        status.innerText = "RETINA CONFIRMADA. BEM-VINDO, COMANDANTE.";
+        status.style.color = "#0f0";
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            document.getElementById('main-system').style.opacity = '1';
+            document.getElementById('main-system').style.visibility = 'visible';
+            init3D();
+            setTimeout(() => document.getElementById('splash').remove(), 1000);
+        }, 1000);
+    }, 2000);
+}
 
-function init() {
+let scene, camera, renderer, globe;
+
+function init3D() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
 
-    const loader = new THREE.TextureLoader();
-    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
-    const earthMat = new THREE.MeshPhongMaterial({
-        map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
-        bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
-        bumpScale: 0.1,
-        shininess: 5
+    const geo = new THREE.SphereGeometry(5, 64, 64);
+    const mat = new THREE.MeshPhongMaterial({
+        color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.2
     });
-    globe = new THREE.Mesh(earthGeo, earthMat);
+    
+    new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg', (tex) => {
+        mat.map = tex; mat.wireframe = false; mat.opacity = 1; mat.needsUpdate = true;
+    });
+
+    globe = new THREE.Mesh(geo, mat);
     scene.add(globe);
-
-    clouds = new THREE.Mesh(
-        new THREE.SphereGeometry(5.15, 64, 64),
-        new THREE.MeshPhongMaterial({ map: loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'), transparent: true, opacity: 0.4 })
-    );
-    scene.add(clouds);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(5, 3, 5);
-    scene.add(sun);
-
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
     camera.position.z = 15;
+    animate();
 }
 
-function executeStrike() {
-    const a = document.getElementById('atk').value;
-    const b = document.getElementById('def').value;
-    if(a === b) return;
-
-    const d = document.getElementById('defcon');
-    const v = document.getElementById('viewport');
-    
-    d.classList.add('active-war');
-    d.innerText = "DEFCON 1";
-    
-    addLog(`⚠️ LANÇAMENTO DETECTADO: ${a} -> ${b}`);
-    
-    // Simulação de Voo e Impacto
-    gsap.to(camera.position, { z: 10, duration: 1.5, ease: "power2.inOut", onComplete: () => {
-        const win = Math.random() > 0.5;
-        if(win) {
-            v.classList.add('shake');
-            addLog(`💥 IMPACTO CRÍTICO em ${b}. Defesas colapsaram.`, "color:#ff9999");
-            setTimeout(() => v.classList.remove('shake'), 500);
-        } else {
-            addLog(`🛡️ INTERCEPTADO. Escudo balístico de ${b} ativo.`);
-        }
-        gsap.to(camera.position, { z: 15, duration: 2 });
-    }});
-}
-
-function addLog(m, style="") {
-    const t = document.getElementById('terminal');
-    const l = document.createElement('div');
-    l.className = 'log';
-    l.style = style;
-    l.innerHTML = `> [${new Date().toLocaleTimeString()}] ${m}`;
-    t.prepend(l);
-}
-
-init();
 function animate() {
     requestAnimationFrame(animate);
-    globe.rotation.y += 0.0015;
-    clouds.rotation.y += 0.002;
-    document.getElementById('clock').innerText = `SISTEMA OPERACIONAL: ${new Date().toLocaleString()}`;
+    if(globe) globe.rotation.y += 0.002;
     renderer.render(scene, camera);
 }
-animate();
 
-const sA = document.getElementById('atk');
-const sD = document.getElementById('def');
-COUNTRIES.sort().forEach(c => {
-    sA.innerHTML += `<option>${c}</option>`;
-    sD.innerHTML += `<option>${c}</option>`;
+function launch() {
+    const d = document.getElementById('defcon');
+    d.style.background = "var(--a)";
+    d.style.color = "#fff";
+    d.innerText = "DEFCON 1";
+    gsap.to(camera.position, { z: 10, duration: 1, yoyo: true, repeat: 1 });
+}
+
+const s1 = document.getElementById('s1');
+const s2 = document.getElementById('s2');
+PAISES.sort().forEach(p => {
+    s1.innerHTML += `<option>${p}</option>`;
+    s2.innerHTML += `<option>${p}</option>`;
 });
 </script>
 </body>
 </html>
-
