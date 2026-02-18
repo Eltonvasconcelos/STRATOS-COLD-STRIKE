@@ -3,93 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v14 | TACTICAL OPS</title>
+    <title>STRATOS v15 | GLOBAL INTEL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 5, 10, 0.9); --intel: #ffaa00; --win: #00ff88; }
+        :root { --n: #00f3ff; --a: #ff003c; --intel: #ffaa00; --win: #00ff88; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* HEADER */
-        #top-bar { position: fixed; top: 0; width: 100%; z-index: 500; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--n); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+        /* TELA DE ACESSO BIOMÉTRICO (RESTAURADA E MELHORADA) */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 2000; background: radial-gradient(circle, #001a1a 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 1s ease-in-out;
+        }
+        .scanner-ring {
+            width: 150px; height: 150px; border: 2px solid var(--n); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            box-shadow: 0 0 30px rgba(0,243,255,0.2); margin-bottom: 20px;
+        }
+        .scanner-line {
+            position: absolute; width: 100%; height: 2px; background: var(--n);
+            box-shadow: 0 0 15px var(--n); animation: scan 2s ease-in-out infinite;
+        }
+        @keyframes scan { 0%, 100% { top: 10%; } 50% { top: 90%; } }
+
+        /* INTERFACE DE COMANDO */
+        #main-ui { visibility: hidden; opacity: 0; transition: 1.5s; }
+        
+        /* HEADER E DEFCON */
+        #header {
+            position: absolute; top: 0; width: 100%; z-index: 500; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .defcon-box { border: 2px solid var(--a); color: var(--a); padding: 5px 12px; font-family: 'Orbitron'; font-weight: 900; background: rgba(255,0,60,0.1); }
 
         /* FEED IA 24H (SUPERIOR) */
-        #intel-real { 
-            position: absolute; top: 55px; left: 10px; right: 10px; 
-            height: 120px; z-index: 400; overflow-y: auto; padding: 8px; 
-            background: rgba(0,0,0,0.5); border-left: 2px solid var(--intel);
+        #intel-real {
+            position: absolute; top: 70px; left: 15px; right: 15px; height: 100px;
+            z-index: 400; overflow-y: auto; padding: 8px; border-left: 2px solid var(--intel);
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
         }
-        .intel-msg { color: var(--intel); font-size: 0.6rem; margin-bottom: 5px; opacity: 0.8; }
+        .intel-msg { color: var(--intel); font-size: 0.6rem; margin-bottom: 4px; border-bottom: 1px solid rgba(255,170,0,0.1); }
 
-        /* SETOR DE OPERAÇÕES (ÁREA SUBLINHADA PELO USUÁRIO) */
+        /* SETOR DE OPERAÇÕES TÁTICAS (Onde você sublinhou) */
         #ops-sector {
-            position: absolute; top: 185px; left: 10px; right: 10px;
-            height: 180px; z-index: 400; overflow-y: auto; padding: 10px;
-            background: rgba(0,20,30,0.7); border: 1px solid rgba(0,243,255,0.3);
-            border-right: 3px solid var(--win); border-radius: 4px;
+            position: absolute; top: 180px; left: 15px; right: 15px; height: 200px;
+            z-index: 400; overflow-y: auto; padding: 12px; border: 1px solid rgba(0,243,255,0.2);
+            background: rgba(0,15,25,0.5); backdrop-filter: blur(8px); border-radius: 8px;
         }
-        .combat-log { color: #fff; font-size: 0.7rem; margin-bottom: 10px; animation: slide 0.3s ease; }
-        .win-chance { color: var(--win); font-weight: bold; font-size: 0.75rem; display: block; margin-top: 3px; }
+        .combat-card { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
 
-        /* GLOBO */
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        /* CONTROLES */
-        #control-deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: var(--g); border-top: 2px solid var(--n); padding: 15px; border-radius: 15px 15px 0 0; }
-        .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 12px; font-size: 0.75rem; width: 100%; border-radius: 5px; }
-        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; }
-
-        @keyframes slide { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        /* CONTROLES INFERIORES */
+        #control-deck {
+            position: absolute; bottom: 0; width: 100%; z-index: 500;
+            background: linear-gradient(to top, rgba(0,0,0,1) 80%, transparent); padding: 20px;
+        }
+        .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; border-radius: 8px; font-size: 0.75rem; }
+        .btn-main { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%); }
     </style>
 </head>
 <body>
 
-    <div id="top-bar">
-        <h1 style="font-size: 0.7rem; font-family:'Orbitron'">STRATOS <span style="color:var(--intel)">REAL-TIME</span></h1>
-        <div id="defcon" style="color:var(--a); border:1px solid var(--a); padding: 3px 8px; font-size:0.6rem">DEFCON 5</div>
-    </div>
-
-    <div id="intel-real"></div>
-
-    <div id="ops-sector">
-        <div style="font-size: 0.5rem; color: var(--win); margin-bottom: 5px; opacity: 0.6;">[ AGUARDANDO COMANDO TÁTICO ]</div>
-    </div>
-
-    <div id="viewport"></div>
-
-    <div id="control-deck">
-        <div class="grid-select">
-            <select id="atq-sel"></select>
-            <select id="def-sel"></select>
+    <div id="login-screen">
+        <div class="scanner-ring">
+            <div class="scanner-line"></div>
+            <span style="font-size: 2rem;">👤</span>
         </div>
-        <button class="btn-strike" onclick="launchSimulation()">Executar Conflito</button>
+        <h2 style="font-family:'Orbitron'; color: var(--n); letter-spacing: 5px; margin-bottom: 5px;">STRATOS SECURITY</h2>
+        <p style="font-size: 0.6rem; color: var(--n); opacity: 0.6; margin-bottom: 30px;">AGUARDANDO BIOMETRIA DO COMANDANTE...</p>
+        <button class="btn-main" style="background: none; border: 1px solid var(--n); width: auto; padding: 15px 40px;" onclick="authenticate()">INICIAR SCANNER</button>
+    </div>
+
+    <div id="main-ui">
+        <div id="header">
+            <div>
+                <p style="font-size: 0.5rem; opacity: 0.7;">INTEL FEED LIVE 24H</p>
+                <h1 style="font-family:'Orbitron'; font-size: 0.9rem;">SISTEMA <span style="color:#fff">V15.0</span></h1>
+            </div>
+            <div id="defcon-status" class="defcon-box">DEFCON 5</div>
+        </div>
+
+        <div id="intel-real"></div>
+
+        <div id="ops-sector">
+            <p style="font-size: 0.5rem; color: var(--n); opacity: 0.5; margin-bottom: 10px;">[ CENTRAL DE OPERAÇÕES TÁTICAS ]</p>
+            <div id="battle-history"></div>
+        </div>
+
+        <div id="viewport"></div>
+
+        <div id="control-deck">
+            <div class="grid-select">
+                <select id="sel-atq"></select>
+                <select id="sel-def"></select>
+            </div>
+            <button class="btn-main" onclick="executeStrike()">EXECUTAR CONFLITO</button>
+        </div>
     </div>
 
 <script>
+// LISTA DE PAÍSES (MANTIDA INTEGRALMENTE)
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
 const INTEL_DB = [
-    "UCRÂNIA: Intensificação de disparos em Zaporiya.",
-    "ORIENTE MÉDIO: Irã realiza testes de mísseis balísticos.",
-    "TAIWAN: Incursão aérea chinesa detectada via satélite.",
-    "EUROPA: OTAN emite alerta de ciberataque nível 4.",
-    "ÁFRICA: Movimentação de mercenários no Sahel."
+    "UCRÂNIA: Baterias Patriot interceptam drones em Kiev.",
+    "ORIENTE MÉDIO: Bloqueio naval detectado no Mar Vermelho.",
+    "ÁSIA: Satélites confirmam movimentação de silos na Coreia.",
+    "EUA/CHINA: Escalada comercial gera tensões militares no Pacífico.",
+    "EUROPA: Polônia reforça fronteira leste com novas divisões."
 ];
 
-const MOTIVOS = [
-    "Superioridade Aérea Estratégica",
-    "Domínio de Suprimento Logístico",
-    "Vantagem Tecnológica em Defesa",
-    "Melhores Condições Climáticas",
-    "Apoio de Inteligência Satelital"
+const ANALISE_TECNICA = [
+    "Vantagem em Guerra Eletrônica (Cyber)",
+    "Superioridade em Blindados Pesados",
+    "Domínio de Espaço Aéreo via Satélite",
+    "Logística de Reabastecimento Falha",
+    "Condições de Baixa Visibilidade (Inverno)"
 ];
 
 let scene, camera, renderer, globe, clouds;
 
-function init() {
+function authenticate() {
+    gsap.to("#login-screen", { y: "-100%", duration: 1.2, ease: "power4.inOut" });
+    document.getElementById('main-ui').style.visibility = "visible";
+    document.getElementById('main-ui').style.opacity = "1";
+    initWorld();
+    startIntel24h();
+}
+
+function startIntel24h() {
+    setInterval(() => {
+        const feed = document.getElementById('intel-real');
+        const msg = document.createElement('div');
+        msg.className = "intel-msg";
+        msg.innerText = `> [LOG REAL ${new Date().toLocaleTimeString()}] ${INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)]}`;
+        feed.prepend(msg);
+    }, 10000);
+}
+
+function initWorld() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -97,77 +153,70 @@ function init() {
     document.getElementById('viewport').appendChild(renderer.domElement);
 
     const loader = new THREE.TextureLoader();
+    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
     const earthMat = new THREE.MeshPhongMaterial({
         map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
         bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
         bumpScale: 0.1
     });
     
-    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), earthMat);
+    globe = new THREE.Mesh(earthGeo, earthMat);
     scene.add(globe);
 
+    const cloudGeo = new THREE.SphereGeometry(5.1, 64, 64);
     const cloudMat = new THREE.MeshPhongMaterial({
         map: loader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png'),
         transparent: true, opacity: 0.3
     });
-    clouds = new THREE.Mesh(new THREE.SphereGeometry(5.1, 64, 64), cloudMat);
+    clouds = new THREE.Mesh(cloudGeo, cloudMat);
     scene.add(clouds);
 
-    const sun = new THREE.DirectionalLight(0xffffff, 1.3);
-    sun.position.set(5, 3, 5);
-    scene.add(sun, new THREE.AmbientLight(0x333333));
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(5,3,5);
+    scene.add(light, new THREE.AmbientLight(0x444444));
     camera.position.z = 15;
-
-    // Iniciar Trabalho da IA 24H (No topo)
-    setInterval(() => {
-        const feed = document.getElementById('intel-real');
-        const div = document.createElement('div');
-        div.className = "intel-msg";
-        div.innerText = `> [IA REAL] ${INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)]}`;
-        feed.prepend(div);
-    }, 12000);
-
+    
     animate();
 }
 
 function animate() {
     requestAnimationFrame(animate);
     if(globe) globe.rotation.y += 0.001;
-    if(clouds) clouds.rotation.y += 0.0012;
+    if(clouds) clouds.rotation.y += 0.0013;
     renderer.render(scene, camera);
 }
 
-function launchSimulation() {
-    const a = document.getElementById('atq-sel').value;
-    const d = document.getElementById('def-sel').value;
+function executeStrike() {
+    const a = document.getElementById('sel-atq').value;
+    const d = document.getElementById('sel-def').value;
     if(a === d) return;
 
-    const chance = (Math.random() * 40 + 60).toFixed(1); // Chance entre 60% e 100%
-    const motivo = MOTIVOS[Math.floor(Math.random()*MOTIVOS.length)];
+    const chance = (Math.random() * 45 + 55).toFixed(1);
+    const analise = ANALISE_TECNICA[Math.floor(Math.random()*ANALISE_TECNICA.length)];
     
-    const ops = document.getElementById('ops-sector');
+    const hist = document.getElementById('battle-history');
     const div = document.createElement('div');
-    div.className = "combat-log";
+    div.className = "combat-card";
     div.innerHTML = `
-        ⚔️ CONFLITO: ${a} vs ${d}
-        <span class="win-chance">Chance de Vitória (${a}): ${chance}%</span>
-        <span style="font-size:0.6rem; opacity:0.8;">Motivo: ${motivo}</span>
+        <div style="color:var(--win); font-size: 0.8rem; font-weight:900;">⚡ SIMULAÇÃO ATIVA</div>
+        <div style="font-size: 0.7rem; color:#fff;">${a} ➔ ${d}</div>
+        <div style="color:var(--win); font-size:0.75rem;">Sucesso: ${chance}%</div>
+        <div style="font-size:0.6rem; color:var(--n); opacity:0.8;">Motivo: ${analise}</div>
     `;
+    hist.prepend(div);
     
-    ops.prepend(div);
-    document.getElementById('defcon').innerText = "DEFCON 1";
-    document.getElementById('defcon').style.background = "var(--a)";
+    document.getElementById('defcon-status').innerText = "DEFCON 1";
+    document.getElementById('defcon-status').style.background = "var(--a)";
+    document.getElementById('defcon-status').style.color = "#fff";
 }
 
-// Popular países
-const s1 = document.getElementById('atq-sel');
-const s2 = document.getElementById('def-sel');
+// Popular seletores
+const s1 = document.getElementById('sel-atq');
+const s2 = document.getElementById('sel-def');
 PAISES.sort().forEach(p => {
-    const opt1 = document.createElement('option'); opt1.text = p; s1.add(opt1);
-    const opt2 = document.createElement('option'); opt2.text = p; s2.add(opt2);
+    s1.innerHTML += `<option>${p}</option>`;
+    s2.innerHTML += `<option>${p}</option>`;
 });
-
-window.onload = init;
 </script>
 </body>
 </html>
