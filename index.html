@@ -3,65 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS | SUPERIORIDADE GLOBAL</title>
+    <title>STRATOS | ORBITAL COMMAND</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 15, 25, 0.9); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 15, 25, 0.7); }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         body { background: #000; color: var(--n); font-family: 'JetBrains Mono', monospace; height: 100vh; overflow: hidden; }
 
-        /* Renderizador e Efeitos */
-        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        #overlay-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background: radial-gradient(circle, transparent 40%, #000 130%); }
+        /* Renderizador e Efeitos de Profundidade */
+        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; filter: saturate(1.2) contrast(1.1); }
+        #scanline { position: fixed; width: 100%; height: 100%; z-index: 5; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; }
+        #overlay-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background: radial-gradient(circle, transparent 20%, #000 130%); }
 
-        /* Interface HUD */
-        #hud { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 15px; pointer-events: none; }
+        /* HUD Principal */
+        #hud { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; padding: 20px; pointer-events: none; }
         
         header { display: flex; justify-content: space-between; pointer-events: auto; }
-        .stat-card { background: var(--g); border-left: 4px solid var(--n); padding: 10px 15px; backdrop-filter: blur(10px); border-radius: 0 4px 4px 0; }
-        .defcon { border: 2px solid var(--a); color: var(--a); padding: 10px; font-family: 'Orbitron'; font-weight: 900; animation: pulse 1.5s infinite; }
+        .glass-panel { background: var(--g); border: 1px solid rgba(0, 243, 255, 0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 4px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        .stat-card { padding: 12px 20px; border-left: 5px solid var(--n); }
+        .defcon { border: 2px solid var(--a); color: var(--a); padding: 10px 20px; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px var(--a); }
 
-        /* Terminal de Inteligência centralizado */
+        /* Terminal de Inteligência Flutuante */
         #terminal { 
-            flex-grow: 1; margin: 20px 0; overflow-y: auto; 
-            padding: 10px; font-size: 0.7rem; display: flex; flex-direction: column-reverse;
+            flex-grow: 1; margin: 30px 0; overflow-y: auto; 
+            padding: 10px; font-size: 0.75rem; display: flex; flex-direction: column-reverse;
+            mask-image: linear-gradient(to top, black 80%, transparent 100%);
         }
-        .log { margin-bottom: 6px; padding: 5px; border-left: 2px solid var(--n); background: rgba(0,243,255,0.05); animation: scan 0.2s ease-out; }
+        .log { margin-bottom: 8px; padding: 10px; background: rgba(0,243,255,0.05); border-left: 2px solid var(--n); font-weight: 500; text-transform: uppercase; }
+        .log.critical { border-left-color: var(--a); background: rgba(255,0,61,0.1); color: #ff9999; }
 
-        /* Painel de Comando Inferior */
+        /* Deck de Comando Estilo 'Cockpit' */
         .cmd-deck { 
             background: var(--g); border: 1px solid rgba(0,243,255,0.3); 
-            border-top: 4px solid var(--n); padding: 25px; pointer-events: auto;
-            border-radius: 20px 20px 0 0; backdrop-filter: blur(15px);
+            border-top: 5px solid var(--n); padding: 25px; pointer-events: auto;
+            border-radius: 30px 30px 0 0; backdrop-filter: blur(25px);
+            transform: translateY(0); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .select-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        select { width: 100%; background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-family: 'Orbitron'; font-size: 0.8rem; }
+        .select-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        select { width: 100%; background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-family: 'Orbitron'; font-size: 0.85rem; border-radius: 4px; }
         
         .btn-launch { 
-            width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; 
-            font-family: 'Orbitron'; font-weight: 900; font-size: 1.1rem; letter-spacing: 3px;
-            cursor: pointer; box-shadow: 0 0 25px rgba(255,0,60,0.5);
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 22px; 
+            font-family: 'Orbitron'; font-weight: 900; font-size: 1.2rem; letter-spacing: 5px;
+            cursor: pointer; box-shadow: 0 10px 30px rgba(255,0,60,0.4);
+            transition: 0.3s; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
         }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        @keyframes scan { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .btn-launch:active { transform: scale(0.95); background: #cc0033; }
     </style>
 </head>
 <body>
 
     <div id="viewport"></div>
+    <div id="scanline"></div>
     <div id="overlay-fx"></div>
 
     <div id="hud">
         <header>
-            <div class="stat-card">
-                <h1 style="font-family: 'Orbitron'; font-size: 1.1rem;">STRATOS CORE v6.5</h1>
-                <p style="font-size: 0.5rem; letter-spacing: 1px;">MODO SINGULARIDADE ATIVADO</p>
+            <div class="glass-panel stat-card">
+                <h1 style="font-family: 'Orbitron'; font-size: 1.2rem; color: #fff;">STRATOS <span style="color: var(--n);">SINGULARITY</span></h1>
+                <p style="font-size: 0.55rem; letter-spacing: 2px; opacity: 0.7;">SISTEMA MILITAR DE ALTA VIGILÂNCIA</p>
             </div>
-            <div class="defcon" id="defcon-lvl">DEFCON 5</div>
+            <div class="glass-panel defcon" id="defcon-lvl">DEFCON 5</div>
         </header>
 
         <div id="terminal"></div>
@@ -69,73 +74,82 @@
         <div class="cmd-deck">
             <div class="select-box">
                 <div>
-                    <label style="font-size: 0.6rem; display: block; margin-bottom: 5px;">AGRESSOR</label>
+                    <label style="font-size: 0.6rem; display: block; margin-bottom: 8px; color: var(--n);">AGRESSOR PRINCIPAL</label>
                     <select id="atk-sel"></select>
                 </div>
                 <div>
-                    <label style="font-size: 0.6rem; display: block; margin-bottom: 5px;">ALVO</label>
+                    <label style="font-size: 0.6rem; display: block; margin-bottom: 8px; color: var(--n);">ALVO ESTRATÉGICO</label>
                     <select id="def-sel"></select>
                 </div>
             </div>
-            <button class="btn-launch" onclick="startWar()">EXECUTAR OPERAÇÃO</button>
+            <button class="btn-launch" onclick="executeWar()">EXECUTAR SIMULAÇÃO</button>
         </div>
     </div>
 
 <script>
-// --- LISTA COMPLETA 200 PAÍSES ---
+// Lista de Países (Truncada para o exemplo)
 const ALL_COUNTRIES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-let scene, camera, renderer, globe;
+let scene, camera, renderer, globe, clouds;
 
 function initEngine() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
     document.getElementById('viewport').appendChild(renderer.domElement);
 
+    // Globo Realista
     const geo = new THREE.SphereGeometry(5, 64, 64);
     const tex = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg');
-    const mat = new THREE.MeshPhongMaterial({ map: tex, bumpMap: tex, bumpScale: 0.05 });
+    const bump = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+    const mat = new THREE.MeshPhongMaterial({ map: tex, bumpMap: bump, bumpScale: 0.15, specular: new THREE.Color('#111'), shininess: 5 });
     globe = new THREE.Mesh(geo, mat);
     scene.add(globe);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-    camera.position.z = 15;
+    // Luzes
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8); scene.add(ambient);
+    const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(10, 10, 10); scene.add(sun);
+
+    camera.position.z = 18;
 }
 
-function startWar() {
+function executeWar() {
     const a = document.getElementById('atk-sel').value;
     const d = document.getElementById('def-sel').value;
-    if(a === d) return addLog("ERRO: Operação inválida.");
+    if(a === d) return addLog("SISTEMA: Erro de alvo idêntico.", true);
 
     document.getElementById('defcon-lvl').innerText = "DEFCON 1";
-    gsap.to(camera.position, { z: 8, duration: 1, yoyo: true, repeat: 1 });
+    document.getElementById('defcon-lvl').style.background = "rgba(255,0,0,0.2)";
     
-    addLog(`⚡ INVASÃO DETECTADA: ${a} em rota de colisão com ${d}.`);
+    // Animação de Zoom
+    gsap.to(camera.position, { z: 12, duration: 1.2, ease: "power4.out" });
+    gsap.to(globe.rotation, { y: globe.rotation.y + 2, duration: 1.5, ease: "power2.inOut" });
+
+    addLog(`🚨 ALERTA: ${a} iniciou agressão contra ${d}.`);
     
     setTimeout(() => {
-        const pwrA = Math.random() * 100;
-        const pwrD = (Math.random() * 100) + 20; // Bônus de defesa
-        
-        if(pwrA > pwrD) {
-            addLog(`🚨 SUCESSO: ${a} dominou setores estratégicos de ${d}.`);
+        const win = Math.random() > 0.5;
+        if(win) {
+            addLog(`⚡ SUCESSO: ${a} estabeleceu domínio sobre ${d}.`, false);
         } else {
-            addLog(`🛡️ REPELIDO: Forças de ${d} aniquilaram o invasor.`);
+            addLog(`🛡️ FALHA: ${a} foi repelido pelas defesas de ${d}.`, true);
         }
-    }, 1200);
+        gsap.to(camera.position, { z: 18, duration: 2, ease: "power2.inOut" });
+    }, 1500);
 }
 
-function addLog(msg) {
+function addLog(msg, isCritical) {
     const t = document.getElementById('terminal');
     const l = document.createElement('div');
-    l.className = 'log';
+    l.className = `log ${isCritical ? 'critical' : ''}`;
     l.innerHTML = `> [${new Date().toLocaleTimeString()}] ${msg}`;
     t.prepend(l);
 }
 
 initEngine();
-function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.0015; renderer.render(scene, camera); }
+function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.001; renderer.render(scene, camera); }
 animate();
 
 const sA = document.getElementById('atk-sel');
