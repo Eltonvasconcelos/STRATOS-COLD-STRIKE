@@ -1,127 +1,78 @@
+<section id="war-selector" class="hud-panel" style="position: absolute; left: 50%; transform: translateX(-50%); top: 120px; width: 80%; display: flex; justify-content: space-around; z-index: 1000;">
+    
+    <div class="country-slot">
+        <label>INVASOR (AGRESSOR)</label>
+        <select id="attacker-select" class="military-select">
+            <option value="eua">ESTADOS UNIDOS</option>
+            <option value="russia">RÚSSIA</option>
+            <option value="china">CHINA</option>
+            <option value="brasil">BRASIL</option>
+        </select>
+    </div>
+
+    <div class="vs-badge">VS</div>
+
+    <div class="country-slot">
+        <label>ALVO (DEFENSOR)</label>
+        <select id="defender-select" class="military-select">
+            <option value="china">CHINA</option>
+            <option value="russia">RÚSSIA</option>
+            <option value="ucrania">UCRÂNIA</option>
+            <option value="eua">ESTADOS UNIDOS</option>
+        </select>
+    </div>
+</section>
+
+<style>
+    .military-select {
+        background: #000; color: var(--neon); border: 1px solid var(--neon);
+        padding: 10px; font-family: 'Orbitron'; width: 250px;
+    }
+    .vs-badge {
+        font-family: 'Orbitron'; font-size: 2rem; color: var(--alert);
+        align-self: center; text-shadow: 0 0 10px var(--alert);
+    }
+    .country-slot { text-align: center; }
+</style>
+
 <script>
-
-// ===============================
-// LISTA COMPLETA DE PAÍSES DO MUNDO
-// ===============================
-const listaPaises = [
-"Afghanistan","Albania","Algeria","Argentina","Armenia","Australia","Austria",
-"Azerbaijan","Bahamas","Bahrain","Bangladesh","Belarus","Belgium","Belize",
-"Bolivia","Brazil","Bulgaria","Cambodia","Cameroon","Canada","Chile","China",
-"Colombia","Costa Rica","Croatia","Cuba","Czech Republic","Denmark","Dominican Republic",
-"Ecuador","Egypt","El Salvador","Estonia","Ethiopia","Finland","France","Georgia",
-"Germany","Ghana","Greece","Guatemala","Haiti","Honduras","Hungary","Iceland","India",
-"Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan",
-"Kazakhstan","Kenya","Kuwait","Latvia","Lebanon","Libya","Lithuania","Luxembourg",
-"Malaysia","Mexico","Moldova","Mongolia","Morocco","Nepal","Netherlands","New Zealand",
-"Nicaragua","Nigeria","North Korea","Norway","Oman","Pakistan","Panama","Paraguay",
-"Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Saudi Arabia",
-"Serbia","Singapore","Slovakia","South Africa","South Korea","Spain","Sri Lanka",
-"Sudan","Sweden","Switzerland","Syria","Taiwan","Thailand","Tunisia","Turkey",
-"Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay",
-"Uzbekistan","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"
-];
-
-// ===============================
-// BANCO MILITAR GLOBAL (AUTO)
-// gera dados simulados realistas
-// ===============================
-const paises = {};
-
-listaPaises.forEach(nome => {
-
-paises[nome.toLowerCase()] = {
-nome: nome,
-soldados: Math.floor(Math.random()*900000)+20000,
-tanques: Math.floor(Math.random()*4000),
-avioes: Math.floor(Math.random()*900),
-navios: Math.floor(Math.random()*400),
-porta_avioes: Math.floor(Math.random()*3),
-nuclear: Math.random() > 0.92 ? Math.floor(Math.random()*400)+20 : 0,
-orcamento: Math.floor(Math.random()*300),
-treinamento: Math.floor(Math.random()*100),
-tecnologia: Math.floor(Math.random()*100),
-logistica: Math.floor(Math.random()*100)
+// --- BANCO DE DADOS MILITAR (EXEMPLO DE ESTRUTURA) ---
+const MILITARY_DB = {
+    "eua": { nome: "EUA", tropas: 1350000, tanques: 6612, caças: 1957, nuke: 5550, treinamento: 9.8, budget: 801 },
+    "russia": { nome: "Rússia", tropas: 850000, tanques: 12420, caças: 772, nuke: 6255, treinamento: 8.5, budget: 66 },
+    "china": { nome: "China", tropas: 2000000, tanques: 5250, caças: 1200, nuke: 350, treinamento: 8.0, budget: 293 },
+    "brasil": { nome: "Brasil", tropas: 360000, tanques: 439, caças: 42, nuke: 0, treinamento: 7.5, budget: 18 }
 };
 
-});
+function calcularConfronto() {
+    const atk = MILITARY_DB[document.getElementById('attacker-select').value];
+    const def = MILITARY_DB[document.getElementById('defender-select').value];
 
-// ===============================
-// CALCULO DE PODER MILITAR
-// ===============================
-function calcularPoder(p){
+    // CÁLCULO DE PODER (LÓGICA DE SIMULAÇÃO)
+    // Fórmula: (Tropas*1 + Tanques*5 + Caças*10) * Treinamento
+    const atkPower = (atk.tropas * 1 + atk.tanques * 5 + atk.caças * 10) * atk.treinamento;
+    const defPower = (def.tropas * 1 + def.tanques * 5 + def.caças * 10) * def.treinamento * 1.5; // +50% Bônus Defensivo
 
-let poder =
-(p.soldados * 0.05) +
-(p.tanques * 2) +
-(p.avioes * 3) +
-(p.navios * 2.5) +
-(p.porta_avioes * 120) +
-(p.nuclear * 8) +
-(p.orcamento * 1.5) +
-(p.treinamento * 2) +
-(p.tecnologia * 2.5) +
-(p.logistica * 2);
+    const probVitoriaAtk = (atkPower / (atkPower + defPower)) * 100;
 
-return poder;
+    exibirResultado(atk, def, probVitoriaAtk.toFixed(2));
 }
 
-// ===============================
-// SIMULAÇÃO DE GUERRA
-// ===============================
-function simular(){
-
-let atk = document.getElementById("atk").value.toLowerCase();
-let def = document.getElementById("def").value.toLowerCase();
-let out = document.getElementById("resultado");
-
-let A = paises[atk];
-let D = paises[def];
-
-if(!A || !D){
-out.innerHTML = "Erro selecionar países";
-return;
+function exibirResultado(atk, def, prob) {
+    const term = document.getElementById('stratos-terminal');
+    term.innerHTML = ""; // Limpa para o relatório
+    
+    logAI(`--- RELATÓRIO ESTRATÉGICO STRATOS ---`);
+    logAI(`INVASOR: ${atk.nome} vs DEFENSOR: ${def.nome}`);
+    logAI(`Vantagem Tecnológica: ${atk.budget > def.budget ? atk.nome : def.nome}`);
+    logAI(`Arsenal Nuclear: ${atk.nuke > 0 ? 'DETECTADO' : 'NENHUM'}`);
+    
+    let veredito = prob > 50 ? `PROBABILIDADE DE SUCESSO DA INVASÃO: ${prob}%` : `PROBABILIDADE DE FRACASSO: ${(100-prob).toFixed(2)}%`;
+    
+    setTimeout(() => {
+        logAI(`<span style="color:var(--neon); font-size:14px">${veredito}</span>`);
+        // Animação do Globo para os países
+        moverCameraParaConflito();
+    }, 1500);
 }
-
-let poderA = calcularPoder(A);
-let poderD = calcularPoder(D);
-
-// vantagem territorial defensor
-poderD *= 1.15;
-
-let total = poderA + poderD;
-let chanceA = ((poderA/total)*100).toFixed(1);
-let chanceD = ((poderD/total)*100).toFixed(1);
-
-let vencedor = poderA > poderD ? A.nome : D.nome;
-
-out.innerHTML = `
-<h2>SIMULAÇÃO GLOBAL DE CONFLITO</h2>
-Atacante: ${A.nome}<br>
-Defensor: ${D.nome}<br><br>
-
-Poder militar atacante: ${Math.floor(poderA)}<br>
-Poder militar defensor: ${Math.floor(poderD)}<br><br>
-
-Chance vitória ${A.nome}: ${chanceA}%<br>
-Chance vitória ${D.nome}: ${chanceD}%<br><br>
-
-🏆 Vencedor provável: <b>${vencedor}</b>
-`;
-}
-
-// ===============================
-// POPULAR SELECT AUTOMATICO
-// ===============================
-window.onload = () => {
-
-let atk = document.getElementById("atk");
-let def = document.getElementById("def");
-
-listaPaises.forEach(p => {
-atk.innerHTML += `<option value="${p.toLowerCase()}">${p}</option>`;
-def.innerHTML += `<option value="${p.toLowerCase()}">${p}</option>`;
-});
-
-}
-
 </script>
