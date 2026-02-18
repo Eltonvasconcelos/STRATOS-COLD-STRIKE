@@ -1,142 +1,159 @@
-<script>
-// ==========================================
-// 🌍 LISTA DE PAÍSES (INTEGRIDADE MANTIDA)
-// ==========================================
-const ALL_COUNTRIES = [
-    "Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda",
-    "Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão",
-    "Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia",
-    "Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi",
-    "Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade",
-    "Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul",
-    "Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica",
-    "Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia",
-    "Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França",
-    "Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné",
-    "Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia",
-    "Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão",
-    "Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia",
-    "Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi",
-    "Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar",
-    "Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru",
-    "Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá",
-    "Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia",
-    "Quirguistão","Reino Unido","República Centro-Africana","República Dominicana",
-    "República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia",
-    "São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura",
-    "Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça",
-    "Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga",
-    "Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda",
-    "Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"
-];
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATOS | GLOBAL COMMAND</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --n: #00f3ff; --a: #ff003c; --bg: #00050a; --glass: rgba(0, 10, 20, 0.85); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; background: var(--bg); color: var(--n); font-family: 'Space Mono', monospace; overflow: hidden; }
 
-// ==========================================
-// 🪖 GERADOR DE INTELIGÊNCIA MILITAR AVANÇADO
-// ==========================================
-function gerarPoderPais(nome) {
-    const seed = nome.length;
-    const doutrinas = ["Guerra Assimétrica", "Blitzkrieg Moderna", "Defesa Territorial", "Supremacia Aérea", "Guerra Eletrônica"];
-    
+        /* Camada do Globo */
+        #viewport { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 30%, black 120%); z-index: 2; pointer-events: none; }
+
+        /* HUD Principal */
+        #hud { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 25px; pointer-events: none; }
+        .panel { background: var(--glass); border: 1px solid var(--n); backdrop-filter: blur(15px); padding: 20px; pointer-events: auto; box-shadow: 0 0 25px rgba(0, 243, 255, 0.1); }
+
+        /* Estilização de Selects e Botões */
+        .ctrl-group { margin-bottom: 15px; }
+        select { width: 100%; background: #000; color: var(--n); border: 1px solid var(--n); padding: 10px; font-family: 'Orbitron'; font-size: 0.8rem; cursor: pointer; }
+        .btn-war { width: 100%; background: transparent; border: 2px solid var(--a); color: var(--a); padding: 15px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-war:hover { background: var(--a); color: #fff; box-shadow: 0 0 30px var(--a); }
+
+        /* Terminal de Inteligência */
+        #terminal { height: 150px; overflow-y: hidden; font-size: 0.65rem; color: #fff; border-top: 1px solid var(--n); padding-top: 10px; }
+        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--n); padding-left: 8px; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        #defcon { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--a); text-shadow: 0 0 15px var(--a); animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+    <div id="viewport"></div>
+    <div id="vignette"></div>
+
+    <div id="hud">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="panel" style="border-left: 5px solid var(--n);">
+                <h1 style="font-family: 'Orbitron'; letter-spacing: 3px; font-size: 1.2rem;">STRATOS CORE v6.0</h1>
+                <p style="font-size: 0.5rem; opacity: 0.6;">SISTEMA ESTRATÉGICO DE SUPERPOTÊNCIA</p>
+            </div>
+            <div class="panel" id="defcon">DEFCON 5</div>
+        </header>
+
+        <main style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="panel" style="width: 350px;">
+                <h3 style="font-size: 0.7rem; margin-bottom: 15px; color: var(--n);">ALVOS DE CONFLITO</h3>
+                
+                <div class="ctrl-group">
+                    <label style="font-size: 0.6rem;">INVASOR:</label>
+                    <select id="atk-sel"></select>
+                </div>
+
+                <div class="ctrl-group">
+                    <label style="font-size: 0.6rem;">DEFENSOR:</label>
+                    <select id="def-sel"></select>
+                </div>
+
+                <button class="btn-war" onclick="executeWar()">INICIAR SIMULAÇÃO TOTAL</button>
+            </div>
+
+            <div class="panel" style="width: 450px;">
+                <h3 style="font-size: 0.7rem; margin-bottom: 10px; color: var(--n);">INTELIGÊNCIA EM TEMPO REAL</h3>
+                <div id="terminal"></div>
+            </div>
+        </main>
+    </div>
+
+<script>
+// --- LISTA DE PAÍSES (MODO DEUS) ---
+const COUNTRIES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
+
+// --- MOTOR 3D ---
+let scene, camera, renderer, earth;
+function init3D() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('viewport').appendChild(renderer.domElement);
+
+    const geo = new THREE.SphereGeometry(5, 64, 64);
+    const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg');
+    const mat = new THREE.MeshPhongMaterial({ map: texture, bumpMap: texture, bumpScale: 0.05, specular: 0x222222 });
+    earth = new THREE.Mesh(geo, mat);
+    scene.add(earth);
+
+    const light = new THREE.AmbientLight(0x404040, 1.5); scene.add(light);
+    const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5,3,5); scene.add(sun);
+    camera.position.z = 15;
+}
+
+// --- LÓGICA DE GUERRA ---
+function generatePower(name) {
+    const s = name.length;
     return {
-        soldados: Math.floor(Math.random() * 1200000 + (seed * 5000)),
-        tanques: Math.floor(Math.random() * 8000 + (seed * 20)),
-        avioes: Math.floor(Math.random() * 2500 + (seed * 15)),
-        naval: Math.floor(Math.random() * 400 + (seed * 2)),
-        nuclear: (["Rússia", "Estados Unidos", "China", "França", "Reino Unido", "Índia", "Paquistão", "Coreia do Norte", "Israel"].includes(nome)) ? Math.floor(Math.random() * 5000 + 100) : 0,
-        treino: Math.floor(Math.random() * 40 + 60), // Nível 60-100
-        tecnologia: Math.floor(Math.random() * 50 + 50), // Nível 50-100
-        moral: Math.floor(Math.random() * 100),
-        doutrina: doutrinas[Math.floor(Math.random() * doutrinas.length)],
-        pontoForte: (seed % 2 === 0) ? "Logística Inquebrável" : "Forças Especiais Elite"
+        tropas: Math.floor(Math.random() * 1000000 + (s * 5000)),
+        nuke: (["EUA", "Rússia", "China", "França", "Israel", "Índia", "Reino Unido"].includes(name)) ? Math.floor(Math.random() * 5000) : 0,
+        treino: Math.random() * 100,
+        tec: Math.random() * 100
     };
 }
 
-// ==========================================
-// ⚔️ MOTOR DE ATRIÇÃO E CÁLCULO DE GUERRA
-// ==========================================
-function calcularPoder(p, isAttacker) {
-    // Pesos Estratégicos
-    let forcaBruta = (p.soldados * 0.1) + (p.tanques * 10) + (p.avioes * 25) + (p.naval * 15);
-    let multiplicadorTecno = 1 + (p.tecnologia / 100);
-    let multiplicadorElite = 1 + (p.treino / 100);
-    
-    let poderFinal = forcaBruta * multiplicadorTecno * multiplicadorElite;
+function executeWar() {
+    const a = document.getElementById('atk-sel').value;
+    const d = document.getElementById('def-sel').value;
+    if(a === d) return addLog("SISTEMA: Conflito interno bloqueado.");
 
-    // Fator Doutrina
-    if (p.doutrina === "Supremacia Aérea") poderFinal *= 1.2;
-    
-    // Penalidade de Invasor vs Bônus de Defensor
-    // Historicamente, invadir exige 3x mais força.
-    return isAttacker ? Math.floor(poderFinal * 0.8) : Math.floor(poderFinal * 1.3);
-}
+    const atkData = generatePower(a);
+    const defData = generatePower(d);
 
-// ==========================================
-// 🌍 INICIALIZAÇÃO DE INTERFACE
-// ==========================================
-const atkSel = document.getElementById("atk-sel");
-const defSel = document.getElementById("def-sel");
+    // Zoom dramático
+    gsap.to(camera.position, { z: 9, duration: 1, yoyo: true, repeat: 1 });
+    document.getElementById('defcon').innerText = "DEFCON 1";
 
-ALL_COUNTRIES.sort().forEach(p => {
-    atkSel.innerHTML += `<option value="${p}">${p}</option>`;
-    defSel.innerHTML += `<option value="${p}">${p}</option>`;
-});
-
-// ==========================================
-// 🧠 SIMULAÇÃO DE CONFLITO CINEMATOGRÁFICO
-// ==========================================
-function triggerWar() {
-    const atkName = atkSel.value;
-    const defName = defSel.value;
-
-    if (atkName === defName) {
-        addLog("<span style='color:yellow'>ERRO: Um país não pode invadir a si mesmo.</span>");
-        return;
-    }
-
-    const atk = gerarPoderPais(atkName);
-    const def = gerarPoderPais(defName);
-
-    const atkPwr = calcularPoder(atk, true);
-    const defPwr = calcularPoder(def, false);
-
-    // Efeitos Visuais
-    document.getElementById("defcon-status").innerText = "DEFCON 1";
-    document.getElementById("defcon-status").style.color = "#ff003c";
-    gsap.to(camera.position, { z: 7, duration: 1.5, ease: "expo.inOut" });
-    
-    addLog(`<br><span style="color:#ff003c">⚡ INICIANDO OPERAÇÃO: ${atkName} -> ${defName}</span>`);
-    addLog(`Doutrina Atacante: ${atk.doutrina} | Ponto Forte Defensor: ${def.pontoForte}`);
+    addLog(`ALERTA: ${a} iniciou invasão contra ${d}.`);
     
     setTimeout(() => {
-        addLog(`--- COMPARATIVO DE FORÇAS ---`);
-        addLog(`${atkName}: ${atk.soldados.toLocaleString()} tropas | Poder: ${atkPwr}`);
-        addLog(`${defName}: ${def.soldados.toLocaleString()} tropas | Poder: ${defPwr}`);
-        
-        const diff = Math.abs(atkPwr - defPwr);
-        let msgFinal = "";
+        let pA = (atkData.tropas * 0.1 + atkData.nuke * 50) * (atkData.treino/100);
+        let pD = (defData.tropas * 0.1 + defData.nuke * 50) * (defData.treino/100) * 1.5; // Bônus Defesa
 
-        if (atkPwr > defPwr) {
-            msgFinal = `<span style="color:#00f3ff">🏆 VITORIA TOTAL: ${atkName} ocupou o território de ${defName}.</span>`;
-            if (def.nuclear > 0) msgFinal += " <br>☢️ ALERTA: Retaliação nuclear detectada.";
+        if(pA > pD) {
+            addLog(`RESULTADO: Vitória de ${a}. ${d} capitulou.`);
         } else {
-            msgFinal = `<span style="color:#ff003c">🛡️ DERROTA: O invasor ${atkName} foi repelido por ${defName}.</span>`;
+            addLog(`RESULTADO: ${d} repeliu a invasão de ${a}.`);
         }
-
-        addLog(msgFinal);
-        addLog(`Baixas estimadas: ${Math.floor(diff / 100).toLocaleString()} unidades.`);
-        
-        // Retornar câmera após simulação
-        gsap.to(camera.position, { z: 11, duration: 3, delay: 2 });
     }, 1000);
 }
 
 function addLog(msg) {
-    const el = document.getElementById("intel-logs");
-    const div = document.createElement("div");
-    div.style.marginBottom = "8px";
-    div.style.borderLeft = "2px solid #00f3ff";
-    div.style.paddingLeft = "10px";
-    div.innerHTML = `<span style="opacity:0.5">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
-    el.prepend(div);
+    const term = document.getElementById('terminal');
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+    term.prepend(div);
 }
+
+// Inicializar
+init3D();
+function animate() { requestAnimationFrame(animate); earth.rotation.y += 0.001; renderer.render(scene, camera); }
+animate();
+
+// Popular Listas
+const s1 = document.getElementById('atk-sel');
+const s2 = document.getElementById('def-sel');
+COUNTRIES.sort().forEach(c => {
+    s1.innerHTML += `<option>${c}</option>`;
+    s2.innerHTML += `<option>${c}</option>`;
+});
 </script>
+</body>
+</html>
