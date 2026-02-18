@@ -3,47 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v13.8 | ESTRATÉGIA</title>
+    <title>STRATOS v14 | TACTICAL OPS</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 5, 10, 0.9); --intel: #ffaa00; }
+        :root { --n: #00f3ff; --a: #ff003c; --g: rgba(0, 5, 10, 0.9); --intel: #ffaa00; --win: #00ff88; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
         /* HEADER */
         #top-bar { position: fixed; top: 0; width: 100%; z-index: 500; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--n); display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
 
-        /* TERMINAL ÚNICO E INTELIGENTE */
-        #intel-center { 
-            position: absolute; top: 60px; left: 10px; right: 10px; 
-            height: 35vh; z-index: 400; overflow-y: auto; padding: 10px; 
-            background: rgba(0,0,0,0.6); border-left: 3px solid var(--n);
-            scroll-behavior: smooth; pointer-events: auto;
+        /* FEED IA 24H (SUPERIOR) */
+        #intel-real { 
+            position: absolute; top: 55px; left: 10px; right: 10px; 
+            height: 120px; z-index: 400; overflow-y: auto; padding: 8px; 
+            background: rgba(0,0,0,0.5); border-left: 2px solid var(--intel);
         }
-        .intel-msg { color: var(--intel); font-size: 0.65rem; margin-bottom: 6px; padding-bottom: 2px; border-bottom: 1px solid rgba(255,170,0,0.1); }
-        .combat-msg { color: #fff; font-size: 0.7rem; margin-bottom: 6px; font-weight: bold; border-left: 2px solid var(--a); padding-left: 5px; }
+        .intel-msg { color: var(--intel); font-size: 0.6rem; margin-bottom: 5px; opacity: 0.8; }
 
-        /* GLOBO REAL */
+        /* SETOR DE OPERAÇÕES (ÁREA SUBLINHADA PELO USUÁRIO) */
+        #ops-sector {
+            position: absolute; top: 185px; left: 10px; right: 10px;
+            height: 180px; z-index: 400; overflow-y: auto; padding: 10px;
+            background: rgba(0,20,30,0.7); border: 1px solid rgba(0,243,255,0.3);
+            border-right: 3px solid var(--win); border-radius: 4px;
+        }
+        .combat-log { color: #fff; font-size: 0.7rem; margin-bottom: 10px; animation: slide 0.3s ease; }
+        .win-chance { color: var(--win); font-weight: bold; font-size: 0.75rem; display: block; margin-top: 3px; }
+
+        /* GLOBO */
         #viewport { position: absolute; inset: 0; z-index: 1; }
 
-        /* PAINEL DE COMANDO */
+        /* CONTROLES */
         #control-deck { position: absolute; bottom: 0; width: 100%; z-index: 500; background: var(--g); border-top: 2px solid var(--n); padding: 15px; border-radius: 15px 15px 0 0; }
         .grid-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         select { background: #111; color: var(--n); border: 1px solid var(--n); padding: 12px; font-size: 0.75rem; width: 100%; border-radius: 5px; }
-        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; }
+        .btn-strike { width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
+        @keyframes slide { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="top-bar">
-        <h1 style="font-size: 0.7rem; font-family:'Orbitron'">STRATOS <span style="color:var(--intel)">LIVE FEED</span></h1>
+        <h1 style="font-size: 0.7rem; font-family:'Orbitron'">STRATOS <span style="color:var(--intel)">REAL-TIME</span></h1>
         <div id="defcon" style="color:var(--a); border:1px solid var(--a); padding: 3px 8px; font-size:0.6rem">DEFCON 5</div>
     </div>
 
-    <div id="intel-center">
-        <div class="intel-msg">> INICIALIZANDO NÚCLEO DE INTELIGÊNCIA...</div>
+    <div id="intel-real"></div>
+
+    <div id="ops-sector">
+        <div style="font-size: 0.5rem; color: var(--win); margin-bottom: 5px; opacity: 0.6;">[ AGUARDANDO COMANDO TÁTICO ]</div>
     </div>
 
     <div id="viewport"></div>
@@ -60,12 +72,19 @@
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
 const INTEL_DB = [
-    "RÚSSIA: Novas divisões blindadas avistam fronteira ucraniana.",
-    "IRÃ: Alerta de defesa aérea elevado após movimentos em Israel.",
-    "EUA: Porta-aviões posicionado no Mar da China Meridional.",
-    "COREIA DO NORTE: Atividade suspeita em complexos nucleares.",
-    "OTAN: Simulação de defesa cibernética iniciada na Europa.",
-    "AMÉRICA DO SUL: Monitoramento intensificado em zonas de selva."
+    "UCRÂNIA: Intensificação de disparos em Zaporiya.",
+    "ORIENTE MÉDIO: Irã realiza testes de mísseis balísticos.",
+    "TAIWAN: Incursão aérea chinesa detectada via satélite.",
+    "EUROPA: OTAN emite alerta de ciberataque nível 4.",
+    "ÁFRICA: Movimentação de mercenários no Sahel."
+];
+
+const MOTIVOS = [
+    "Superioridade Aérea Estratégica",
+    "Domínio de Suprimento Logístico",
+    "Vantagem Tecnológica em Defesa",
+    "Melhores Condições Climáticas",
+    "Apoio de Inteligência Satelital"
 ];
 
 let scene, camera, renderer, globe, clouds;
@@ -97,13 +116,16 @@ function init() {
     const sun = new THREE.DirectionalLight(0xffffff, 1.3);
     sun.position.set(5, 3, 5);
     scene.add(sun, new THREE.AmbientLight(0x333333));
-
     camera.position.z = 15;
-    
-    // Iniciar Feed IA
+
+    // Iniciar Trabalho da IA 24H (No topo)
     setInterval(() => {
-        postMsg(INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)], "intel");
-    }, 9000);
+        const feed = document.getElementById('intel-real');
+        const div = document.createElement('div');
+        div.className = "intel-msg";
+        div.innerText = `> [IA REAL] ${INTEL_DB[Math.floor(Math.random()*INTEL_DB.length)]}`;
+        feed.prepend(div);
+    }, 12000);
 
     animate();
 }
@@ -115,21 +137,24 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-function postMsg(text, type) {
-    const term = document.getElementById('intel-center');
-    const div = document.createElement('div');
-    div.className = type === "intel" ? "intel-msg" : "combat-msg";
-    div.innerText = `> [${new Date().toLocaleTimeString()}] ${text}`;
-    term.appendChild(div); // Adiciona no fim
-    term.scrollTop = term.scrollHeight; // Rola automático para baixo
-}
-
 function launchSimulation() {
     const a = document.getElementById('atq-sel').value;
     const d = document.getElementById('def-sel').value;
     if(a === d) return;
+
+    const chance = (Math.random() * 40 + 60).toFixed(1); // Chance entre 60% e 100%
+    const motivo = MOTIVOS[Math.floor(Math.random()*MOTIVOS.length)];
     
-    postMsg(`LANÇAMENTO: ${a} atacou ${d}. Impacto iminente.`, "combat");
+    const ops = document.getElementById('ops-sector');
+    const div = document.createElement('div');
+    div.className = "combat-log";
+    div.innerHTML = `
+        ⚔️ CONFLITO: ${a} vs ${d}
+        <span class="win-chance">Chance de Vitória (${a}): ${chance}%</span>
+        <span style="font-size:0.6rem; opacity:0.8;">Motivo: ${motivo}</span>
+    `;
+    
+    ops.prepend(div);
     document.getElementById('defcon').innerText = "DEFCON 1";
     document.getElementById('defcon').style.background = "var(--a)";
 }
@@ -138,8 +163,8 @@ function launchSimulation() {
 const s1 = document.getElementById('atq-sel');
 const s2 = document.getElementById('def-sel');
 PAISES.sort().forEach(p => {
-    s1.innerHTML += `<option>${p}</option>`;
-    s2.innerHTML += `<option>${p}</option>`;
+    const opt1 = document.createElement('option'); opt1.text = p; s1.add(opt1);
+    const opt2 = document.createElement('option'); opt2.text = p; s2.add(opt2);
 });
 
 window.onload = init;
