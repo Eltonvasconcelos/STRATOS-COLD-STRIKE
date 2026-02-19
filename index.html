@@ -24,18 +24,18 @@
         .source-tag { color: var(--n); font-size: 0.6rem; font-weight: bold; text-transform: uppercase; margin-left: 10px; border: 1px solid var(--n); padding: 2px 5px; border-radius: 3px; }
         #combat-area { flex: 1.3; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-top: 2px solid var(--a); }
         .report-card { border-left: 4px solid var(--win); background: rgba(0, 255, 136, 0.05); padding: 12px; margin-bottom: 10px; }
-        
-        /* AJUSTE SOLICITADO: LARGURA DOS CONTROLES */
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; width: 100%; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-size: 0.75rem; width: 100%; }
-        .btn-war { width: 100%; background: var(--a); color: #fff; border: none; padding: 20px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; }
+
+        /* AQUI ESTÁ A CORREÇÃO QUE VOCÊ PEDIU */
+        .row { display: flex; gap: 5px; margin-bottom: 10px; width: 100%; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 10px; font-size: 0.65rem; width: 50%; border-radius: 5px; }
+        .btn-war { width: 100%; background: var(--a); color: #fff; border: none; padding: 15px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
     </style>
 </head>
 <body onload="initWorld()">
 
     <div id="auth-screen">
-        <h1 style="font-family:'Orbitron'; font-size: 3rem; letter-spacing: 20px; text-shadow: 0 0 30px var(--n);">STRATOS</h1>
-        <button class="btn-access" onclick="bypassLogin()">ATIVAR MONITOR REAL</button>
+        <h1 style="font-family:'Orbitron'; font-size: 2.5rem; letter-spacing: 10px; text-shadow: 0 0 30px var(--n);">STRATOS</h1>
+        <button class="btn-access" onclick="bypassLogin()">CONECTAR</button>
     </div>
 
     <div id="viewport"></div>
@@ -44,13 +44,13 @@
         <div id="header-info">
             <div>
                 <h2 style="font-family:'Orbitron'; font-size: 0.8rem; letter-spacing: 3px;">LIVE GLOBAL INTELLIGENCE</h2>
-                <p id="status-link" style="font-size: 0.5rem; color: var(--win);">● CONECTADO: AGÊNCIAS REAIS</p>
+                <p style="font-size: 0.5rem; color: var(--win);">● STATUS: OPERACIONAL</p>
             </div>
             <div id="digital-clock">00:00:00</div>
         </div>
 
         <div id="intel-area" class="panel">
-            <div id="intel-feed">Carregando dados via satélite...</div>
+            <div id="intel-feed">Aguardando ativação de satélite...</div>
         </div>
 
         <div id="combat-area" class="panel">
@@ -68,7 +68,7 @@
 
 <script>
 const API_KEY = 'ae46552e7af9425b8abfe9ed218ace41';
-const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
+const PAISES = ["Afeganistão","África do Sul","Alemanha","Arábia Saudita","Argentina","Austrália","Brasil","Canadá","China","Coreia do Norte","Coreia do Sul","Egito","Emirados Árabes","Espanha","Estados Unidos","França","Índia","Irã","Iraque","Israel","Itália","Japão","México","Portugal","Reino Unido","Rússia","Turquia","Ucrânia","Venezuela"];
 const PODER_MILITAR = { "Estados Unidos": 99, "China": 98, "Rússia": 97, "Israel": 95, "Irã": 84, "Brasil": 88, "Turquia": 87 };
 
 let scene, camera, renderer, globe;
@@ -79,18 +79,16 @@ function initWorld() {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
-    const loader = new THREE.TextureLoader();
     globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshPhongMaterial({
-        map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
         bumpScale: 0.2, shininess: 5
     }));
     scene.add(globe);
     scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 1));
     camera.position.z = 12;
+    const animate = () => { requestAnimationFrame(animate); globe.rotation.y += 0.002; renderer.render(scene, camera); };
     animate();
 }
-
-function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.002; renderer.render(scene, camera); }
 
 function bypassLogin() {
     document.getElementById('auth-screen').style.opacity = '0';
@@ -103,23 +101,22 @@ function bypassLogin() {
 
 async function fetchRealNews() {
     const feed = document.getElementById('intel-feed');
-    const url = `https://newsapi.org/v2/everything?q=(war OR military OR gaza)&language=pt&sortBy=publishedAt&apiKey=${API_KEY}`;
+    const url = `https://newsapi.org/v2/everything?q=(war OR military OR conflict)&language=pt&sortBy=publishedAt&apiKey=${API_KEY}`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
         if(data.articles && data.articles.length > 0) {
             feed.innerHTML = '';
-            data.articles.slice(0, 15).forEach(article => {
+            data.articles.slice(0, 10).forEach(article => {
                 const p = document.createElement('div');
                 p.className = "log-line";
-                const time = new Date(article.publishedAt).toLocaleTimeString('pt-BR');
-                p.innerHTML = `<span class="timestamp">[${time}]</span> <b>${article.title}</b> <span class="source-tag">${article.source.name}</span>`;
+                p.innerHTML = `> <b>${article.title}</b> <span class="source-tag">${article.source.name}</span>`;
                 feed.appendChild(p);
             });
         }
     } catch (e) {
-        feed.innerHTML = 'Conexão instável. Tentando reconectar...';
+        feed.innerHTML = 'Buscando sinal...';
     }
 }
 
@@ -136,9 +133,9 @@ function fight() {
     const div = document.createElement('div');
     div.className = "report-card";
     div.style.borderLeftColor = win === a ? 'var(--n)' : 'var(--a)';
-    div.innerHTML = `<p style="font-size:0.5rem; color:var(--alert);">[ ANÁLISE DE IMPACTO REAL ]</p>
-                     <div style="color:var(--win); font-family:Orbitron; font-size:0.9rem;">DOMÍNIO: ${win}</div>
-                     <p style="font-size:0.6rem; color:#fff;">Probabilidade Analítica: ${prob.toFixed(1)}%</p>`;
+    div.innerHTML = `<p style="font-size:0.5rem; color:var(--alert);">[ IMPACTO ESTRATÉGICO ]</p>
+                     <div style="color:var(--win); font-family:Orbitron; font-size:0.8rem;">DOMÍNIO: ${win}</div>
+                     <p style="font-size:0.6rem; color:#fff;">Eficiência: ${prob.toFixed(1)}%</p>`;
     document.getElementById('combat-log').prepend(div);
 }
 
