@@ -1,182 +1,73 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v21 | COMMAND CENTER</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --n: #00f3ff; --a: #ff003c; --win: #00ff88; --bg: rgba(0, 10, 20, 0.88); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
-        body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
-
-        /* TELA DE AUTENTICAÇÃO */
-        #auth-screen {
-            position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle, #001a1a, #000);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
-        }
-        .scanner-ring {
-            width: 240px; height: 240px; border: 2px solid rgba(0,243,255,0.3); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; position: relative;
-        }
-        .scanner-line {
-            position: absolute; width: 100%; height: 2px; background: var(--n);
-            box-shadow: 0 0 15px var(--n); animation: scan-move 2s infinite ease-in-out;
-        }
-        @keyframes scan-move { 0%, 100% { top: 0%; opacity: 0.2; } 50% { top: 100%; opacity: 1; } }
-
-        /* PLANETA DE FUNDO */
-        #viewport { position: fixed; inset: 0; z-index: 1; }
-
-        /* INTERFACE HUD PRINCIPAL */
-        #hud {
-            position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column;
-            padding: 12px; opacity: 0; transition: opacity 1.5s; pointer-events: none;
-        }
-        #hud.active { opacity: 1; pointer-events: all; }
-
-        .panel { background: var(--bg); border: 1px solid rgba(0,243,255,0.15); border-radius: 4px; backdrop-filter: blur(12px); }
-
-        /* FEED DE INFORMAÇÕES (AMPLIADO - O SEU RADAR) */
-        #intel-section { flex: 2; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-top: 3px solid #ffaa00; }
-        .intel-tag { font-size: 0.55rem; color: #ffaa00; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
-        .log-line { font-size: 0.7rem; color: #ffaa00; margin-bottom: 6px; line-height: 1.3; border-bottom: 1px solid rgba(255,170,0,0.1); padding-bottom: 4px; }
-
-        /* TERMINAL DE COMBATE (AJUSTADO) */
-        #combat-section { flex: 1.2; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-top: 3px solid var(--n); }
-        .win-title { color: var(--win); font-family: 'Orbitron'; font-weight: 900; font-size: 0.9rem; margin: 8px 0; text-transform: uppercase; }
-
-        /* CONTROLES INFERIORES */
-        #controls { height: auto; padding: 10px 0; }
-        .select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 14px; font-size: 0.75rem; border-radius: 4px; }
-        .btn-launch {
-            width: 100%; background: var(--a); color: #fff; border: none; padding: 22px;
-            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; cursor: pointer;
-            box-shadow: 0 0 25px rgba(255,0,60,0.4); text-transform: uppercase;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="auth-screen" onclick="launchSystem()">
-        <div class="scanner-ring">
-            <div class="scanner-line"></div>
-            <div style="width: 60%; height: 60%; border: 1px solid var(--n); border-radius: 50%; opacity: 0.5;"></div>
-            <div style="position: absolute; font-size: 0.5rem; color: var(--n);">RETINA ID</div>
-        </div>
-        <h1 style="font-family:'Orbitron'; margin-top: 25px; letter-spacing: 6px; font-size: 1.2rem;">STRATOS OS</h1>
-        <p style="font-size: 0.6rem; opacity: 0.5; margin-top: 10px;">CLIQUE PARA AUTENTICAÇÃO BIOMÉTRICA</p>
-    </div>
-
-    <div id="viewport"></div>
-
-    <div id="hud">
-        <div id="intel-section" class="panel">
-            <div class="intel-tag">🛰️ Live Global Intel Feed</div>
-            <div id="intel-content"></div>
-        </div>
-
-        <div id="combat-section" class="panel">
-            <div style="font-size: 0.5rem; opacity: 0.5; text-transform: uppercase;">[ Central de Operações Táticas ]</div>
-            <div id="combat-results"></div>
-        </div>
-
-        <div id="controls">
-            <div class="select-row">
-                <select id="atq-list"></select>
-                <select id="def-list"></select>
-            </div>
-            <button class="btn-launch" onclick="runSimulation()">Iniciar Operação</button>
-        </div>
-    </div>
-
-<script>
-const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
-
-let audioCtx;
-function launchSystem() {
-    if(!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.setValueAtTime(45, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start();
+<style>
+    /* NOVA ESTÉTICA DA TELA DE AUTENTICAÇÃO */
+    #auth-screen {
+        position: fixed; inset: 0; z-index: 9999;
+        background: radial-gradient(circle at center, #001a1a 0%, #000 100%);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        overflow: hidden;
     }
-    gsap.to("#auth-screen", { opacity: 0, scale: 1.2, duration: 0.8, onComplete: () => {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('hud').classList.add('active');
-        initWorld();
-    }});
-}
 
-let scene, camera, renderer, globe;
-function initWorld() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('viewport').appendChild(renderer.domElement);
+    /* EFEITO DE RUÍDO (OVERLAY) */
+    #auth-screen::before {
+        content: ""; position: absolute; inset: 0;
+        background: url('https://grainy-gradients.vercel.app/noise.svg');
+        opacity: 0.05; pointer-events: none; z-index: 10000;
+    }
 
-    const loader = new THREE.TextureLoader();
-    globe = new THREE.Mesh(
-        new THREE.SphereGeometry(5, 64, 64),
-        new THREE.MeshPhongMaterial({
-            map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
-            bumpMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
-            bumpScale: 0.1, shininess: 5
-        })
-    );
-    scene.add(globe);
-    scene.add(new THREE.AmbientLight(0x555555), new THREE.DirectionalLight(0xffffff, 0.7));
-    camera.position.z = 12;
+    .retina-scanner-v2 {
+        width: 260px; height: 260px; position: relative;
+        display: flex; align-items: center; justify-content: center;
+    }
 
-    setInterval(() => {
-        const intel = document.getElementById('intel-content');
-        const data = ["RÚSSIA: Novas divisões blindadas avistam fronteira.","EUA: Porta-aviões posicionado no Mar da China.","OTAN: Alerta de cibersegurança nível 4.","AMÉRICA DO SUL: Monitoramento intensificado."];
-        const line = document.createElement('div');
-        line.className = "log-line";
-        line.innerText = `> [${new Date().toLocaleTimeString()}] ${data[Math.floor(Math.random()*data.length)]}`;
-        intel.prepend(line);
-    }, 4000);
+    /* ANÉIS GIRATÓRIOS */
+    .ring {
+        position: absolute; border-radius: 50%;
+        border: 2px solid transparent; border-top-color: var(--n);
+        animation: rotate-ring 4s linear infinite;
+    }
+    .ring-1 { width: 100%; height: 100%; opacity: 0.3; }
+    .ring-2 { width: 80%; height: 80%; border-top-color: var(--a); animation-duration: 2s; animation-direction: reverse; }
+    
+    @keyframes rotate-ring { to { transform: rotate(360deg); } }
 
-    animate();
-}
+    /* LINHA DE SCANNER LASER */
+    .laser-line {
+        position: absolute; width: 110%; height: 2px;
+        background: var(--n); box-shadow: 0 0 20px var(--n);
+        animation: laser-anim 2.5s ease-in-out infinite;
+    }
+    @keyframes laser-anim { 0%, 100% { top: 20%; opacity: 0; } 50% { top: 80%; opacity: 1; } }
 
-function animate() {
-    requestAnimationFrame(animate);
-    globe.rotation.y += 0.0012;
-    renderer.render(scene, camera);
-}
+    .status-text {
+        font-family: 'Orbitron'; font-size: 0.7rem; color: var(--n);
+        margin-top: 40px; text-transform: uppercase; letter-spacing: 5px;
+        animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-function runSimulation() {
-    const a = document.getElementById('atq-list').value;
-    const d = document.getElementById('def-list').value;
-    if(a === d) return;
+    /* CÓDIGOS LATERAIS (DECORATIVOS) */
+    .side-intel {
+        position: absolute; left: 20px; bottom: 20px;
+        font-size: 0.5rem; color: var(--n); opacity: 0.4; line-height: 1.5;
+    }
+</style>
 
-    const prob = Math.floor(Math.random() * 101);
-    const vencedor = prob > 50 ? a : d;
-    const perdedor = vencedor === a ? d : a;
+<div id="auth-screen" onclick="launchSystem()">
+    <div class="side-intel">
+        SATELLITE_LINK: ACTIVE<br>
+        ENCRYPTION: AES-256<br>
+        LOCATION: [CONFIDENTIAL]<br>
+        USER_ID: ELITE_COMMANDER
+    </div>
 
-    const res = document.getElementById('combat-results');
-    const div = document.createElement('div');
-    div.style.marginBottom = "15px";
-    div.innerHTML = `
-        <div style="font-size:0.55rem; color:var(--n); opacity:0.8;">LOG: ${a} vs ${d}</div>
-        <div class="win-title">VENCEDOR: ${vencedor}</div>
-        <div style="font-size:0.6rem; color:var(--a);">STATUS: ${perdedor} em colapso total.</div>
-    `;
-    res.prepend(div);
-}
+    <div class="retina-scanner-v2">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="laser-line"></div>
+        <div style="font-family:'Orbitron'; font-size: 0.5rem; color: var(--n);">RETINA ID</div>
+    </div>
 
-PAISES.sort().forEach(p => {
-    document.getElementById('atq-list').innerHTML += `<option>${p}</option>`;
-    document.getElementById('def-list').innerHTML += `<option>${p}</option>`;
-});
-</script>
-</body>
-</html>
+    <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 8px; font-weight: 900; text-shadow: 0 0 10px var(--n);">STRATOS OS</h1>
+    <div class="status-text">Aguardando Impressão Digital...</div>
+    <p style="font-size: 0.5rem; color: #fff; opacity: 0.3; margin-top: 15px;">Protocolo de Segurança Nível 5 Ativo</p>
+</div>
