@@ -3,62 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v24.2 | PRECISION</title>
+    <title>STRATOS v24.3 | COMMAND</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --n: #00f3ff; --a: #ff003c; --win: #00ff88; --bg: rgba(0, 10, 20, 0.9); }
+        :root { --n: #00f3ff; --a: #ff003c; --win: #00ff88; --bg: rgba(0, 10, 20, 0.95); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-        /* LOGIN */
+        /* TELA DE AUTENTICAÇÃO */
         #auth-screen {
-            position: fixed; inset: 0; z-index: 9999; background: #000;
+            position: fixed; inset: 0; z-index: 10000; background: #000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .scanner-visual {
-            width: 200px; height: 200px; border: 2px solid var(--n); border-radius: 50%;
+            width: 220px; height: 220px; border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 50%;
             display: flex; align-items: center; justify-content: center; position: relative;
         }
         .scanner-bar {
             position: absolute; width: 100%; height: 2px; background: var(--n);
-            box-shadow: 0 0 15px var(--n); animation: scan-anim 2s infinite ease-in-out;
+            box-shadow: 0 0 15px var(--n); animation: scan-anim 2.5s infinite ease-in-out;
         }
         @keyframes scan-anim { 0%, 100% { top: 10%; } 50% { top: 90%; } }
 
         .btn-access {
-            margin-top: 50px; padding: 20px 50px; background: var(--n); color: #000;
-            border: none; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; border-radius: 4px;
+            margin-top: 50px; padding: 18px 45px; background: var(--n); color: #000;
+            border: none; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px;
+            cursor: pointer; border-radius: 4px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
         }
 
-        /* HUD */
-        #viewport { position: fixed; inset: 0; z-index: 1; opacity: 0.3; }
+        /* INTERFACE HUD */
+        #viewport { position: fixed; inset: 0; z-index: 1; opacity: 0.35; }
         #hud {
             position: relative; z-index: 10; height: 100vh; width: 100%;
-            display: none; flex-direction: column; padding: 10px;
+            display: none; flex-direction: column; padding: 15px;
         }
         #hud.active { display: flex; }
 
-        .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 5px; backdrop-filter: blur(10px); }
+        .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.15); border-radius: 5px; backdrop-filter: blur(12px); }
         
-        #intel-area { flex: 2.5; overflow-y: auto; margin-bottom: 8px; padding: 12px; }
-        .log-line { font-size: 0.7rem; color: #ffaa00; margin-bottom: 6px; border-left: 2px solid #ffaa00; padding-left: 8px; }
+        #header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        #digital-clock { border: 1px solid var(--n); padding: 4px 12px; font-weight: bold; font-size: 0.9rem; }
 
-        #combat-area { flex: 1.2; overflow-y: auto; margin-bottom: 8px; padding: 12px; border-top: 2px solid var(--a); }
-        .win-card { color: var(--win); font-family: 'Orbitron'; font-size: 0.85rem; margin-top: 5px; }
+        #intel-area { flex: 2.5; overflow-y: auto; margin-bottom: 10px; padding: 15px; }
+        .log-line { font-size: 0.65rem; color: #ffaa00; margin-bottom: 8px; border-left: 2px solid #ffaa00; padding-left: 10px; line-height: 1.4; }
+        .loc-tag { color: var(--n); font-weight: bold; margin-left: 8px; font-size: 0.6rem; opacity: 0.9; }
 
-        #controls { padding: 10px 0; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; }
+        #combat-area { flex: 1.2; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-top: 2px solid var(--a); }
+        .win-card { color: var(--win); font-family: 'Orbitron'; font-size: 0.9rem; margin: 8px 0; text-transform: uppercase; }
+
+        #controls { padding: 5px 0; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 15px; font-size: 0.8rem; border-radius: 4px; }
         .btn-war {
-            width: 100%; background: var(--a); color: #fff; border: none; padding: 20px;
-            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px;
-        }
-
-        /* RELÓGIO */
-        #digital-clock {
-            font-family: 'JetBrains Mono'; color: var(--n); font-size: 0.85rem;
-            border: 1px solid var(--n); padding: 4px 10px; border-radius: 3px;
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 22px;
+            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 3px; border-radius: 4px; cursor: pointer;
         }
     </style>
 </head>
@@ -66,15 +65,15 @@
 
     <div id="auth-screen">
         <div class="scanner-visual"><div class="scanner-bar"></div></div>
-        <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 5px;">STRATOS OS</h1>
-        <button class="btn-access" onclick="bypassLogin()">ENTRAR NO SISTEMA</button>
+        <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 8px;">STRATOS OS</h1>
+        <button class="btn-access" onclick="bypassLogin()">AUTENTICAR COMANDO</button>
     </div>
 
     <div id="viewport"></div>
 
     <div id="hud">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h1 style="font-family:'Orbitron'; font-size: 0.9rem; letter-spacing: 2px;">STRATOS LIVE FEED</h1>
+        <div id="header-info">
+            <h2 style="font-family:'Orbitron'; font-size: 0.8rem; letter-spacing: 3px;">STRATOS REAL-TIME FEED</h2>
             <div id="digital-clock">00:00:00</div>
         </div>
 
@@ -83,8 +82,9 @@
         </div>
 
         <div id="combat-area" class="panel">
-            <p style="font-size: 0.5rem; opacity: 0.5; margin-bottom: 10px;">[ TERMINAL DE RELATÓRIOS TÁTICOS ]</p>
-            <div id="combat-log"></div>
+            <div id="combat-log">
+                <p style="font-size: 0.6rem; opacity: 0.4;">[ AGUARDANDO INSTRUÇÕES TÁTICAS ]</p>
+            </div>
         </div>
 
         <div id="controls">
@@ -97,36 +97,96 @@
     </div>
 
 <script>
-// LISTA DE PAÍSES (CONFORME SOLICITADO, SEM ALTERAR QUANTIDADE)
+// DADOS DE PAÍSES E PODER (ESTRUTURA PROTEGIDA)
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-// PODER MILITAR PARA PRECISÃO DE COMBATE
 const PODER_MILITAR = {
-    "Brasil": 88, "Estados Unidos": 99, "Rússia": 96, "China": 97,
-    "Alemanha": 85, "França": 87, "Reino Unido": 89, "Índia": 82,
-    "Israel": 91, "Coreia do Norte": 78, "Japão": 84, "Turquia": 80,
-    "Argentina": 60, "Ucrânia": 72, "Irã": 75, "Botswana": 15,
-    "Afeganistão": 35, "Angola": 30, "Vaticano": 1
+    "Brasil": 89, "Estados Unidos": 99, "Rússia": 97, "China": 98,
+    "Alemanha": 86, "França": 88, "Reino Unido": 90, "Índia": 84,
+    "Israel": 92, "Coreia do Norte": 79, "Irã": 76, "Japão": 85,
+    "Botswana": 12, "Vaticano": 1, "Andorra": 5, "Austrália": 82
 };
 
+// INICIALIZAÇÃO DO SISTEMA
 function bypassLogin() {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('hud').classList.add('active');
-    initGlobe();
+    document.getElementById('auth-screen').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('hud').classList.add('active');
+        initWorld();
+    }, 500);
 }
 
-// RELÓGIO
 function updateClock() {
     const now = new Date();
     document.getElementById('digital-clock').innerText = now.toLocaleTimeString('pt-BR');
 }
 setInterval(updateClock, 1000);
 
-// PLANETA E FEED
+// LOGICA DE INTEL COM FUSO HORÁRIO LOCAL
+function getLocalTime(gmtOffset) {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const local = new Date(utc + (3600000 * gmtOffset));
+    return local.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+setInterval(() => {
+    const feed = document.getElementById('intel-feed');
+    const newsData = [
+        { t: "EUA: Porta-aviões detectado no Mar da China.", g: -5 },
+        { t: "RÚSSIA: Baterias S-400 em prontidão na fronteira.", g: +3 },
+        { t: "CHINA: Exercícios navais em Taiwan iniciados.", g: +8 },
+        { t: "OTAN: Alerta máximo de defesa aérea na Europa.", g: +1 },
+        { t: "BRASIL: Monitoramento via satélite na Amazônia.", g: -3 },
+        { t: "ORIENTE MÉDIO: Atividade nuclear detectada.", g: +3.5 }
+    ];
+    
+    const item = newsData[Math.floor(Math.random()*newsData.length)];
+    const sysTime = new Date().toLocaleTimeString('pt-BR');
+    const locTime = getLocalTime(item.g);
+
+    const p = document.createElement('p');
+    p.className = "log-line";
+    p.innerHTML = `> [${sysTime}] ${item.t} <span class="loc-tag">(HORA LOCAL: ${locTime})</span>`;
+    
+    feed.prepend(p);
+    if(feed.children.length > 18) feed.lastChild.remove();
+}, 4500);
+
+// COMBATE COM PRECISÃO MILITAR
+function fight() {
+    const a = document.getElementById('atq').value;
+    const d = document.getElementById('def').value;
+    if(a === d) return;
+
+    const pA = PODER_MILITAR[a] || 50;
+    const pD = PODER_MILITAR[d] || 50;
+    const chanceA = (pA / (pA + pD)) * 100;
+    
+    const vencedor = (Math.random() * 100) <= chanceA ? a : d;
+    const perdedor = vencedor === a ? d : a;
+    const prob = vencedor === a ? chanceA : (100 - chanceA);
+
+    const log = document.getElementById('combat-log');
+    const div = document.createElement('div');
+    div.style.padding = "10px 0";
+    div.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+    div.innerHTML = `
+        <p style="font-size:0.55rem; opacity:0.6;">OPER: ${a} vs ${d}</p>
+        <div class="win-card">VENCEDOR: ${vencedor}</div>
+        <p style="font-size:0.6rem; color:#fff;">Taxa de Sucesso: ${prob.toFixed(1)}%</p>
+        <p style="font-size:0.55rem; color:var(--a);">ESTADO: ${perdedor} neutralizado.</p>
+    `;
+    log.prepend(div);
+    if(log.children.length > 5) log.lastChild.remove();
+}
+
+// GLOBO 3D
 let scene, camera, renderer, globe;
-function initGlobe() {
+function initWorld() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
@@ -136,67 +196,24 @@ function initGlobe() {
         new THREE.SphereGeometry(5, 64, 64),
         new THREE.MeshPhongMaterial({
             map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
-            bumpScale: 0.1, shininess: 5
+            bumpScale: 0.15, shininess: 10
         })
     );
     scene.add(globe);
-    scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 0.8));
-    camera.position.z = 12;
-
-    setInterval(() => {
-        const feed = document.getElementById('intel-feed');
-        const news = ["EUA: Frota aérea em alerta no Pacífico.","RÚSSIA: Novas divisões blindadas avistadas.","CHINA: Manobras navais intensificadas.","OTAN: Alerta de cibersegurança Nível 4."];
-        const time = new Date().toLocaleTimeString('pt-BR');
-        const p = document.createElement('p');
-        p.className = "log-line";
-        p.innerText = `> [${time}] ${news[Math.floor(Math.random()*news.length)]}`;
-        feed.prepend(p);
-        if(feed.children.length > 15) feed.lastChild.remove();
-    }, 4000);
-
-    animate();
+    scene.add(new THREE.AmbientLight(0x555555), new THREE.DirectionalLight(0xffffff, 0.8));
+    camera.position.z = 13;
+    render();
 }
-
-function animate() {
-    requestAnimationFrame(animate);
-    globe.rotation.y += 0.0015;
+function render() {
+    requestAnimationFrame(render);
+    globe.rotation.y += 0.002;
     renderer.render(scene, camera);
 }
 
-// COMBATE COM LÓGICA DE PODER
-function fight() {
-    const a = document.getElementById('atq').value;
-    const d = document.getElementById('def').value;
-    if(a === d) return;
-
-    const pA = PODER_MILITAR[a] || 50;
-    const pD = PODER_MILITAR[d] || 50;
-    
-    const soma = pA + pD;
-    const chanceA = (pA / soma) * 100;
-    const rng = Math.random() * 100;
-    
-    const vencedor = rng <= chanceA ? a : d;
-    const perdedor = vencedor === a ? d : a;
-    const probFinal = vencedor === a ? chanceA : (100 - chanceA);
-
-    const res = document.getElementById('combat-log');
-    const div = document.createElement('div');
-    div.style.marginBottom = "15px";
-    div.innerHTML = `
-        <p style="font-size:0.55rem; color:var(--n);">OPER: ${a} vs ${d}</p>
-        <div class="win-card">VENCEDOR: ${vencedor}</div>
-        <p style="font-size:0.55rem; color:#fff;">Probabilidade de Sucesso: ${probFinal.toFixed(1)}%</p>
-        <p style="font-size:0.55rem; color:var(--a);">STATUS: ${perdedor} neutralizado.</p>
-        <hr style="opacity:0.1; margin:5px 0;">
-    `;
-    res.prepend(div);
-}
-
-PAISES.sort().forEach(p => {
-    document.getElementById('atq').innerHTML += `<option>${p}</option>`;
-    document.getElementById('def').innerHTML += `<option>${p}</option>`;
-});
+// POPULAR SELECTS
+const fill = (el) => PAISES.sort().forEach(p => el.innerHTML += `<option value="${p}">${p}</option>`);
+fill(document.getElementById('atq'));
+fill(document.getElementById('def'));
 </script>
 </body>
 </html>
