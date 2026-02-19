@@ -1,104 +1,170 @@
-<style>
-    /* RESET E FUNDO DA TELA DE LOGIN */
-    #auth-screen {
-        position: fixed; inset: 0; z-index: 10000;
-        background: #000;
-        background-image: 
-            radial-gradient(circle at center, rgba(0, 243, 255, 0.05) 0%, transparent 70%),
-            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-            linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-        background-size: 100% 100%, 100% 4px, 3px 100%;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.5s;
-    }
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATOS v24 | COMMAND</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --n: #00f3ff; --a: #ff003c; --win: #00ff88; --bg: rgba(0, 10, 20, 0.9); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
+        body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
 
-    /* O SCANNER DE RETINA (MELHORADO) */
-    .retina-box {
-        position: relative; width: 280px; height: 280px;
-        border: 1px solid rgba(0, 243, 255, 0.2);
-        display: flex; align-items: center; justify-content: center;
-        background: rgba(0, 243, 255, 0.02);
-    }
+        /* TELA DE LOGIN - RECONSTRUÍDA DO ZERO */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 9999; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .scanner-visual {
+            width: 200px; height: 200px; border: 2px solid var(--n); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; position: relative;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+        .scanner-bar {
+            position: absolute; width: 100%; height: 2px; background: var(--n);
+            box-shadow: 0 0 15px var(--n); animation: scan-anim 2s infinite ease-in-out;
+        }
+        @keyframes scan-anim { 0%, 100% { top: 10%; } 50% { top: 90%; } }
 
-    .retina-box::before {
-        content: "SCANNING..."; position: absolute; top: -20px; left: 0;
-        font-size: 0.6rem; color: var(--n); letter-spacing: 2px;
-    }
+        .btn-access {
+            margin-top: 50px; padding: 20px 50px; background: var(--n); color: #000;
+            border: none; font-family: 'Orbitron'; font-weight: 900; font-size: 0.9rem;
+            letter-spacing: 2px; cursor: pointer; border-radius: 4px; box-shadow: 0 0 20px var(--n);
+        }
 
-    .scan-circle {
-        position: absolute; width: 180px; height: 180px;
-        border: 2px solid var(--n); border-radius: 50%;
-        box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-        animation: pulse-glow 2s infinite;
-    }
+        /* FUNDO COM PLANETA */
+        #viewport { position: fixed; inset: 0; z-index: 1; opacity: 0.4; }
 
-    .moving-laser {
-        position: absolute; width: 100%; height: 2px;
-        background: var(--n); box-shadow: 0 0 15px var(--n);
-        animation: laser-move 3s infinite linear;
-    }
+        /* INTERFACE PRINCIPAL */
+        #hud {
+            position: relative; z-index: 10; height: 100vh; width: 100%;
+            display: none; flex-direction: column; padding: 10px;
+        }
+        #hud.active { display: flex; }
 
-    @keyframes laser-move { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-    @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
+        .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 5px; backdrop-filter: blur(10px); }
 
-    /* BOTÃO DE ACESSO */
-    .auth-btn {
-        margin-top: 40px; padding: 15px 40px;
-        background: transparent; border: 1px solid var(--n);
-        color: var(--n); font-family: 'Orbitron'; font-size: 0.8rem;
-        letter-spacing: 3px; cursor: pointer; position: relative;
-        overflow: hidden; transition: 0.3s;
-    }
+        /* ÁREA DE INTEL (MAIOR) */
+        #intel-area { flex: 2.5; overflow-y: auto; margin-bottom: 8px; padding: 12px; }
+        .log-line { font-size: 0.7rem; color: #ffaa00; margin-bottom: 6px; border-left: 2px solid #ffaa00; padding-left: 8px; }
 
-    .auth-btn:active { background: var(--n); color: #000; box-shadow: 0 0 30px var(--n); }
+        /* ÁREA DE COMBATE */
+        #combat-area { flex: 1; overflow-y: auto; margin-bottom: 8px; padding: 12px; border-top: 2px solid var(--a); }
+        .win-card { color: var(--win); font-family: 'Orbitron'; font-size: 0.85rem; margin-top: 10px; }
 
-    /* TEXTOS DECORATIVOS NAS QUINAS */
-    .corner-text {
-        position: absolute; font-size: 0.5rem; color: var(--n); opacity: 0.4;
-        padding: 20px; text-transform: uppercase;
-    }
-</style>
+        /* CONTROLES */
+        #controls { padding: 10px 0; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px; font-size: 0.8rem; }
+        .btn-war {
+            width: 100%; background: var(--a); color: #fff; border: none; padding: 20px;
+            font-family: 'Orbitron'; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
 
-<div id="auth-screen">
-    <div class="corner-text" style="top: 0; left: 0;">System: Stratos v23.0<br>Status: Secure</div>
-    <div class="corner-text" style="top: 0; right: 0;">Encryption: Active<br>Node: Global-01</div>
-    
-    <div class="retina-box">
-        <div class="scan-circle"></div>
-        <div class="moving-laser"></div>
-        <div style="color: var(--n); font-family: 'Orbitron'; font-size: 0.5rem; letter-spacing: 2px;">RETINA IDENTIFIED</div>
+    <div id="auth-screen">
+        <div class="scanner-visual">
+            <div class="scanner-bar"></div>
+            <div style="width: 60%; height: 60%; border: 1px dashed var(--n); border-radius: 50%; opacity: 0.3;"></div>
+        </div>
+        <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 5px;">STRATOS OS</h1>
+        <button class="btn-access" onclick="bypassLogin()">ENTRAR NO SISTEMA</button>
+        <p style="font-size: 0.6rem; margin-top: 15px; opacity: 0.5;">AUTENTICAÇÃO DE SEGURANÇA REQUERIDA</p>
     </div>
 
-    <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 10px; color: #fff; text-shadow: 0 0 10px var(--n);">STRATOS OS</h1>
-    
-    <button class="auth-btn" onclick="secureUnlock()">AUTENTICAR COMANDO</button>
-    
-    <p style="margin-top: 20px; font-size: 0.5rem; color: var(--a); letter-spacing: 1px; opacity: 0.7;">RESTRITO A PESSOAL DE NÍVEL 5</p>
-</div>
+    <div id="viewport"></div>
+
+    <div id="hud">
+        <div id="intel-area" class="panel">
+            <p style="font-size: 0.5rem; color: var(--n); margin-bottom: 10px;">[ MONITORAMENTO GLOBAL LIVE 24H ]</p>
+            <div id="intel-feed"></div>
+        </div>
+
+        <div id="combat-area" class="panel">
+            <p style="font-size: 0.5rem; opacity: 0.5;">[ TERMINAL DE OPERAÇÕES ]</p>
+            <div id="combat-log"></div>
+        </div>
+
+        <div id="controls">
+            <div class="row">
+                <select id="atq"></select>
+                <select id="def"></select>
+            </div>
+            <button class="btn-war" onclick="fight()">Executar Conflito</button>
+        </div>
+    </div>
 
 <script>
-function secureUnlock() {
-    // 1. Tenta iniciar o áudio (se falhar, o código continua)
-    try {
-        setupAudio(); 
-    } catch(e) { console.log("Audio Blocked"); }
+const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo","Coreia do Norte","Coreia do Sul","Costa Rica","Costa do Marfim","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Holanda","Honduras","Hungria","Iêmen","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Mianmar","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Palau","Panamá","Papua Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Dominicana","República Tcheca","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão","São Tomé","São Vicente","Senegal","Serra Leoa","Sérvia","Singapura","Síria","Somália","Sri Lanka","Suazilândia","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-    // 2. Animação de saída ultra-rápida e segura
-    const screen = document.getElementById('auth-screen');
-    screen.style.opacity = '0';
-    screen.style.transform = 'scale(1.5)';
-    
-    setTimeout(() => {
-        screen.style.display = 'none';
-        // 3. Ativa a interface principal
-        const hud = document.getElementById('hud');
-        if(hud) {
-            hud.classList.add('active');
-            hud.style.opacity = '1';
-            hud.style.pointerEvents = 'all';
-        }
-        // 4. Inicia o planeta
-        if(typeof initWorld === 'function') initWorld();
-    }, 600);
+function bypassLogin() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('hud').classList.add('active');
+    initGlobe();
 }
+
+let scene, camera, renderer, globe;
+function initGlobe() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('viewport').appendChild(renderer.domElement);
+
+    const loader = new THREE.TextureLoader();
+    globe = new THREE.Mesh(
+        new THREE.SphereGeometry(5, 64, 64),
+        new THREE.MeshPhongMaterial({
+            map: loader.load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
+            bumpScale: 0.1, shininess: 5
+        })
+    );
+    scene.add(globe);
+    scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 0.8));
+    camera.position.z = 12;
+
+    setInterval(() => {
+        const feed = document.getElementById('intel-feed');
+        const news = ["EUA: Frota aérea em alerta no Pacífico.","RÚSSIA: Novas divisões blindadas detectadas.","CHINA: Manobras navais em larga escala.","OTAN: Alerta nível 4 ativado."];
+        const p = document.createElement('p');
+        p.className = "log-line";
+        p.innerText = `> [LOG] ${news[Math.floor(Math.random()*news.length)]}`;
+        feed.prepend(p);
+    }, 4000);
+
+    animate();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    globe.rotation.y += 0.0015;
+    renderer.render(scene, camera);
+}
+
+function fight() {
+    const a = document.getElementById('atq').value;
+    const d = document.getElementById('def').value;
+    if(a === d) return;
+    const vencedor = Math.random() > 0.5 ? a : d;
+    const perdedor = vencedor === a ? d : a;
+    const res = document.getElementById('combat-log');
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <p style="font-size:0.6rem; opacity:0.7;">COMBATE: ${a} vs ${d}</p>
+        <div class="win-card">VENCEDOR: ${vencedor}</div>
+        <p style="font-size:0.55rem; color:var(--a);">ESTADO: ${perdedor} neutralizado.</p>
+        <hr style="opacity:0.1; margin:8px 0;">
+    `;
+    res.prepend(div);
+}
+
+PAISES.sort().forEach(p => {
+    document.getElementById('atq').innerHTML += `<option>${p}</option>`;
+    document.getElementById('def').innerHTML += `<option>${p}</option>`;
+});
 </script>
+</body>
+</html>
