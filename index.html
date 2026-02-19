@@ -1,73 +1,104 @@
 <style>
-    /* NOVA ESTÉTICA DA TELA DE AUTENTICAÇÃO */
+    /* RESET E FUNDO DA TELA DE LOGIN */
     #auth-screen {
-        position: fixed; inset: 0; z-index: 9999;
-        background: radial-gradient(circle at center, #001a1a 0%, #000 100%);
+        position: fixed; inset: 0; z-index: 10000;
+        background: #000;
+        background-image: 
+            radial-gradient(circle at center, rgba(0, 243, 255, 0.05) 0%, transparent 70%),
+            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+            linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 100%, 100% 4px, 3px 100%;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        overflow: hidden;
+        transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.5s;
     }
 
-    /* EFEITO DE RUÍDO (OVERLAY) */
-    #auth-screen::before {
-        content: ""; position: absolute; inset: 0;
-        background: url('https://grainy-gradients.vercel.app/noise.svg');
-        opacity: 0.05; pointer-events: none; z-index: 10000;
-    }
-
-    .retina-scanner-v2 {
-        width: 260px; height: 260px; position: relative;
+    /* O SCANNER DE RETINA (MELHORADO) */
+    .retina-box {
+        position: relative; width: 280px; height: 280px;
+        border: 1px solid rgba(0, 243, 255, 0.2);
         display: flex; align-items: center; justify-content: center;
+        background: rgba(0, 243, 255, 0.02);
     }
 
-    /* ANÉIS GIRATÓRIOS */
-    .ring {
-        position: absolute; border-radius: 50%;
-        border: 2px solid transparent; border-top-color: var(--n);
-        animation: rotate-ring 4s linear infinite;
+    .retina-box::before {
+        content: "SCANNING..."; position: absolute; top: -20px; left: 0;
+        font-size: 0.6rem; color: var(--n); letter-spacing: 2px;
     }
-    .ring-1 { width: 100%; height: 100%; opacity: 0.3; }
-    .ring-2 { width: 80%; height: 80%; border-top-color: var(--a); animation-duration: 2s; animation-direction: reverse; }
-    
-    @keyframes rotate-ring { to { transform: rotate(360deg); } }
 
-    /* LINHA DE SCANNER LASER */
-    .laser-line {
-        position: absolute; width: 110%; height: 2px;
-        background: var(--n); box-shadow: 0 0 20px var(--n);
-        animation: laser-anim 2.5s ease-in-out infinite;
+    .scan-circle {
+        position: absolute; width: 180px; height: 180px;
+        border: 2px solid var(--n); border-radius: 50%;
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        animation: pulse-glow 2s infinite;
     }
-    @keyframes laser-anim { 0%, 100% { top: 20%; opacity: 0; } 50% { top: 80%; opacity: 1; } }
 
-    .status-text {
-        font-family: 'Orbitron'; font-size: 0.7rem; color: var(--n);
-        margin-top: 40px; text-transform: uppercase; letter-spacing: 5px;
-        animation: blink 1.5s infinite;
+    .moving-laser {
+        position: absolute; width: 100%; height: 2px;
+        background: var(--n); box-shadow: 0 0 15px var(--n);
+        animation: laser-move 3s infinite linear;
     }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-    /* CÓDIGOS LATERAIS (DECORATIVOS) */
-    .side-intel {
-        position: absolute; left: 20px; bottom: 20px;
-        font-size: 0.5rem; color: var(--n); opacity: 0.4; line-height: 1.5;
+    @keyframes laser-move { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+    @keyframes pulse-glow { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
+
+    /* BOTÃO DE ACESSO */
+    .auth-btn {
+        margin-top: 40px; padding: 15px 40px;
+        background: transparent; border: 1px solid var(--n);
+        color: var(--n); font-family: 'Orbitron'; font-size: 0.8rem;
+        letter-spacing: 3px; cursor: pointer; position: relative;
+        overflow: hidden; transition: 0.3s;
+    }
+
+    .auth-btn:active { background: var(--n); color: #000; box-shadow: 0 0 30px var(--n); }
+
+    /* TEXTOS DECORATIVOS NAS QUINAS */
+    .corner-text {
+        position: absolute; font-size: 0.5rem; color: var(--n); opacity: 0.4;
+        padding: 20px; text-transform: uppercase;
     }
 </style>
 
-<div id="auth-screen" onclick="launchSystem()">
-    <div class="side-intel">
-        SATELLITE_LINK: ACTIVE<br>
-        ENCRYPTION: AES-256<br>
-        LOCATION: [CONFIDENTIAL]<br>
-        USER_ID: ELITE_COMMANDER
+<div id="auth-screen">
+    <div class="corner-text" style="top: 0; left: 0;">System: Stratos v23.0<br>Status: Secure</div>
+    <div class="corner-text" style="top: 0; right: 0;">Encryption: Active<br>Node: Global-01</div>
+    
+    <div class="retina-box">
+        <div class="scan-circle"></div>
+        <div class="moving-laser"></div>
+        <div style="color: var(--n); font-family: 'Orbitron'; font-size: 0.5rem; letter-spacing: 2px;">RETINA IDENTIFIED</div>
     </div>
 
-    <div class="retina-scanner-v2">
-        <div class="ring ring-1"></div>
-        <div class="ring ring-2"></div>
-        <div class="laser-line"></div>
-        <div style="font-family:'Orbitron'; font-size: 0.5rem; color: var(--n);">RETINA ID</div>
-    </div>
-
-    <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 8px; font-weight: 900; text-shadow: 0 0 10px var(--n);">STRATOS OS</h1>
-    <div class="status-text">Aguardando Impressão Digital...</div>
-    <p style="font-size: 0.5rem; color: #fff; opacity: 0.3; margin-top: 15px;">Protocolo de Segurança Nível 5 Ativo</p>
+    <h1 style="font-family:'Orbitron'; margin-top: 30px; letter-spacing: 10px; color: #fff; text-shadow: 0 0 10px var(--n);">STRATOS OS</h1>
+    
+    <button class="auth-btn" onclick="secureUnlock()">AUTENTICAR COMANDO</button>
+    
+    <p style="margin-top: 20px; font-size: 0.5rem; color: var(--a); letter-spacing: 1px; opacity: 0.7;">RESTRITO A PESSOAL DE NÍVEL 5</p>
 </div>
+
+<script>
+function secureUnlock() {
+    // 1. Tenta iniciar o áudio (se falhar, o código continua)
+    try {
+        setupAudio(); 
+    } catch(e) { console.log("Audio Blocked"); }
+
+    // 2. Animação de saída ultra-rápida e segura
+    const screen = document.getElementById('auth-screen');
+    screen.style.opacity = '0';
+    screen.style.transform = 'scale(1.5)';
+    
+    setTimeout(() => {
+        screen.style.display = 'none';
+        // 3. Ativa a interface principal
+        const hud = document.getElementById('hud');
+        if(hud) {
+            hud.classList.add('active');
+            hud.style.opacity = '1';
+            hud.style.pointerEvents = 'all';
+        }
+        // 4. Inicia o planeta
+        if(typeof initWorld === 'function') initWorld();
+    }, 600);
+}
+</script>
