@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v27.0 | LIVE INTEL</title>
+    <title>STRATOS v27.2 | LIVE INTEL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -11,134 +11,82 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background: #000; color: var(--n); height: 100vh; overflow: hidden; }
         #viewport { position: fixed; inset: 0; z-index: 1; opacity: 0.5; }
-        #auth-screen { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: 1.5s; }
-        .btn-access { margin-top: 40px; padding: 25px 70px; background: var(--n); color: #000; border: none; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 5px; cursor: pointer; box-shadow: 0 0 50px var(--n); }
-        #hud { position: relative; z-index: 10; height: 100vh; width: 100%; display: none; flex-direction: column; padding: 15px; }
+        #auth-screen { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(15px); transition: 1.5s; }
+        .btn-access { margin-top: 40px; padding: 20px 50px; background: var(--n); color: #000; border: none; font-family: 'Orbitron'; font-weight: 900; letter-spacing: 5px; cursor: pointer; box-shadow: 0 0 30px var(--n); }
+        #hud { position: relative; z-index: 10; height: 100vh; width: 100%; display: none; flex-direction: column; padding: 12px; }
         #hud.active { display: flex; }
         .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.15); border-radius: 4px; backdrop-filter: blur(20px); }
-        #header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        #digital-clock { border: 1px solid var(--n); padding: 5px 15px; font-weight: bold; background: #000; font-size: 1.1rem; }
-        #intel-area { flex: 3; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-left: 4px solid var(--a); }
-        .log-line { font-size: 0.75rem; color: #fff; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .timestamp { color: var(--alert); font-weight: bold; margin-right: 8px; }
-        .source-tag { color: var(--n); font-size: 0.6rem; font-weight: bold; text-transform: uppercase; margin-left: 10px; border: 1px solid var(--n); padding: 2px 5px; border-radius: 3px; }
-        #combat-area { flex: 1.3; overflow-y: auto; margin-bottom: 10px; padding: 15px; border-top: 2px solid var(--a); }
-        .report-card { border-left: 4px solid var(--win); background: rgba(0, 255, 136, 0.05); padding: 12px; margin-bottom: 10px; }
-
-        /* AQUI ESTÁ A CORREÇÃO QUE VOCÊ PEDIU */
-        .row { display: flex; gap: 5px; margin-bottom: 10px; width: 100%; }
-        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 10px; font-size: 0.65rem; width: 50%; border-radius: 5px; }
-        .btn-war { width: 100%; background: var(--a); color: #fff; border: none; padding: 15px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
+        #header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        #digital-clock { border: 1px solid var(--n); padding: 5px 12px; font-weight: bold; background: #000; font-size: 1rem; }
+        #intel-area { flex: 3; overflow-y: auto; margin-bottom: 8px; padding: 12px; border-left: 4px solid var(--a); }
+        .log-line { font-size: 0.75rem; color: #fff; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+        #combat-area { flex: 1.2; overflow-y: auto; margin-bottom: 8px; padding: 12px; border-top: 2px solid var(--a); }
+        .row { display: flex; gap: 8px; margin-bottom: 8px; width: 100%; }
+        select { background: #000; color: var(--n); border: 1px solid var(--n); padding: 12px 5px; font-size: 0.7rem; width: 49%; border-radius: 4px; }
+        .btn-war { width: 100%; background: var(--a); color: #fff; border: none; padding: 18px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 0.8rem; }
     </style>
 </head>
 <body onload="initWorld()">
-
     <div id="auth-screen">
-        <h1 style="font-family:'Orbitron'; font-size: 2.5rem; letter-spacing: 10px; text-shadow: 0 0 30px var(--n);">STRATOS</h1>
-        <button class="btn-access" onclick="bypassLogin()">CONECTAR</button>
+        <h1 style="font-family:'Orbitron'; font-size: 2.2rem; letter-spacing: 10px; text-shadow: 0 0 20px var(--n);">STRATOS</h1>
+        <button class="btn-access" onclick="bypassLogin()">ATIVAR COMANDO</button>
     </div>
-
     <div id="viewport"></div>
-
     <div id="hud">
         <div id="header-info">
             <div>
-                <h2 style="font-family:'Orbitron'; font-size: 0.8rem; letter-spacing: 3px;">LIVE GLOBAL INTELLIGENCE</h2>
-                <p style="font-size: 0.5rem; color: var(--win);">● STATUS: OPERACIONAL</p>
+                <h2 style="font-family:'Orbitron'; font-size: 0.75rem;">LIVE INTEL FEED</h2>
+                <p style="font-size: 0.5rem; color: var(--win);">● CONECTADO</p>
             </div>
             <div id="digital-clock">00:00:00</div>
         </div>
-
-        <div id="intel-area" class="panel">
-            <div id="intel-feed">Aguardando ativação de satélite...</div>
-        </div>
-
-        <div id="combat-area" class="panel">
-            <div id="combat-log"></div>
-        </div>
-
-        <div id="controls">
-            <div class="row">
-                <select id="atq"></select>
-                <select id="def"></select>
-            </div>
-            <button class="btn-war" onclick="fight()">PROJETAR IMPACTO</button>
+        <div id="intel-area" class="panel"><div id="intel-feed">Sincronizando agências...</div></div>
+        <div id="combat-area" class="panel"><div id="combat-log"></div></div>
+        <div class="controls">
+            <div class="row"><select id="atq"></select><select id="def"></select></div>
+            <button class="btn-war" onclick="fight()">PROJETAR CONFLITO</button>
         </div>
     </div>
-
 <script>
 const API_KEY = 'ae46552e7af9425b8abfe9ed218ace41';
 const PAISES = ["Afeganistão","África do Sul","Alemanha","Arábia Saudita","Argentina","Austrália","Brasil","Canadá","China","Coreia do Norte","Coreia do Sul","Egito","Emirados Árabes","Espanha","Estados Unidos","França","Índia","Irã","Iraque","Israel","Itália","Japão","México","Portugal","Reino Unido","Rússia","Turquia","Ucrânia","Venezuela"];
-const PODER_MILITAR = { "Estados Unidos": 99, "China": 98, "Rússia": 97, "Israel": 95, "Irã": 84, "Brasil": 88, "Turquia": 87 };
-
 let scene, camera, renderer, globe;
-
 function initWorld() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('viewport').appendChild(renderer.domElement);
-    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshPhongMaterial({
-        map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg'),
-        bumpScale: 0.2, shininess: 5
-    }));
-    scene.add(globe);
-    scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 1));
+    globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshPhongMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/planets/earth_atk_2048.jpg') }));
+    scene.add(globe); scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 1));
     camera.position.z = 12;
     const animate = () => { requestAnimationFrame(animate); globe.rotation.y += 0.002; renderer.render(scene, camera); };
     animate();
 }
-
-function bypassLogin() {
-    document.getElementById('auth-screen').style.opacity = '0';
-    setTimeout(() => { 
-        document.getElementById('auth-screen').style.display = 'none'; 
-        document.getElementById('hud').classList.add('active');
-        fetchRealNews();
-    }, 1000);
-}
-
+function bypassLogin() { document.getElementById('auth-screen').style.display = 'none'; document.getElementById('hud').classList.add('active'); fetchRealNews(); }
 async function fetchRealNews() {
     const feed = document.getElementById('intel-feed');
-    const url = `https://newsapi.org/v2/everything?q=(war OR military OR conflict)&language=pt&sortBy=publishedAt&apiKey=${API_KEY}`;
-
+    const url = `https://newsapi.org/v2/everything?q=(war OR military OR Israel OR Iran OR USA)&language=pt&sortBy=publishedAt&apiKey=${API_KEY}`;
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if(data.articles && data.articles.length > 0) {
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data.articles) {
             feed.innerHTML = '';
-            data.articles.slice(0, 10).forEach(article => {
-                const p = document.createElement('div');
-                p.className = "log-line";
-                p.innerHTML = `> <b>${article.title}</b> <span class="source-tag">${article.source.name}</span>`;
-                feed.appendChild(p);
+            data.articles.slice(0, 15).forEach(art => {
+                feed.innerHTML += `<div class="log-line"><b>${art.title}</b> <span style="font-size:0.6rem; color:var(--n)">[${art.source.name}]</span></div>`;
             });
         }
-    } catch (e) {
-        feed.innerHTML = 'Buscando sinal...';
-    }
+    } catch (e) { feed.innerHTML = 'Buscando sinal...'; }
 }
-
+setInterval(fetchRealNews, 600000);
 setInterval(() => { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
-
 function fight() {
     const a = document.getElementById('atq').value, d = document.getElementById('def').value;
-    if(a === d) return;
-    const pA = PODER_MILITAR[a] || 50, pD = PODER_MILITAR[d] || 50;
-    const chanceA = (pA / (pA + pD)) * 100;
-    const win = (Math.random()*100) <= chanceA ? a : d;
-    const prob = win === a ? chanceA : (100 - chanceA);
-
     const div = document.createElement('div');
     div.className = "report-card";
-    div.style.borderLeftColor = win === a ? 'var(--n)' : 'var(--a)';
-    div.innerHTML = `<p style="font-size:0.5rem; color:var(--alert);">[ IMPACTO ESTRATÉGICO ]</p>
-                     <div style="color:var(--win); font-family:Orbitron; font-size:0.8rem;">DOMÍNIO: ${win}</div>
-                     <p style="font-size:0.6rem; color:#fff;">Eficiência: ${prob.toFixed(1)}%</p>`;
+    div.innerHTML = `<div style="color:var(--win); font-size:0.8rem;">DOMÍNIO: ${a}</div>`;
     document.getElementById('combat-log').prepend(div);
 }
-
 const fill = (el) => PAISES.sort().forEach(p => el.innerHTML += `<option value="${p}">${p}</option>`);
 fill(document.getElementById('atq')); fill(document.getElementById('def'));
 </script>
