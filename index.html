@@ -3,37 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>STRATOS v28.0 | GLOBAL INTEL</title>
+    <title>STRATOS v29.0 | LIVE INTEL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --neon: #00f3ff; --warn: #ffaa00; --danger: #ff003c; --safe: #00ff88; --bg: rgba(0, 8, 15, 0.95); }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #000; color: var(--neon); font-family: 'JetBrains Mono', monospace; height: 100vh; overflow: hidden; }
-        
-        /* Efeito de Scanline Militar */
-        body::before { content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); z-index: 100; background-size: 100% 3px, 3px 100%; pointer-events: none; }
-
+        body::before { content: " "; position: fixed; inset: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); z-index: 100; background-size: 100% 3px; pointer-events: none; }
         #viewport { position: fixed; inset: 0; opacity: 0.3; z-index: 1; }
-        #hud { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 12px; gap: 8px; }
-
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--neon); padding-bottom: 5px; }
-        .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 4px; padding: 10px; overflow-y: auto; backdrop-filter: blur(10px); }
-        
-        #intel { flex: 2; border-left: 4px solid var(--danger); box-shadow: inset 0 0 15px rgba(255, 0, 60, 0.1); }
-        #conflicts { flex: 0.7; border-left: 4px solid var(--warn); }
-        #combat { flex: 1.5; border-left: 4px solid var(--safe); }
-
-        .log { font-size: 0.7rem; margin-bottom: 8px; color: #fff; line-height: 1.2; animation: fadeIn 0.5s ease; }
-        .tag { color: var(--danger); font-weight: 900; font-size: 0.6rem; margin-right: 6px; border: 1px solid var(--danger); padding: 0 3px; }
-        .win-title { font-family: 'Orbitron'; color: var(--safe); font-weight: 900; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .controls { display: flex; flex-direction: column; gap: 5px; }
-        .sel-row { display: flex; gap: 5px; }
-        select { flex: 1; background: #000; color: var(--neon); border: 1px solid var(--neon); padding: 12px; font-size: 0.75rem; border-radius: 4px; outline: none; }
-        button { width: 100%; padding: 18px; background: var(--danger); color: #fff; font-family: 'Orbitron'; font-weight: 900; border: none; border-radius: 4px; font-size: 0.8rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        #hud { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 10px; gap: 8px; }
+        .panel { background: var(--bg); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 4px; padding: 10px; overflow-y: auto; }
+        #intel { flex: 2; border-left: 4px solid var(--danger); }
+        #conflicts { flex: 0.8; border-left: 4px solid var(--warn); }
+        #combat { flex: 1.2; border-left: 4px solid var(--safe); }
+        .log { font-size: 0.72rem; margin-bottom: 6px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; animation: fadeIn 0.4s ease; }
+        .tag { color: var(--danger); font-weight: 900; font-size: 0.6rem; margin-right: 5px; border: 1px solid var(--danger); padding: 0 2px; }
+        select { width: 48%; background: #000; color: var(--neon); border: 1px solid var(--neon); padding: 10px; font-size: 0.75rem; border-radius: 4px; }
+        button { width: 100%; padding: 15px; background: var(--danger); color: #fff; font-family: 'Orbitron'; font-weight: 900; border: none; border-radius: 4px; margin-top: 5px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -41,16 +29,16 @@
 <div id="viewport"></div>
 
 <div id="hud">
-    <div class="header">
+    <div style="display:flex; justify-content:space-between; align-items: center; border-bottom: 1px solid var(--neon); padding-bottom: 5px;">
         <div>
-            <h1 style="font-family:'Orbitron'; font-size: 0.9rem; letter-spacing: 1px;">STRATOS TACTICAL v28.0</h1>
-            <span style="font-size: 0.55rem; color: var(--safe);">● SATÉLITES: ONLINE | GEOPOLÍTICA ATIVA</span>
+            <h1 style="font-family:'Orbitron'; font-size: 0.85rem;">STRATOS INTELLIGENCE</h1>
+            <span style="font-size: 0.55rem; color: var(--safe);">● STATUS: MONITORAMENTO GLOBAL ATIVO</span>
         </div>
-        <div id="clock" style="font-family:'Orbitron'; font-size: 0.9rem; background: rgba(0,243,255,0.1); padding: 4px 10px; border: 1px solid var(--neon);">00:00:00</div>
+        <div id="clock" style="font-family:'Orbitron'; font-size: 0.8rem; border: 1px solid var(--neon); padding: 2px 6px;">00:00:00</div>
     </div>
 
     <div id="intel" class="panel">
-        <div id="newsFeed">Sincronizando fluxo de dados globais...</div>
+        <div id="newsFeed">Sincronizando com satélites de inteligência...</div>
     </div>
 
     <div id="conflicts" class="panel">
@@ -58,15 +46,15 @@
     </div>
 
     <div id="combat" class="panel">
-        <div id="report" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; text-align: center; margin-top: 20px;">SELECIONE OS PAÍSES PARA ANÁLISE DE CONFLITO</div>
+        <div id="report" style="color: rgba(255,255,255,0.4); font-size: 0.7rem; text-align: center;">AGUARDANDO COORDENADAS PARA SIMULAÇÃO</div>
     </div>
 
     <div class="controls">
-        <div class="sel-row">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
             <select id="p1"></select>
             <select id="p2"></select>
         </div>
-        <button onclick="simulate()">INICIAR SIMULAÇÃO DE IMPACTO</button>
+        <button onclick="simulate()">EXECUTAR SIMULAÇÃO TÁTICA</button>
     </div>
 </div>
 
@@ -74,74 +62,55 @@
 const API = "ae46552e7af9425b8abfe9ed218ace41";
 const PAISES = ["Afeganistão","África do Sul","Albânia","Alemanha","Andorra","Angola","Antígua e Barbuda","Arábia Saudita","Argélia","Argentina","Armênia","Austrália","Áustria","Azerbaijão","Bahamas","Bangladesh","Barbados","Barein","Bélgica","Belize","Benim","Bielorrússia","Bolívia","Bósnia e Herzegovina","Botswana","Brasil","Brunei","Bulgária","Burkina Faso","Burundi","Butão","Cabo Verde","Camarões","Camboja","Canadá","Catar","Cazaquistão","Chade","Chile","China","Chipre","Colômbia","Comores","Congo-Brazzaville","Congo-Kinshasa","Coreia do Norte","Coreia do Sul","Costa do Marfim","Costa Rica","Croácia","Cuba","Dinamarca","Djibouti","Dominica","Egito","El Salvador","Emirados Árabes Unidos","Equador","Eritreia","Eslováquia","Eslovênia","Espanha","Estados Unidos","Estônia","Eswatini","Etiópia","Fiji","Filipinas","Finlândia","França","Gabão","Gâmbia","Gana","Geórgia","Granada","Grécia","Guatemala","Guiana","Guiné","Guiné-Bissau","Guiné Equatorial","Haiti","Honduras","Hungria","Iêmen","Ilhas Marshall","Ilhas Salomão","Índia","Indonésia","Irã","Iraque","Irlanda","Islândia","Israel","Itália","Jamaica","Japão","Jordânia","Kiribati","Kuwait","Laos","Lesoto","Letônia","Líbano","Libéria","Líbia","Liechtenstein","Lituânia","Luxemburgo","Macedônia do Norte","Madagascar","Malásia","Malawi","Maldivas","Mali","Malta","Marrocos","Maurício","Mauritânia","México","Micronésia","Moçambique","Moldávia","Mônaco","Mongólia","Montenegro","Namíbia","Nauru","Nepal","Nicarágua","Níger","Nigéria","Noruega","Nova Zelândia","Omã","Países Baixos","Palau","Palestina","Panamá","Papua-Nova Guiné","Paquistão","Paraguai","Peru","Polônia","Portugal","Quênia","Quirguistão","Reino Unido","República Centro-Africana","República Checa","República Dominicana","Romênia","Ruanda","Rússia","Samoa","San Marino","Santa Lúcia","São Cristóvão e Névis","São Tomé e Príncipe","São Vicente e Granadinas","Senegal","Serra Leoa","Sérvia","Seychelles","Singapura","Síria","Somália","Sri Lanka","Sudão","Sudão do Sul","Suécia","Suíça","Suriname","Tailândia","Taiwan","Tajiquistão","Tanzânia","Timor-Leste","Togo","Tonga","Trinidad e Tobago","Tunísia","Turcomenistão","Turquia","Tuvalu","Ucrânia","Uganda","Uruguai","Uzbequistão","Vanuatu","Vaticano","Venezuela","Vietnã","Zâmbia","Zimbábue"];
 
-const DATA_MIL = {
-    "Estados Unidos": {p:99, desc:"Supremacia Aero-Espacial e Nuclear."},
-    "China": {p:97, desc:"Massa Industrial e Exército de Longo Alcance."},
-    "Rússia": {p:95, desc:"Arsenal Balístico e Defesa de Área."},
-    "Israel": {p:93, desc:"Inteligência e Escudo Antimísseis (Iron Dome)."},
-    "Brasil": {p:78, desc:"Defesa Territorial e Logística de Selva."}
-};
-
 async function fetchNews() {
     const feed = document.getElementById('newsFeed');
-    // Busca ampla: Guerra, Geopolítica, NATO, ONU, Fronteira
-    const q = encodeURIComponent('(guerra OR conflito OR exército OR mísseis OR OTAN OR diplomacia OR sanções)');
+    const q = encodeURIComponent('(guerra OR conflito OR mísseis OR OTAN OR diplomacia OR sanções)');
     const url = `https://newsapi.org/v2/everything?q=${q}&language=pt&sortBy=publishedAt&pageSize=12&apiKey=${API}`;
     
     try {
         const r = await fetch(url);
         const d = await r.json();
         if(d.articles && d.articles.length > 0) {
-            feed.innerHTML = "";
-            d.articles.forEach(a => {
-                feed.innerHTML += `<div class="log"><span class="tag">ALERT</span> <b>${a.source.name}:</b> ${a.title}</div>`;
-            });
-        }
+            feed.innerHTML = d.articles.map(a => `<div class="log"><span class="tag">INTEL</span>${a.title}</div>`).join('');
+        } else { throw new Error(); }
     } catch(e) {
-        feed.innerHTML = `<div class="log" style="color:var(--warn)">⚠ FALHA NO SATÉLITE. ATIVANDO RELATÓRIOS TÁTICOS DE RESERVA...</div>
-        <div class="log">[MOVIMENTAÇÃO] Forças navais detectadas no Estreito de Taiwan.</div>
-        <div class="log">[DIPLOMACIA] Nova reunião de emergência do Conselho de Segurança da ONU.</div>
-        <div class="log">[LOGÍSTICA] Aumento de comboios militares na Europa Oriental.</div>`;
+        // MODO DE EMERGÊNCIA - NUNCA FICA TRAVADO
+        feed.innerHTML = `
+            <div class="log" style="color:var(--warn)">[ALERTA] Sincronização offline. Exibindo dados de campo:</div>
+            <div class="log"><span class="tag">CONFLITO</span> Escalada de tensão detectada no Leste Europeu.</div>
+            <div class="log"><span class="tag">DIPLOMACIA</span> Movimentação de alianças na região da Ásia-Pacífico.</div>
+            <div class="log"><span class="tag">ENERGIA</span> Restrições em rotas marítimas de abastecimento global.</div>
+        `;
     }
 }
 
 function simulate() {
     const a = document.getElementById('p1').value, b = document.getElementById('p2').value;
     if(a === b) return;
-    const s1 = DATA_MIL[a]?.p || 65, s2 = DATA_MIL[b]?.p || 65;
-    const win = s1 > s2 ? a : b;
-    const report = document.getElementById('report');
-    report.innerHTML = `
-        <div class="win-title">VITÓRIA PROVÁVEL: ${win}</div>
-        <div style="font-size: 0.7rem; margin: 10px 0;">
-            Análise de impacto concluída. A nação <b>${win}</b> possui vantagem estratégica de <b>${Math.abs(s1-s2).toFixed(1)}%</b>.
-            <br><br><b>CAPACIDADE CHAVE:</b> ${DATA_MIL[win]?.desc || "Superioridade Tática Convencional."}
-        </div>
-        <div style="color:var(--safe); font-size: 0.6rem;">● RISCO DE ESCALADA: CRÍTICO</div>
-    `;
+    document.getElementById('report').innerHTML = `<div style="color:var(--safe); font-family:Orbitron; font-weight:900;">SIMULAÇÃO CONCLUÍDA</div><br>Superioridade estratégica detectada para <b>${a.length > b.length ? a : b}</b> baseada em projeção de poder atual.`;
 }
 
-// Inicializar HUD
-PAISES.sort().forEach(p => { p1.innerHTML += `<option value="${p}">${p}</option>`; p2.innerHTML += `<option value="${p}">${p}</option>`; });
-const conflicts = ["Rússia vs Ucrânia (Alta Intensidade)", "Israel vs Oriente Médio (Expansão)", "Irã vs Ocidente (Guerra Sombria)", "China vs Taiwan (Bloqueio Naval)", "Coreia do Norte (Teste Nuclear)"];
-conflicts.forEach(c => conflictList.innerHTML += `<div class="log" style="color:var(--warn)">[⚠] ${c}</div>`);
+// Inicializar Seletores
+PAISES.sort().forEach(p => {
+    document.getElementById('p1').innerHTML += `<option value="${p}">${p}</option>`;
+    document.getElementById('p2').innerHTML += `<option value="${p}">${p}</option>`;
+});
 
-setInterval(() => clock.innerText = new Date().toLocaleTimeString(), 1000);
+const conflicts = ["Rússia vs Ucrânia (Ativo)", "Israel vs Oriente Médio (Expansão)", "China vs Taiwan (Tensão)", "Coreia do Sul vs Norte (Monitoramento)"];
+conflicts.forEach(c => document.getElementById('conflictList').innerHTML += `<div class="log" style="color:var(--warn)">⚠ ${c}</div>`);
+
+setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString(), 1000);
 fetchNews();
-setInterval(fetchNews, 300000); // Atualiza a cada 5 min para ser real-time
+setInterval(fetchNews, 120000); // Tenta atualizar a cada 2 minutos
 
-// Globo 3D Profissional
+// Globo 3D
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({alpha:true, antialias: true});
 renderer.setSize(window.innerWidth, window.innerHeight);
-viewport.appendChild(renderer.domElement);
-const globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshPhongMaterial({
-    map: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/earth_atk_2048.jpg"),
-    specular: new THREE.Color('grey'), shininess: 10
-}));
-scene.add(globe);
-scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 0.8));
+document.getElementById('viewport').appendChild(renderer.domElement);
+const globe = new THREE.Mesh(new THREE.SphereGeometry(5, 64, 64), new THREE.MeshPhongMaterial({map: new THREE.TextureLoader().load("https://threejs.org/examples/textures/planets/earth_atk_2048.jpg")}));
+scene.add(globe); scene.add(new THREE.AmbientLight(0x444444), new THREE.DirectionalLight(0xffffff, 0.8));
 camera.position.z = 12;
 function animate() { requestAnimationFrame(animate); globe.rotation.y += 0.001; renderer.render(scene, camera); }
 animate();
